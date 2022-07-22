@@ -1,0 +1,6 @@
+[submodule "test_models/pytorch-openpose"]
+	path = test_models/pytorch-openpose
+	url = https://github.com/Hzzone/pytorch-openpose
+[submodule "test_models/yolov5"]
+	path = test_models/yolov5
+	url = https://github.com/ultralytics/yolov5.git
