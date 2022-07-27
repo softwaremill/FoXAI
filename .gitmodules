@@ -4,3 +4,6 @@
 [submodule "test_models/yolov5"]
 	path = test_models/yolov5
 	url = https://github.com/ultralytics/yolov5.git
+[submodule "test_models/graph-convnet-tsp"]
+	path = test_models/graph-convnet-tsp
+	url = https://github.com/chaitjo/graph-convnet-tsp.git
