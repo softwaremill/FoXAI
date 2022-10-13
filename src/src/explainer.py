@@ -6,10 +6,7 @@ import numpy as np
 from typing import Any
 import matplotlib
 
-from captum.attr import IntegratedGradients
-from captum.attr import GradientShap
-from captum.attr import Occlusion
-from captum.attr import NoiseTunnel
+from captum.attr import IntegratedGradients, LRP, GradientShap, Occlusion, NoiseTunnel, GuidedGradCam
 from captum.attr import visualization as viz
 
 
@@ -46,6 +43,8 @@ class CVExplainer(ABC):
         Returns:
             matplotlib.pyplot.Figure: Image with paired figures: original image and features heatmap.
         """
+        print(attributions.shape)
+        print(transformed_img.shape)
         figure, _ = viz.visualize_image_attr_multiple(
             np.transpose(attributions.squeeze().cpu().detach().numpy(), (1, 2, 0)),
             np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1, 2, 0)),
@@ -61,6 +60,7 @@ class CVExplainer(ABC):
 
 class IntegratedGradientsCVExplainer(CVExplainer):
     """Integrated Gradients algorithm explainer."""
+
     algorithm_name = "integrated_gradient"
 
     def calculate_features(
@@ -90,6 +90,7 @@ class IntegratedGradientsCVExplainer(CVExplainer):
 
 class NoiseTunnelCVExplainer(CVExplainer):
     """Noise Tunnel algorithm explainer."""
+
     algorithm_name = "noise_tunnel"
 
     def calculate_features(
@@ -119,6 +120,7 @@ class NoiseTunnelCVExplainer(CVExplainer):
 
 class GradientSHAPCVExplainer(CVExplainer):
     """Gradient SHAP algorithm explainer."""
+
     algorithm_name = "gradient_shap"
 
     def calculate_features(
@@ -159,6 +161,7 @@ class GradientSHAPCVExplainer(CVExplainer):
 
 class OcculusionCVExplainer(CVExplainer):
     """Occulusion algorithm explainer."""
+
     algorithm_name = "occulusion"
 
     def calculate_features(
@@ -190,4 +193,80 @@ class OcculusionCVExplainer(CVExplainer):
             sliding_window_shapes=sliding_window_shapes,
             baselines=0,
         )
+        return attributions
+
+
+class LRPCVExplainer(CVExplainer):
+    """LRP algorithm explainer."""
+
+    algorithm_name = "lrp"
+
+    def calculate_features(
+        self,
+        model: Any,
+        input_data: np.ndarray,
+        pred_label_idx: torch.Tensor,
+        *args,  # pylint: disable=unused-argument
+        **kwargs,  # pylint: disable=unused-argument
+    ) -> torch.Tensor:
+        """Generate features image with occulusion algorithm explainer.
+
+        Args:
+            model (Any): Any DNN model You want to use.
+            input_data (np.ndarray): Input image.
+            pred_label_idx (torch.Tensor): Predicted label.
+
+        Returns:
+            torch.Tensor: Features matrix.
+        """
+        lrp = LRP(model)
+        
+        for module in model.modules():
+            if isinstance(module, torch.nn.ReLU):
+                module.inplace=False
+        
+        attributions = lrp.attribute(
+            input_data,
+            target=pred_label_idx,
+        )
+        return attributions
+
+class GuidedGradCamCVExplainer(CVExplainer):
+    """Guided GradCAM algorithm explainer."""
+
+    algorithm_name = "guided_gradcam"
+
+    def calculate_features(
+        self,
+        model: Any,
+        input_data: np.ndarray,
+        pred_label_idx: torch.Tensor,
+        *args,  # pylint: disable=unused-argument
+        **kwargs,  # pylint: disable=unused-argument
+    ) -> torch.Tensor:
+        """Generate features image with occulusion algorithm explainer.
+
+        Args:
+            model (Any): Any DNN model You want to use.
+            input_data (np.ndarray): Input image.
+            pred_label_idx (torch.Tensor): Predicted label.
+
+        Returns:
+            torch.Tensor: Features matrix.
+        """
+        selected_layer = kwargs.get("selected_layer", -1)
+        conv_layer_list = []
+        for module in model.modules():
+            if isinstance(module, torch.nn.ReLU):
+                module.inplace=False
+                
+            if isinstance(module, torch.nn.Conv2d):
+                conv_layer_list.append(module)
+
+        guided_cam = GuidedGradCam(model, layer=conv_layer_list[selected_layer])
+        attributions = guided_cam.attribute(
+            input_data,
+            target=pred_label_idx,
+        )
+        
         return attributions
