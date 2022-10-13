@@ -1,11 +1,7 @@
 from PIL import Image
 
-import os
-import json
-
 import datetime
 import uuid
-from typing import Dict, Any
 
 from explainer import (
     IntegratedGradientsCVExplainer,
@@ -28,7 +24,7 @@ def parse_args():
     parser.add_argument("--cache", type=str, default="../autoxai_cache/", help="Path to AutoXAI cache directory")
     parser.add_argument("--img_path", type=str, required=True, help="Path to image")
     return parser.parse_args()
-    
+
 
 def main():
     args = parse_args()
