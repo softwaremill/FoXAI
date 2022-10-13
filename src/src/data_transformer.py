@@ -5,7 +5,7 @@ import torch
 from torchvision import transforms
 
 
-class ComputerVisionTransformer(ABC):
+class CVTransformer(ABC):
     """Abstract class performing input data transformations."""
 
     def resize_and_center(self, img: PIL.Image) -> PIL.Image:  # pylint: disable=unused-argument
@@ -31,7 +31,7 @@ class ComputerVisionTransformer(ABC):
         ...
 
 
-class ExplainerComputerVisionTransformer(ComputerVisionTransformer):
+class ExplainerCVTransformer(CVTransformer):
     """Computer vision tasks input data transformation class."""
 
     def resize_and_center(self, img: PIL.Image) -> PIL.Image:

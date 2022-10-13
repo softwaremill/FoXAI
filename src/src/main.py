@@ -10,12 +10,12 @@ from explainer import (
     OcculusionCVExplainer,
 )
 from data_transformer import (
-    ExplainerComputerVisionTransformer,
+    ExplainerCVTransformer,
 )
 from cache_manager import LocalDirCacheManager
 from path_manager import ExperimentDataClass
 from model_utils import load_model
-from explainer_manager import OfflineExplainer
+from explainer_manager import ExplainerManager
 from argparse import ArgumentParser
 
 
@@ -74,9 +74,9 @@ def main():
         "attributes_stride_50",
     ]
 
-    transformer = ExplainerComputerVisionTransformer()
+    transformer = ExplainerCVTransformer()
     cache_manager = LocalDirCacheManager()
-    offline_explainer = OfflineExplainer()
+    offline_explainer = ExplainerManager()
     offline_explainer.explain_cv_prediction(
         transformer,
         experiment,

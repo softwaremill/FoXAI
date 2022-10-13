@@ -37,6 +37,15 @@ class CVExplainer(ABC):
         ...
 
     def visualize(self, attributions: torch.Tensor, transformed_img: torch.Tensor) -> matplotlib.pyplot.Figure:
+        """Create image with calculated features.
+
+        Args:
+            attributions (torch.Tensor): Features.
+            transformed_img (torch.Tensor): Image.
+
+        Returns:
+            matplotlib.pyplot.Figure: Image with paired figures: original image and features heatmap.
+        """
         figure, _ = viz.visualize_image_attr_multiple(
             np.transpose(attributions.squeeze().cpu().detach().numpy(), (1, 2, 0)),
             np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1, 2, 0)),
@@ -51,6 +60,7 @@ class CVExplainer(ABC):
 
 
 class IntegratedGradientsCVExplainer(CVExplainer):
+    """Integrated Gradients algorithm explainer."""
     algorithm_name = "integrated_gradient"
 
     def calculate_features(
@@ -79,6 +89,7 @@ class IntegratedGradientsCVExplainer(CVExplainer):
 
 
 class NoiseTunnelCVExplainer(CVExplainer):
+    """Noise Tunnel algorithm explainer."""
     algorithm_name = "noise_tunnel"
 
     def calculate_features(
@@ -107,6 +118,7 @@ class NoiseTunnelCVExplainer(CVExplainer):
 
 
 class GradientSHAPCVExplainer(CVExplainer):
+    """Gradient SHAP algorithm explainer."""
     algorithm_name = "gradient_shap"
 
     def calculate_features(
@@ -146,6 +158,7 @@ class GradientSHAPCVExplainer(CVExplainer):
 
 
 class OcculusionCVExplainer(CVExplainer):
+    """Occulusion algorithm explainer."""
     algorithm_name = "occulusion"
 
     def calculate_features(

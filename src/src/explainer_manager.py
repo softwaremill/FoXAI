@@ -10,15 +10,15 @@ from explainer import (
     CVExplainer,
 )
 from data_transformer import (
-    ComputerVisionTransformer,
+    CVTransformer,
 )
 from cache_manager import CacheManager
 from path_manager import ExperimentDataClass
 from model_utils import get_prediction
 
 
-class OfflineExplainer:
-    """Explainer for offline mode."""
+class ExplainerManager:
+    """Explainer manager class."""
 
     def make_explanation(
         self,
@@ -53,7 +53,7 @@ class OfflineExplainer:
 
     def explain_cv_prediction(
         self,
-        transformer: ComputerVisionTransformer,
+        transformer: CVTransformer,
         experiment: ExperimentDataClass,
         model: Any,
         img: Image,
