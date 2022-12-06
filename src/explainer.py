@@ -1,22 +1,30 @@
+"""Supported explainable algorithms classes."""
 from abc import ABC
-import torch
-
-import numpy as np
-
 from typing import Any
-import matplotlib
 
-from captum.attr import IntegratedGradients, LRP, GradientShap, Occlusion, NoiseTunnel, GuidedGradCam
+import matplotlib
+import numpy as np
+import torch
+from captum.attr import (
+    LRP,
+    GradientShap,
+    GuidedGradCam,
+    IntegratedGradients,
+    NoiseTunnel,
+    Occlusion,
+)
 from captum.attr import visualization as viz
 
 
 class CVExplainer(ABC):
     """Abstract explainer class."""
 
+    algorithm_name = ""
+
     def calculate_features(
         self,
         model: Any,  # pylint: disable=unused-argument
-        input_data: np.ndarray,  # pylint: disable=unused-argument
+        input_data: torch.Tensor,  # pylint: disable=unused-argument
         pred_label_idx: torch.Tensor,  # pylint: disable=unused-argument
         *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
@@ -24,24 +32,25 @@ class CVExplainer(ABC):
         """Calculate features of given explainer.
 
         Args:
-            model (Any): Any DNN model You want to use.
-            input_data (np.ndarray): Input image.
-            pred_label_idx (torch.Tensor): Predicted label.
+            model: Any DNN model You want to use.
+            input_data: Input image.
+            pred_label_idx: Predicted label.
 
         Returns:
-            torch.Tensor: Tensor of attributes.
+            Tensor of attributes.
         """
-        ...
 
-    def visualize(self, attributions: torch.Tensor, transformed_img: torch.Tensor) -> matplotlib.pyplot.Figure:
+    def visualize(
+        self, attributions: torch.Tensor, transformed_img: torch.Tensor
+    ) -> matplotlib.pyplot.Figure:
         """Create image with calculated features.
 
         Args:
-            attributions (torch.Tensor): Features.
-            transformed_img (torch.Tensor): Image.
+            attributions: Features.
+            transformed_img: Image.
 
         Returns:
-            matplotlib.pyplot.Figure: Image with paired figures: original image and features heatmap.
+            Image with paired figures: original image and features heatmap.
         """
         print(attributions.shape)
         print(transformed_img.shape)
@@ -66,7 +75,7 @@ class IntegratedGradientsCVExplainer(CVExplainer):
     def calculate_features(
         self,
         model: Any,
-        input_data: np.ndarray,
+        input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
         *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
@@ -74,17 +83,19 @@ class IntegratedGradientsCVExplainer(CVExplainer):
         """Generate features image with integrated gradients algorithm explainer.
 
         Args:
-            model (Any): Any DNN model You want to use.
-            input_data (np.ndarray): Input image.
-            pred_label_idx (torch.Tensor): Predicted label.
+            model: Any DNN model You want to use.
+            input_data: Input image.
+            pred_label_idx: Predicted label.
 
         Returns:
-            torch.Tensor: Features matrix.
+            Features matrix.
         """
         n_steps = kwargs.get("n_steps", 100)
 
         integrated_gradients = IntegratedGradients(model)
-        attributions = integrated_gradients.attribute(input_data, target=pred_label_idx, n_steps=n_steps)
+        attributions = integrated_gradients.attribute(
+            input_data, target=pred_label_idx, n_steps=n_steps
+        )
         return attributions
 
 
@@ -96,7 +107,7 @@ class NoiseTunnelCVExplainer(CVExplainer):
     def calculate_features(
         self,
         model: Any,
-        input_data: np.ndarray,
+        input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
         *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
@@ -104,17 +115,19 @@ class NoiseTunnelCVExplainer(CVExplainer):
         """Generate features image with noise tunnel algorithm explainer.
 
         Args:
-            model (Any): Any DNN model You want to use.
-            input_data (np.ndarray): Input image.
-            pred_label_idx (torch.Tensor): Predicted label.
+            model: Any DNN model You want to use.
+            input_data: Input image.
+            pred_label_idx: Predicted label.
 
         Returns:
-            torch.Tensor: Features matrix.
+            Features matrix.
         """
         integrated_gradients = IntegratedGradients(model)
         noise_tunnel = NoiseTunnel(integrated_gradients)
 
-        attributions = noise_tunnel.attribute(input_data, nt_samples=10, nt_type="smoothgrad_sq", target=pred_label_idx)
+        attributions = noise_tunnel.attribute(
+            input_data, nt_samples=10, nt_type="smoothgrad_sq", target=pred_label_idx
+        )
         return attributions
 
 
@@ -126,7 +139,7 @@ class GradientSHAPCVExplainer(CVExplainer):
     def calculate_features(
         self,
         model: Any,
-        input_data: np.ndarray,
+        input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
         *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
@@ -134,12 +147,12 @@ class GradientSHAPCVExplainer(CVExplainer):
         """Generate features image with gradient SHAP algorithm explainer.
 
         Args:
-            model (Any): Any DNN model You want to use.
-            input_data (np.ndarray): Input image.
-            pred_label_idx (torch.Tensor): Predicted label.
+            model: Any DNN model You want to use.
+            input_data: Input image.
+            pred_label_idx: Predicted label.
 
         Returns:
-            torch.Tensor: Features matrix.
+            Features matrix.
         """
         torch.manual_seed(0)
         np.random.seed(0)
@@ -147,7 +160,9 @@ class GradientSHAPCVExplainer(CVExplainer):
         gradient_shap = GradientShap(model)
 
         # Defining baseline distribution of images
-        rand_img_dist = torch.cat([input_data * 0, input_data * 1])
+        rand_img_dist = torch.cat(  # pylint: disable = (no-member)
+            [input_data * 0, input_data * 1]
+        )
 
         attributions = gradient_shap.attribute(
             input_data,
@@ -167,7 +182,7 @@ class OcculusionCVExplainer(CVExplainer):
     def calculate_features(
         self,
         model: Any,
-        input_data: np.ndarray,
+        input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
         *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
@@ -175,12 +190,12 @@ class OcculusionCVExplainer(CVExplainer):
         """Generate features image with occulusion algorithm explainer.
 
         Args:
-            model (Any): Any DNN model You want to use.
-            input_data (np.ndarray): Input image.
-            pred_label_idx (torch.Tensor): Predicted label.
+            model: Any DNN model You want to use.
+            input_data: Input image.
+            pred_label_idx: Predicted label.
 
         Returns:
-            torch.Tensor: Features matrix.
+            Features matrix.
         """
         stride = kwargs.get("stride", (3, 8, 8))
         sliding_window_shapes = kwargs.get("sliding_window_shapes", (3, 15, 15))
@@ -204,7 +219,7 @@ class LRPCVExplainer(CVExplainer):
     def calculate_features(
         self,
         model: Any,
-        input_data: np.ndarray,
+        input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
         *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
@@ -212,24 +227,25 @@ class LRPCVExplainer(CVExplainer):
         """Generate features image with occulusion algorithm explainer.
 
         Args:
-            model (Any): Any DNN model You want to use.
-            input_data (np.ndarray): Input image.
-            pred_label_idx (torch.Tensor): Predicted label.
+            model: Any DNN model You want to use.
+            input_data: Input image.
+            pred_label_idx: Predicted label.
 
         Returns:
-            torch.Tensor: Features matrix.
+            Features matrix.
         """
         lrp = LRP(model)
-        
+
         for module in model.modules():
             if isinstance(module, torch.nn.ReLU):
-                module.inplace=False
-        
+                module.inplace = False
+
         attributions = lrp.attribute(
             input_data,
             target=pred_label_idx,
         )
         return attributions
+
 
 class GuidedGradCamCVExplainer(CVExplainer):
     """Guided GradCAM algorithm explainer."""
@@ -239,7 +255,7 @@ class GuidedGradCamCVExplainer(CVExplainer):
     def calculate_features(
         self,
         model: Any,
-        input_data: np.ndarray,
+        input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
         *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
@@ -247,19 +263,19 @@ class GuidedGradCamCVExplainer(CVExplainer):
         """Generate features image with occulusion algorithm explainer.
 
         Args:
-            model (Any): Any DNN model You want to use.
-            input_data (np.ndarray): Input image.
-            pred_label_idx (torch.Tensor): Predicted label.
+            model: Any DNN model You want to use.
+            input_data: Input image.
+            pred_label_idx: Predicted label.
 
         Returns:
-            torch.Tensor: Features matrix.
+            Features matrix.
         """
         selected_layer = kwargs.get("selected_layer", -1)
         conv_layer_list = []
         for module in model.modules():
             if isinstance(module, torch.nn.ReLU):
-                module.inplace=False
-                
+                module.inplace = False
+
             if isinstance(module, torch.nn.Conv2d):
                 conv_layer_list.append(module)
 
@@ -268,5 +284,5 @@ class GuidedGradCamCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        
+
         return attributions

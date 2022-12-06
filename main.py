@@ -1,32 +1,42 @@
-from PIL import Image
-
+"""Entry point for CLI."""
 import datetime
 import uuid
+from argparse import ArgumentParser, Namespace
 
-from explainer import (
-    IntegratedGradientsCVExplainer,
+from PIL import Image
+
+from src.cache_manager import LocalDirCacheManager
+from src.data_transformer import ExplainerCVTransformer
+from src.explainer import (
     GradientSHAPCVExplainer,
+    IntegratedGradientsCVExplainer,
     NoiseTunnelCVExplainer,
     OcculusionCVExplainer,
 )
-from data_transformer import (
-    ExplainerCVTransformer,
-)
-from cache_manager import LocalDirCacheManager
-from path_manager import ExperimentDataClass
-from model_utils import load_model
-from explainer_manager import ExplainerManager
-from argparse import ArgumentParser
+from src.explainer_manager import ExplainerManager
+from src.model_utils import load_model
+from src.path_manager import ExperimentDataClass
 
 
-def parse_args():
+def parse_args() -> Namespace:
+    """Parse CLI arguments.
+
+    Returns:
+        Namespace with parsed arguments.
+    """
     parser = ArgumentParser(description="AutoXAI - Explainable AI")
-    parser.add_argument("--cache", type=str, default="../autoxai_cache/", help="Path to AutoXAI cache directory")
+    parser.add_argument(
+        "--cache",
+        type=str,
+        default="../autoxai_cache/",
+        help="Path to AutoXAI cache directory",
+    )
     parser.add_argument("--img_path", type=str, required=True, help="Path to image")
     return parser.parse_args()
 
 
 def main():
+    """Entry point for application."""
     args = parse_args()
 
     experiment = ExperimentDataClass(

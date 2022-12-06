@@ -1,9 +1,10 @@
+"""Helper class for handling paths creation."""
 import os
 from dataclasses import dataclass
 
 
 @dataclass
-class ExperimentDataClass:
+class ExperimentDataClass:  # pylint: disable = (too-many-instance-attributes)
     """Class to gather information about directory structure of an experiment."""
 
     base_path: str
@@ -38,15 +39,15 @@ class ExperimentDataClass:
     @property
     def image_name(self):
         """Image name."""
-        return self.image_path.split("/")[-1]
+        return self.image_path.rsplit("/", maxsplit=1)[-1]
 
     def generate_path_to_experiment_figures(self, path: str) -> str:
         """Generate path to experiment explanations figures.
 
         Args:
-            path (str): Path to experiment explanations algorithm directory.
+            path: Path to experiment explanations algorithm directory.
 
         Returns:
-            str: Path.
+            Path.
         """
         return os.path.join(path, self.figures_dir)

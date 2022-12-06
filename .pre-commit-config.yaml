@@ -1,0 +1,40 @@
+fail_fast: false
+default_stages: [commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-toml
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        args: [ --profile, black, --filter-files ]
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        entry: poetry run black
+        language: system
+        require_serial: true
+        types_or: [ python, pyi ]
+      - id: pylint
+        name: pylint
+        entry: poetry run pylint
+        language: system
+        types: [ python ]
+        require_serial: true
+      - id: mypy
+        name: mypy
+        language: system
+        files: src
+        types: [ python ]
+        entry: poetry run mypy
+      - id: locks
+        name: Update locks
+        files: pyproject.toml
+        entry: poetry lock
+        language: system
+        pass_filenames: false
