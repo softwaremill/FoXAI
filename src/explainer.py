@@ -52,8 +52,6 @@ class CVExplainer(ABC):
         Returns:
             Image with paired figures: original image and features heatmap.
         """
-        print(attributions.shape)
-        print(transformed_img.shape)
         figure, _ = viz.visualize_image_attr_multiple(
             np.transpose(attributions.squeeze().cpu().detach().numpy(), (1, 2, 0)),
             np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1, 2, 0)),

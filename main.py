@@ -1,20 +1,15 @@
 """Entry point for CLI."""
 import datetime
+import os
 import uuid
 from argparse import ArgumentParser, Namespace
-
-from PIL import Image
+from pathlib import Path
 
 from src.cache_manager import LocalDirCacheManager
 from src.data_transformer import ExplainerCVTransformer
-from src.explainer import (
-    GradientSHAPCVExplainer,
-    IntegratedGradientsCVExplainer,
-    NoiseTunnelCVExplainer,
-    OcculusionCVExplainer,
-)
 from src.explainer_manager import ExplainerManager
-from src.model_utils import load_model
+from src.image_utils import load_image
+from src.model_utils import load_model, load_model_idx_to_label
 from src.path_manager import ExperimentDataClass
 
 
@@ -28,7 +23,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--cache",
         type=str,
-        default="../autoxai_cache/",
+        default="autoxai_cache/",
         help="Path to AutoXAI cache directory",
     )
     parser.add_argument("--img_path", type=str, required=True, help="Path to image")
@@ -38,64 +33,30 @@ def parse_args() -> Namespace:
 def main():
     """Entry point for application."""
     args = parse_args()
+    image_name = Path(args.img_path).name
 
     experiment = ExperimentDataClass(
         base_path=args.cache,
         date=str(datetime.date.today()),
         uuid=str(uuid.uuid1()),
-        image_path=args.img_path,
     )
     model = load_model()
-
-    img = Image.open(args.img_path)
-
-    algorithm_list = [
-        IntegratedGradientsCVExplainer(),
-        NoiseTunnelCVExplainer(),
-        GradientSHAPCVExplainer(),
-        OcculusionCVExplainer(),
-        OcculusionCVExplainer(),
-        OcculusionCVExplainer(),
-    ]
-
-    parameter_list = [
-        {},
-        {},
-        {},
-        {
-            "stride": (3, 8, 8),
-        },
-        {
-            "stride": (3, 25, 25),
-            "sliding_window_shapes": (3, 30, 30),
-        },
-        {
-            "stride": (3, 50, 50),
-            "sliding_window_shapes": (3, 60, 60),
-        },
-    ]
-
-    result_name_list = [
-        "attributes",
-        "attributes",
-        "attributes",
-        "attributes_stride_8",
-        "attributes_stride_25",
-        "attributes_stride_50",
-    ]
+    idx_to_label = load_model_idx_to_label()
 
     transformer = ExplainerCVTransformer()
     cache_manager = LocalDirCacheManager()
+    cache_manager.save_artifact(
+        os.path.join(experiment.path_to_model, "idx_to_label.json"),
+        idx_to_label,
+    )
     offline_explainer = ExplainerManager()
     offline_explainer.explain_cv_prediction(
-        transformer,
-        experiment,
-        model,
-        img,
-        algorithm_list,
-        parameter_list,
-        result_name_list,
-        cache_manager,
+        transformer=transformer,
+        experiment=experiment,
+        model=model,
+        img=load_image(args.img_path),
+        image_name=image_name,
+        cache_manager=cache_manager,
     )
 
 

@@ -14,7 +14,18 @@ def load_model() -> Any:
     """
     model = models.resnet18(pretrained=True)
     model = model.eval()
+
     return model
+
+
+def load_model_idx_to_label() -> dict[str, str]:
+    """Load index to label mapping for model.
+
+    Returns:
+        Dictionary containgin index to label mapping.
+    """
+    weights = models.ResNet18_Weights.DEFAULT
+    return dict(weights.meta["categories"])
 
 
 def get_prediction(model: Any, input_data: torch.Tensor) -> torch.Tensor:
