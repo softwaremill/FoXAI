@@ -52,9 +52,30 @@ class CVExplainer(ABC):
         Returns:
             Image with paired figures: original image and features heatmap.
         """
+        # for single color, e.g. MNIST data copy one colour channel 3 times to simulate RGB
+        if attributions.shape[1] == 1:
+            attributions = attributions.expand(
+                1, 3, attributions.shape[2], attributions.shape[3]
+            )
+        if transformed_img.shape[1] == 1:
+            transformed_img = transformed_img.expand(
+                1, 3, transformed_img.shape[2], transformed_img.shape[3]
+            )
+
+        # change dimension from (C x H x W) to (H x W x C)
+        # where C is colour dimension, H and W are height and width dimensions
+        attributions_np: np.ndarray = attributions.squeeze().cpu().detach().numpy()
+        transformed_img_np: np.ndarray = (
+            transformed_img.squeeze().cpu().detach().numpy()
+        )
+        if len(attributions.shape) >= 3:
+            attributions_np = np.transpose(attributions_np, (1, 2, 0))
+        if len(transformed_img.shape) >= 3:
+            transformed_img_np = np.transpose(transformed_img_np, (1, 2, 0))
+
         figure, _ = viz.visualize_image_attr_multiple(
-            np.transpose(attributions.squeeze().cpu().detach().numpy(), (1, 2, 0)),
-            np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1, 2, 0)),
+            attributions_np,
+            transformed_img_np,
             ["original_image", "heat_map"],
             ["all", "positive"],
             show_colorbar=True,
@@ -195,8 +216,10 @@ class OcculusionCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        stride = kwargs.get("stride", (3, 8, 8))
-        sliding_window_shapes = kwargs.get("sliding_window_shapes", (3, 15, 15))
+        stride_value = kwargs.get("stride_value", 3)
+        window_value = kwargs.get("window_value", 3)
+        stride = (input_data.shape[1], stride_value, stride_value)
+        sliding_window_shapes = (input_data.shape[1], window_value, window_value)
         occlusion = Occlusion(model)
 
         attributions = occlusion.attribute(

@@ -1,5 +1,5 @@
 """Model loading and prediction functions."""
-from typing import Any
+from typing import Any, Dict
 
 import torch
 import torch.nn.functional as F
@@ -18,7 +18,7 @@ def load_model() -> Any:
     return model
 
 
-def load_model_idx_to_label() -> dict[int, str]:
+def load_model_idx_to_label() -> Dict[int, str]:
     """Load index to label mapping for model.
 
     Returns:
