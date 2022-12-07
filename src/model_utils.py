@@ -18,14 +18,16 @@ def load_model() -> Any:
     return model
 
 
-def load_model_idx_to_label() -> dict[str, str]:
+def load_model_idx_to_label() -> dict[int, str]:
     """Load index to label mapping for model.
 
     Returns:
         Dictionary containgin index to label mapping.
     """
     weights = models.ResNet18_Weights.DEFAULT
-    return dict(weights.meta["categories"])
+    return {  # pylint: disable = (unnecessary-comprehension)
+        i: val for i, val in enumerate(weights.meta["categories"])
+    }
 
 
 def get_prediction(model: Any, input_data: torch.Tensor) -> torch.Tensor:
