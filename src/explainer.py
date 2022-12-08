@@ -26,7 +26,6 @@ class CVExplainer(ABC):
         model: Any,  # pylint: disable=unused-argument
         input_data: torch.Tensor,  # pylint: disable=unused-argument
         pred_label_idx: torch.Tensor,  # pylint: disable=unused-argument
-        *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
     ) -> torch.Tensor:
         """Calculate features of given explainer.
@@ -96,8 +95,7 @@ class IntegratedGradientsCVExplainer(CVExplainer):
         model: Any,
         input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
-        *args,  # pylint: disable=unused-argument
-        **kwargs,  # pylint: disable=unused-argument
+        **kwargs,
     ) -> torch.Tensor:
         """Generate features image with integrated gradients algorithm explainer.
 
@@ -128,8 +126,7 @@ class NoiseTunnelCVExplainer(CVExplainer):
         model: Any,
         input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
-        *args,  # pylint: disable=unused-argument
-        **kwargs,  # pylint: disable=unused-argument
+        **kwargs,
     ) -> torch.Tensor:
         """Generate features image with noise tunnel algorithm explainer.
 
@@ -141,11 +138,14 @@ class NoiseTunnelCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
+        nt_samples: int = kwargs.get("nt_samples", 10)
+        nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
+
         integrated_gradients = IntegratedGradients(model)
         noise_tunnel = NoiseTunnel(integrated_gradients)
 
         attributions = noise_tunnel.attribute(
-            input_data, nt_samples=10, nt_type="smoothgrad_sq", target=pred_label_idx
+            input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
         )
         return attributions
 
@@ -160,8 +160,7 @@ class GradientSHAPCVExplainer(CVExplainer):
         model: Any,
         input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
-        *args,  # pylint: disable=unused-argument
-        **kwargs,  # pylint: disable=unused-argument
+        **kwargs,
     ) -> torch.Tensor:
         """Generate features image with gradient SHAP algorithm explainer.
 
@@ -173,8 +172,8 @@ class GradientSHAPCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        torch.manual_seed(0)
-        np.random.seed(0)
+        stdevs: float = kwargs.get("stdevs", 0.0001)
+        n_samples: int = kwargs.get("n_samples", 50)
 
         gradient_shap = GradientShap(model)
 
@@ -185,8 +184,8 @@ class GradientSHAPCVExplainer(CVExplainer):
 
         attributions = gradient_shap.attribute(
             input_data,
-            n_samples=50,
-            stdevs=0.0001,
+            n_samples=n_samples,
+            stdevs=stdevs,
             baselines=rand_img_dist,
             target=pred_label_idx,
         )
@@ -203,8 +202,7 @@ class OcculusionCVExplainer(CVExplainer):
         model: Any,
         input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
-        *args,  # pylint: disable=unused-argument
-        **kwargs,  # pylint: disable=unused-argument
+        **kwargs,
     ) -> torch.Tensor:
         """Generate features image with occulusion algorithm explainer.
 
@@ -218,6 +216,7 @@ class OcculusionCVExplainer(CVExplainer):
         """
         stride_value = kwargs.get("stride_value", 3)
         window_value = kwargs.get("window_value", 3)
+
         stride = (input_data.shape[1], stride_value, stride_value)
         sliding_window_shapes = (input_data.shape[1], window_value, window_value)
         occlusion = Occlusion(model)
@@ -242,7 +241,6 @@ class LRPCVExplainer(CVExplainer):
         model: Any,
         input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
-        *args,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
     ) -> torch.Tensor:
         """Generate features image with occulusion algorithm explainer.
@@ -278,8 +276,7 @@ class GuidedGradCamCVExplainer(CVExplainer):
         model: Any,
         input_data: torch.Tensor,
         pred_label_idx: torch.Tensor,
-        *args,  # pylint: disable=unused-argument
-        **kwargs,  # pylint: disable=unused-argument
+        **kwargs,
     ) -> torch.Tensor:
         """Generate features image with occulusion algorithm explainer.
 
@@ -291,13 +288,15 @@ class GuidedGradCamCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
+        layer_type = kwargs.get("layer_type", torch.nn.Conv2d)
         selected_layer = kwargs.get("selected_layer", -1)
         conv_layer_list = []
         for module in model.modules():
             if isinstance(module, torch.nn.ReLU):
+                print("relu")
                 module.inplace = False
 
-            if isinstance(module, torch.nn.Conv2d):
+            if isinstance(module, layer_type):
                 conv_layer_list.append(module)
 
         guided_cam = GuidedGradCam(model, layer=conv_layer_list[selected_layer])

@@ -1,9 +1,11 @@
 """Library callback for pytorch-lightning."""
 import logging
 import os
+from pathlib import Path
 from typing import Dict, Optional
 
 import pytorch_lightning as pl
+import torch
 
 from src.cache_manager import LocalDirCacheManager
 from src.path_manager import ExperimentDataClass
@@ -80,11 +82,31 @@ class AutoXAIPytorchLightningCallback(pl.callbacks.Callback):
             f"Saving model checkpoint at epoch: {str(epoch)}."
         )
 
-        trainer.save_checkpoint(
-            os.path.join(
-                self.experiment.path,
-                "training",
-                str(trainer.current_epoch),
-                "model.cpkt",
-            ),
+        model_path: str = os.path.join(
+            self.experiment.path,
+            "training",
+            str(trainer.current_epoch),
+            "model.onnx",
+        )
+        path = Path(model_path)
+        if not os.path.exists(path.parent):
+            os.makedirs(path.parent)
+
+        # TODO: check if no validation dataloader is provided it will work  # pylint: disable = (fixme)
+        input_sample: Optional[torch.Tensor] = None
+        if trainer.val_dataloaders:
+            for batch in trainer.val_dataloaders[0]:
+                items, _ = batch
+                input_sample = items[0]
+                break
+
+        if input_sample is None:
+            logger.warning(
+                "Unable to obtain `input_sample` for exportig model to ONNX."
+            )
+
+        pl_module.to_onnx(
+            model_path,
+            input_sample,
+            export_params=True,
         )

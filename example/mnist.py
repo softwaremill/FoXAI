@@ -8,7 +8,6 @@ import uuid
 import torch
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
-from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, random_split
 from torchmetrics import Accuracy
@@ -60,15 +59,15 @@ class LitMNIST(
         )
 
         # Define PyTorch model
-        self.model = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(channels * width * height, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(hidden_size, self.num_classes),
+        self.model = torch.nn.Sequential(
+            torch.nn.Flatten(),
+            torch.nn.Linear(channels * width * height, hidden_size),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(0.1),
+            torch.nn.Linear(hidden_size, hidden_size),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(0.1),
+            torch.nn.Linear(hidden_size, self.num_classes),
         )
 
         mnist_full = MNIST(self.data_dir, train=True, transform=self.transform)
@@ -143,8 +142,9 @@ class LitMNIST(
 
 def main() -> None:
     """Entry point of application."""
-    data_dir = os.environ.get("PATH_DATASETS", ".")
-    batch_size = 256 if torch.cuda.is_available() else 64
+    data_dir: str = os.environ.get("PATH_DATASETS", ".")
+    batch_size: int = 256 if torch.cuda.is_available() else 64
+    max_epochs: int = 3
 
     experiment = ExperimentDataClass(
         base_path="logs/",
@@ -162,9 +162,10 @@ def main() -> None:
     trainer = Trainer(
         accelerator="auto",
         devices=1 if torch.cuda.is_available() else None,
-        max_epochs=1,
+        max_epochs=max_epochs,
         callbacks=[TQDMProgressBar(refresh_rate=20), callback],
     )
+    trainer.tune(model)
     trainer.fit(model)
     trainer.test()
 
