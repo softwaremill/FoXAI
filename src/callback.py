@@ -205,12 +205,14 @@ class TensorboardCallback(pl.callbacks.Callback):
         """
         attribution: Optional[torch.Tensor] = None
         if input_sample is not None:
-            input_data: torch.Tensor = input_sample.to(torch.Tensor(pl_module.device))
+            input_data: torch.Tensor = input_sample.to(
+                "cuda" if pl_module.on_gpu else "cpu"
+            )
             if isinstance(input_data, torch.Tensor):
                 attribution = self.explainer.calculate_features(
                     model=pl_module,
                     input_data=input_data,
-                    pred_label_idx=torch.Tensor(class_index),
+                    pred_label_idx=class_index,
                 )
 
         return attribution

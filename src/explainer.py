@@ -25,7 +25,7 @@ class CVExplainer(ABC):
         self,
         model: Any,  # pylint: disable=unused-argument
         input_data: torch.Tensor,  # pylint: disable=unused-argument
-        pred_label_idx: torch.Tensor,  # pylint: disable=unused-argument
+        pred_label_idx: int,  # pylint: disable=unused-argument
         **kwargs,  # pylint: disable=unused-argument
     ) -> torch.Tensor:
         """Calculate features of given explainer.
@@ -102,7 +102,7 @@ class IntegratedGradientsCVExplainer(CVExplainer):
         self,
         model: Any,
         input_data: torch.Tensor,
-        pred_label_idx: torch.Tensor,
+        pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
         """Generate features image with integrated gradients algorithm explainer.
@@ -133,7 +133,7 @@ class NoiseTunnelCVExplainer(CVExplainer):
         self,
         model: Any,
         input_data: torch.Tensor,
-        pred_label_idx: torch.Tensor,
+        pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
         """Generate features image with noise tunnel algorithm explainer.
@@ -167,7 +167,7 @@ class GradientSHAPCVExplainer(CVExplainer):
         self,
         model: Any,
         input_data: torch.Tensor,
-        pred_label_idx: torch.Tensor,
+        pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
         """Generate features image with gradient SHAP algorithm explainer.
@@ -209,7 +209,7 @@ class OcculusionCVExplainer(CVExplainer):
         self,
         model: Any,
         input_data: torch.Tensor,
-        pred_label_idx: torch.Tensor,
+        pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
         """Generate features image with occulusion algorithm explainer.
@@ -248,7 +248,7 @@ class LRPCVExplainer(CVExplainer):
         self,
         model: Any,
         input_data: torch.Tensor,
-        pred_label_idx: torch.Tensor,
+        pred_label_idx: int,
         **kwargs,  # pylint: disable=unused-argument
     ) -> torch.Tensor:
         """Generate features image with occulusion algorithm explainer.
@@ -283,7 +283,7 @@ class GuidedGradCamCVExplainer(CVExplainer):
         self,
         model: Any,
         input_data: torch.Tensor,
-        pred_label_idx: torch.Tensor,
+        pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
         """Generate features image with occulusion algorithm explainer.
