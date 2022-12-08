@@ -25,7 +25,13 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
         experiment: Optional[ExperimentDataClass] = None,
         cache_manager: Optional[LocalDirCacheManager] = None,
     ):
-        """Initialize Callback class."""
+        """Initialize Callback class.
+
+        Args:
+            idx_to_label: Index to label mapping.
+            experiment: Helper object for creating paths to store artifacts.
+            cache_manager: Helper class to store artifacts in log direcotry.
+        """
         super().__init__()
         self.experiment = experiment
         self.cache_manager = cache_manager
@@ -44,7 +50,13 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
         trainer: pl.Trainer,
         pl_module: pl.LightningModule,  # pylint: disable = (unused-argument)
     ) -> None:
-        """Called when fit begins."""
+        """Save index to labels mapping and validation samples to log directory
+        before `fit`.
+
+        Args:
+            trainer: Trainer object.
+            pl_module: Model to explain.
+        """
         if (
             self.experiment is None
             or self.cache_manager is None
@@ -71,7 +83,13 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
         trainer: pl.Trainer,
         pl_module: pl.LightningModule,  # pylint: disable = (unused-argument)
     ) -> None:
-        """Called when the validation epoch ends."""
+        """Export model checkpoint in ONNX format in log directory on validation
+        epoch end.
+
+        Args:
+            trainer: Trainer object.
+            pl_module: Model to explain.
+        """
         if self.experiment is None:
             return
 
@@ -121,7 +139,14 @@ class TensorboardCallback(pl.callbacks.Callback):
         experiment: Optional[ExperimentDataClass] = None,
         cache_manager: Optional[LocalDirCacheManager] = None,
     ):
-        """Initialize Callback class."""
+        """Initialize Callback class.
+
+        Args:
+            explainer: Generic `Explainer` class.
+            idx_to_label: Index to label mapping.
+            experiment: Helper object for creating paths to store artifacts.
+            cache_manager: Helper class to store artifacts in log direcotry.
+        """
         super().__init__()
         self.experiment = experiment
         self.cache_manager = cache_manager
@@ -130,7 +155,7 @@ class TensorboardCallback(pl.callbacks.Callback):
         self.file_writer: Optional[tf.summary.SummaryWriter] = None
 
     def convert_tensor(self, data: torch.Tensor) -> np.ndarray:
-        """Convert and transpoze tensor to numpy array.
+        """Convert and transpose tensor to numpy array.
 
         The function transforms a tensor in 4D or 3D form with dimensions
         `(K x H x W x C)` to the form `(K x C x H x W)`, where `K` is number of
@@ -141,7 +166,7 @@ class TensorboardCallback(pl.callbacks.Callback):
             data: Tensor to convert.
 
         Returns:
-            Converted and transpozed numpy array on CPU.
+            Converted and transposed numpy array on CPU.
         """
         if len(data.shape) == 4 and data.shape[1] == 1:
             data = data.expand(1, 3, data.shape[2], data.shape[3])
@@ -159,7 +184,12 @@ class TensorboardCallback(pl.callbacks.Callback):
         trainer: pl.Trainer,
         pl_module: pl.LightningModule,  # pylint: disable = (unused-argument)
     ) -> None:
-        """Called when the validation epoch ends."""
+        """Draw attributes at the end of validation epoch to Tensorboard.
+
+        Args:
+            trainer: Trainer object.
+            pl_module: Model to explain.
+        """
         if self.experiment is None:
             return
 
