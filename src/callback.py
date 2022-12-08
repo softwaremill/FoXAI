@@ -16,7 +16,7 @@ from src.path_manager import ExperimentDataClass
 logger = logging.getLogger(__name__)
 
 
-class PytorchLightningCallback(pl.callbacks.Callback):
+class CustomPytorchLightningCallback(pl.callbacks.Callback):
     """Library callback for pytorch-lightning."""
 
     def __init__(
