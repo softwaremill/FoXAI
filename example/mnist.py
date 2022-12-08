@@ -15,7 +15,7 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 
 from src.cache_manager import LocalDirCacheManager
-from src.callback import AutoXAIPytorchLightningCallback
+from src.callback import PytorchLightningCallback
 from src.path_manager import ExperimentDataClass
 
 
@@ -152,7 +152,7 @@ def main() -> None:
         uuid=str(uuid.uuid1()),
     )
     cache_manager = LocalDirCacheManager()
-    callback = AutoXAIPytorchLightningCallback(
+    callback = PytorchLightningCallback(
         experiment=experiment,
         cache_manager=cache_manager,
         idx_to_label={index: index for index in range(0, 10)},

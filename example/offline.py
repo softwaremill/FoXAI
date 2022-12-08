@@ -5,6 +5,7 @@ import uuid
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Dict
+
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -14,7 +15,7 @@ from src.cache_manager import LocalDirCacheManager
 from src.path_manager import ExperimentDataClass
 
 
-class DataTransformer():  # pylint: disable = (too-few-public-methods)
+class DataTransformer:  # pylint: disable = (too-few-public-methods)
     """Computer vision tasks input data transformation class."""
 
     def preprocess(
@@ -84,6 +85,7 @@ def load_image(img_path: str) -> torch.Tensor:
     converter = torchvision.transforms.ToTensor()
     return converter(img)
 
+
 def load_model() -> Any:
     """Load model to explain.
 
@@ -124,6 +126,7 @@ def get_prediction(model: Any, input_data: torch.Tensor) -> torch.Tensor:
 
     pred_label_idx.squeeze_()
     return pred_label_idx
+
 
 def parse_args() -> Namespace:
     """Parse CLI arguments.
@@ -171,9 +174,7 @@ def main():
         input_data,
     )
 
-    path: str = os.path.join(
-        experiment.path, "training", "0", "model.onnx"
-    )
+    path: str = os.path.join(experiment.path, "training", "0", "model.onnx")
 
     if not os.path.exists(path):
         os.makedirs(Path(path).parent)
@@ -184,7 +185,7 @@ def main():
         path,
         verbose=True,
         input_names=["conv1"],
-        output_names=["output1"]
+        output_names=["output1"],
     )
 
 
