@@ -52,13 +52,21 @@ class CVExplainer(ABC):
             Image with paired figures: original image and features heatmap.
         """
         # for single color, e.g. MNIST data copy one colour channel 3 times to simulate RGB
-        if attributions.shape[1] == 1:
+        if len(attributions.shape) == 4 and attributions.shape[1] == 1:
             attributions = attributions.expand(
                 1, 3, attributions.shape[2], attributions.shape[3]
             )
-        if transformed_img.shape[1] == 1:
+        elif attributions.shape[0] == 1:
+            attributions = attributions.expand(
+                3, attributions.shape[1], attributions.shape[2]
+            )
+        if len(transformed_img.shape) == 4 and transformed_img.shape[1] == 1:
             transformed_img = transformed_img.expand(
                 1, 3, transformed_img.shape[2], transformed_img.shape[3]
+            )
+        elif transformed_img.shape[0] == 1:
+            transformed_img = transformed_img.expand(
+                3, transformed_img.shape[1], transformed_img.shape[2]
             )
 
         # change dimension from (C x H x W) to (H x W x C)
