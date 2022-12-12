@@ -121,12 +121,12 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
             logger.warning(
                 "Unable to obtain `input_sample` for exportig model to ONNX."
             )
-
-        pl_module.to_onnx(
-            model_path,
-            input_sample,
-            export_params=True,
-        )
+        else:
+            pl_module.to_onnx(
+                model_path,
+                input_sample,
+                export_params=True,
+            )
 
 
 class TensorboardCallback(pl.callbacks.Callback):
