@@ -175,7 +175,7 @@ class TensorboardCallback(pl.callbacks.Callback):
 
         # change dimension from (K x C x H x W) to (K x H x W x C)
         # where C is colour dimension, H and W are height and width dimensions
-        attributions_np: np.ndarray = data.cpu().detach().numpy()
+        attributions_np: np.ndarray = data.detach().cpu().numpy()
         attributions_np = np.transpose(attributions_np, (0, 2, 3, 1))
         return attributions_np
 

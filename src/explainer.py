@@ -1,5 +1,5 @@
 """Supported explainable algorithms classes."""
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any
 
 import matplotlib
@@ -19,8 +19,7 @@ from captum.attr import visualization as viz
 class CVExplainer(ABC):
     """Abstract explainer class."""
 
-    algorithm_name = ""
-
+    @abstractmethod
     def calculate_features(
         self,
         model: Any,  # pylint: disable=unused-argument
@@ -38,6 +37,15 @@ class CVExplainer(ABC):
         Returns:
             Tensor of attributes.
         """
+
+    @property
+    def algorithm_name(self) -> str:
+        """Get algorithm name.
+
+        Returns:
+            str: Name of algorithm.
+        """
+        return type(self).__name__
 
     def visualize(
         self, attributions: torch.Tensor, transformed_img: torch.Tensor
@@ -71,9 +79,9 @@ class CVExplainer(ABC):
 
         # change dimension from (C x H x W) to (H x W x C)
         # where C is colour dimension, H and W are height and width dimensions
-        attributions_np: np.ndarray = attributions.squeeze().cpu().detach().numpy()
+        attributions_np: np.ndarray = attributions.squeeze().detach().cpu().numpy()
         transformed_img_np: np.ndarray = (
-            transformed_img.squeeze().cpu().detach().numpy()
+            transformed_img.squeeze().detach().cpu().numpy()
         )
         if len(attributions.shape) >= 3:
             attributions_np = np.transpose(attributions_np, (1, 2, 0))
@@ -95,8 +103,6 @@ class CVExplainer(ABC):
 
 class IntegratedGradientsCVExplainer(CVExplainer):
     """Integrated Gradients algorithm explainer."""
-
-    algorithm_name = "integrated_gradient"
 
     def calculate_features(
         self,
@@ -126,8 +132,6 @@ class IntegratedGradientsCVExplainer(CVExplainer):
 
 class NoiseTunnelCVExplainer(CVExplainer):
     """Noise Tunnel algorithm explainer."""
-
-    algorithm_name = "noise_tunnel"
 
     def calculate_features(
         self,
@@ -160,8 +164,6 @@ class NoiseTunnelCVExplainer(CVExplainer):
 
 class GradientSHAPCVExplainer(CVExplainer):
     """Gradient SHAP algorithm explainer."""
-
-    algorithm_name = "gradient_shap"
 
     def calculate_features(
         self,
@@ -203,8 +205,6 @@ class GradientSHAPCVExplainer(CVExplainer):
 class OcculusionCVExplainer(CVExplainer):
     """Occulusion algorithm explainer."""
 
-    algorithm_name = "occulusion"
-
     def calculate_features(
         self,
         model: Any,
@@ -242,8 +242,6 @@ class OcculusionCVExplainer(CVExplainer):
 class LRPCVExplainer(CVExplainer):
     """LRP algorithm explainer."""
 
-    algorithm_name = "lrp"
-
     def calculate_features(
         self,
         model: Any,
@@ -277,8 +275,6 @@ class LRPCVExplainer(CVExplainer):
 class GuidedGradCamCVExplainer(CVExplainer):
     """Guided GradCAM algorithm explainer."""
 
-    algorithm_name = "guided_gradcam"
-
     def calculate_features(
         self,
         model: Any,
@@ -301,7 +297,6 @@ class GuidedGradCamCVExplainer(CVExplainer):
         conv_layer_list = []
         for module in model.modules():
             if isinstance(module, torch.nn.ReLU):
-                print("relu")
                 module.inplace = False
 
             if isinstance(module, layer_type):
