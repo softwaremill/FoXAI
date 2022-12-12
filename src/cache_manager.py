@@ -9,7 +9,7 @@ class CacheManager(ABC):
     """Abstract class for cache management."""
 
     @abstractmethod
-    def save_artifact(self, path: str, obj: Any):  # pylint: disable=unused-argument
+    def save_artifact(self, path: str, obj: Any):
         """Save artifact to given path.
 
         Args:
@@ -18,7 +18,7 @@ class CacheManager(ABC):
         """
 
     @abstractmethod
-    def load_artifact(self, path: str):  # pylint: disable=unused-argument
+    def load_artifact(self, path: str):
         """Load artifact from given path.
 
         Args:

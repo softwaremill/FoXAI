@@ -1,6 +1,5 @@
 """Supported explainable algorithms classes."""
 from abc import ABC, abstractmethod
-from typing import Any
 
 import matplotlib
 import numpy as np
@@ -22,10 +21,10 @@ class CVExplainer(ABC):
     @abstractmethod
     def calculate_features(
         self,
-        model: Any,  # pylint: disable=unused-argument
-        input_data: torch.Tensor,  # pylint: disable=unused-argument
-        pred_label_idx: int,  # pylint: disable=unused-argument
-        **kwargs,  # pylint: disable=unused-argument
+        model: torch.nn.Module,
+        input_data: torch.Tensor,
+        pred_label_idx: int,
+        **kwargs,
     ) -> torch.Tensor:
         """Calculate features of given explainer.
 
@@ -106,7 +105,7 @@ class IntegratedGradientsCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: Any,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -135,7 +134,7 @@ class NoiseTunnelCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: Any,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -167,7 +166,7 @@ class GradientSHAPCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: Any,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -207,7 +206,7 @@ class OcculusionCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: Any,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -244,7 +243,7 @@ class LRPCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: Any,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,  # pylint: disable=unused-argument
@@ -277,7 +276,7 @@ class GuidedGradCamCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: Any,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
