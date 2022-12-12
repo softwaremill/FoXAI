@@ -4,7 +4,7 @@ import os
 import uuid
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, Dict
+from typing import Dict
 
 import torch
 import torch.nn.functional as F
@@ -86,7 +86,7 @@ def load_image(img_path: str) -> torch.Tensor:
     return converter(img)
 
 
-def load_model() -> Any:
+def load_model() -> torchvision.models.ResNet:
     """Load model to explain.
 
     Returns:
@@ -110,11 +110,13 @@ def load_model_idx_to_label() -> Dict[int, str]:
     }
 
 
-def get_prediction(model: Any, input_data: torch.Tensor) -> torch.Tensor:
+def get_prediction(
+    model: torchvision.models.ResNet, input_data: torch.Tensor
+) -> torch.Tensor:
     """Get predicted label from model.
 
     Args:
-        model: Any model type.
+        model: ResNet model.
         input_data: Input data tensor.
 
     Returns:
