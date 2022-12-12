@@ -1,13 +1,14 @@
 """Class to perform caching on local storage."""
 import os
 import pickle
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any
 
 
 class CacheManager(ABC):
     """Abstract class for cache management."""
 
+    @abstractmethod
     def save_artifact(self, path: str, obj: Any):  # pylint: disable=unused-argument
         """Save artifact to given path.
 
@@ -16,6 +17,7 @@ class CacheManager(ABC):
             obj: Object to be saved.
         """
 
+    @abstractmethod
     def load_artifact(self, path: str):  # pylint: disable=unused-argument
         """Load artifact from given path.
 
