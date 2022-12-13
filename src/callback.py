@@ -2,7 +2,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import numpy as np
 import pytorch_lightning as pl
@@ -132,10 +132,11 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
 class TensorboardCallback(pl.callbacks.Callback):
     """Library callback for pytorch-lightning."""
 
-    def __init__(
+    def __init__(  # pylint: disable = (too-many-arguments)
         self,
         explainer: CVExplainer,
         idx_to_label: Dict[int, str],
+        classes_to_explain: Optional[List[int]] = None,
         experiment: Optional[ExperimentDataClass] = None,
         cache_manager: Optional[LocalDirCacheManager] = None,
     ):
@@ -144,6 +145,7 @@ class TensorboardCallback(pl.callbacks.Callback):
         Args:
             explainer: Generic `Explainer` class.
             idx_to_label: Index to label mapping.
+            classes_to_explain: Selected classes to explain.
             experiment: Helper object for creating paths to store artifacts.
             cache_manager: Helper class to store artifacts in log direcotry.
         """
@@ -152,7 +154,9 @@ class TensorboardCallback(pl.callbacks.Callback):
         self.cache_manager = cache_manager
         self.idx_to_label = idx_to_label
         self.explainer = explainer
+        self.classes_to_explain = classes_to_explain
         self.file_writer: Optional[tf.summary.SummaryWriter] = None
+        self.input_sample: Optional[torch.Tensor] = None
 
     def convert_tensor(self, data: torch.Tensor) -> np.ndarray:
         """Convert and transpose tensor to numpy array.
@@ -190,25 +194,34 @@ class TensorboardCallback(pl.callbacks.Callback):
             trainer: Trainer object.
             pl_module: Model to explain.
         """
+        epoch: int = trainer.current_epoch
         if self.experiment is None:
             return
 
-        epoch: int = trainer.current_epoch
         if self.file_writer is None:
             self.file_writer = self._configure_file_writer(trainer)
 
         if self.file_writer is None:
             return
 
-        input_sample = self._get_sample_data(trainer)
-        org_img = self.convert_tensor(input_sample)
+        # if test sample was not set
+        if self.input_sample is None:
+            self.input_sample = self._get_sample_data(trainer)
+
+        org_img = self.convert_tensor(self.input_sample)
         with self.file_writer.as_default():
             tf.summary.image("Original image", org_img, step=epoch)
 
         logger.info("Generate explanations")
-        for index in range(0, len(self.idx_to_label.keys())):
-            attribution = self._explain_sample(pl_module, input_sample, index)
+        classes_to_explain = list(range(0, len(self.idx_to_label.keys())))
+        if self.classes_to_explain is not None:
+            classes_to_explain = self.classes_to_explain
 
+        # explain all selected classes
+        for index in classes_to_explain:
+            attribution = self._explain_sample(pl_module, self.input_sample, index)
+
+            # save attributes to Tensorboard
             if attribution is not None:
                 with self.file_writer.as_default():
                     tf.summary.image(
