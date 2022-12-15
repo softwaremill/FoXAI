@@ -12,7 +12,7 @@ from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 from src.cache_manager import LocalDirCacheManager
 from src.callback import TensorboardCallback
-from src.explainer import GradientSHAPCVExplainer
+from src.explainer.gradient_shap import GradientSHAPCVExplainer
 from src.path_manager import ExperimentDataClass
 
 

@@ -10,7 +10,7 @@ import tensorflow as tf
 import torch
 
 from src.cache_manager import LocalDirCacheManager
-from src.explainer import CVExplainer
+from src.explainer.base_explainer import CVExplainer
 from src.path_manager import ExperimentDataClass
 
 logger = logging.getLogger(__name__)

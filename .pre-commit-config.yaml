@@ -22,7 +22,7 @@ repos:
         types_or: [ python, pyi ]
       - id: pylint
         name: pylint
-        entry: poetry run pylint
+        entry: poetry run pylint --min-similarity-lines 6
         language: system
         types: [ python ]
         require_serial: true

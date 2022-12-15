@@ -1,19 +1,26 @@
-import os
+"""File contains functions """
 
-import matplotlib
-import numpy as np
+import os
+from typing import Any, Dict, List, Union, cast
+
 import streamlit as st
 import torch
 from settings import Settings
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 from src.cache_manager import LocalDirCacheManager
-from src.explainer import IntegratedGradientsCVExplainer
 
 
-def load_subdir(path):
-    subdir = {}
-    paths = []
+def load_subdir(path: str) -> Union[Dict[str, Any], List[str]]:
+    """Load sub-directory.
+
+    Args:
+        path: Path to directory.
+
+    Returns:
+        List of directory content or dictionary with directory names and content.
+    """
+    subdir: Dict[str, List[str]] = {}
+    paths: List[str] = []
     for method in os.listdir(path):
         if not os.path.isdir(os.path.join(path, method)):
             paths.append(method)
@@ -27,21 +34,25 @@ def load_subdir(path):
     return retval
 
 
-def convert_figure_to_numpy(figure) -> np.ndarray:
-    canvas = FigureCanvas(figure)
-    canvas.draw()
-    buf = canvas.buffer_rgba()
-    image = np.asarray(buf)
-    return image
+def load_input_data(
+    cache_path: str, selected_date: str, experiment_hash: str
+) -> torch.Tensor:
+    """Load preprocessed input data sample from given path.
 
+    Args:
+        cache_path: Path to cache directory.
+        selected_date: Selected date.
+        experiment_hash: Selected experiment hash.
 
-def load_input_data(cache_path: str, date_selectbox: str, hash_selectbox: str) -> torch.Tensor:
+    Returns:
+        Preprocessed data sample.
+    """
     cache_manager = LocalDirCacheManager()
 
     path = os.path.join(
         cache_path,
-        date_selectbox,
-        hash_selectbox,
+        selected_date,
+        experiment_hash,
         "data",
         st.session_state[Settings.sample_name_key],
     )
@@ -50,13 +61,25 @@ def load_input_data(cache_path: str, date_selectbox: str, hash_selectbox: str) -
     return input_data
 
 
-def load_original_data(cache_path: str, date_selectbox: str, hash_selectbox: str) -> torch.Tensor:
+def load_original_data(
+    cache_path: str, selected_date: str, experiment_hash: str
+) -> torch.Tensor:
+    """Load original data sample from given path.
+
+    Args:
+        cache_path: Path to cache directory.
+        selected_date: Selected date.
+        experiment_hash: Selected experiment hash.
+
+    Returns:
+        Original data sample.
+    """
     cache_manager = LocalDirCacheManager()
 
     path = os.path.join(
         cache_path,
-        date_selectbox,
-        hash_selectbox,
+        selected_date,
+        experiment_hash,
         "data",
         st.session_state[Settings.sample_name_key],
     )
@@ -65,25 +88,54 @@ def load_original_data(cache_path: str, date_selectbox: str, hash_selectbox: str
     return original_data
 
 
-def load_idx_to_labels(cache_path, date_selectbox, hash_selectbox):
+def load_idx_to_labels(
+    cache_path: str,
+    selected_date: str,
+    experiment_hash: str,
+) -> Dict[int, str]:
+    """Load index to class label mapping.
+
+    Args:
+        cache_path: Path to cache directory.
+        selected_date: Selected date.
+        experiment_hash: Selected experiment hash.
+
+    Returns:
+        Index to class label mapping dictionary.
+    """
     cache_manager = LocalDirCacheManager()
     path = os.path.join(
         cache_path,
-        date_selectbox,
-        hash_selectbox,
+        selected_date,
+        experiment_hash,
         "labels",
         "idx_to_label.json.pkl",
     )
-    return cache_manager.load_artifact(path)
+    return cast(Dict[int, str], cache_manager.load_artifact(path))
 
 
-def initialize_session_state(key, value):
+def initialize_session_state(key: str, value: Any) -> None:
+    """Initialize `st.session_state` with given key and value.
+
+    Args:
+        key: Key in session state.
+        value: Value of key in session state.
+    """
     if key not in st.session_state:
         st.session_state[key] = value
 
 
-def change_state(key, value):
-    if Settings.experiment_date_label not in st.session_state or key == Settings.experiment_date_label:
+def change_state(key: str, value: Any) -> None:
+    """Update key state with given value in `st.session_state`.
+
+    Args:
+        key: Key in session state.
+        value: Value of key in session state.
+    """
+    if (
+        Settings.experiment_date_label not in st.session_state
+        or key == Settings.experiment_date_label
+    ):
         st.session_state[Settings.experiment_date_label] = value
     if Settings.hash_label not in st.session_state or key == Settings.hash_label:
         st.session_state[Settings.hash_label] = value
@@ -91,20 +143,11 @@ def change_state(key, value):
         st.session_state[Settings.method_label] = value
 
 
-def enable_explain():
-    st.session_state.explain = True
+def enable_explain() -> None:
+    """Set `explain` flag in `st.session_state` to `True`."""
+    st.session_state[Settings.explain_key] = True
 
 
 def disable_explain():
-    st.session_state.explain = False
-
-
-def selected_date():
-    st.session_state.selected_date = False
-    disable_explain()
-    st.session_state.selected_date = True
-
-
-def create_figure(path: str, transformed_img: torch.Tensor) -> matplotlib.pyplot.Figure:
-    attributions = torch.Tensor(np.load(path))
-    return IntegratedGradientsCVExplainer().visualize(attributions, transformed_img)
+    """Set `explain` flag in `st.session_state` to `False`."""
+    st.session_state[Settings.explain_key] = False
