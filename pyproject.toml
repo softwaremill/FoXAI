@@ -4,16 +4,17 @@ version = "0.1.0"
 description = ""
 authors = ["Adam Wawrzyński <adam.wawrzynski@reasonfieldlab.com>"]
 readme = "README.md"
+packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11,!=3.9.7"
 numpy = "^1.23.4"
 captum = "^0.5.0"
-torch = {url="https://download.pytorch.org/whl/cu113/torch-1.12.1%2Bcu113-cp38-cp38-linux_x86_64.whl"}
-torchvision = {url="https://download.pytorch.org/whl/cu113/torchvision-0.13.1%2Bcu113-cp38-cp38-linux_x86_64.whl"}
+torch = {version='1.13.0+cu116',source="pytorch"}
+torchvision = {version='0.14.0+cu116',source="pytorch"}
 pytorch-lightning = "^1.8.3.post1"
 tensorflow = "^2.11.0"
-
+protobuf = "3.19"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
@@ -26,6 +27,12 @@ Pillow = "^9.3.0"
 streamlit = "^1.15.2"
 onnx2torch = "^1.5.4"
 onnx = "1.12.0"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu116"
+secondary = true
+default = false
 
 [build-system]
 requires = ["poetry-core"]
