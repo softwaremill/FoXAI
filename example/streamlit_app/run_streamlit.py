@@ -5,6 +5,7 @@ from typing import Any, Dict, cast
 
 import numpy as np
 import streamlit as st
+from method_names import MethodName
 from model_utils import get_model_layers, load_model
 from settings import Settings
 from streamlit_utils import (
@@ -37,20 +38,21 @@ from src.explainer.occulusion import OcculusionCVExplainer
 
 cache_path = os.environ.get("LOGDIR", "logs")
 
-explainer_map = {
-    "occulusion": OcculusionCVExplainer(),
-    "integrated_gradients": IntegratedGradientsCVExplainer(),
-    "noise_tunnel": NoiseTunnelCVExplainer(),
-    "gradient_shap": GradientSHAPCVExplainer(),
-    "lrp": LRPCVExplainer(),
-    "guided_gradcam": GuidedGradCAMCVExplainer(),
-    "layer_integrated_gradients": LayerIntegratedGradientsCVExplainer(),
-    "layer_noise_tunnel": LayerNoiseTunnelCVExplainer(),
-    "layer_gradient_shap": LayerGradientSHAPCVExplainer(),
-    "layer_lrp": LayerLRPCVExplainer(),
-    "layer_gradcam": LayerGradCAMCVExplainer(),
-}
-method_list = list(explainer_map)
+explainer_list = [
+    OcculusionCVExplainer(),
+    IntegratedGradientsCVExplainer(),
+    NoiseTunnelCVExplainer(),
+    GradientSHAPCVExplainer(),
+    LRPCVExplainer(),
+    GuidedGradCAMCVExplainer(),
+    LayerIntegratedGradientsCVExplainer(),
+    LayerNoiseTunnelCVExplainer(),
+    LayerGradientSHAPCVExplainer(),
+    LayerLRPCVExplainer(),
+    LayerGradCAMCVExplainer(),
+]
+
+explainer_map = {entry.algorithm_name: entry for entry in explainer_list}
 layer_explainers = [
     LayerNoiseTunnelCVExplainer,
     LayerGradCAMCVExplainer,
@@ -58,6 +60,9 @@ layer_explainers = [
     LayerIntegratedGradientsCVExplainer,
     LayerLRPCVExplainer,
 ]
+
+
+method_list = [e.value for e in MethodName]
 
 
 def check_if_layer_explainer(explainer: CVExplainer) -> bool:
@@ -150,7 +155,7 @@ def generate_feature_map(
     return convert_figure_to_numpy(figure)
 
 
-def get_kwargs(method: str) -> Dict[str, Any]:
+def get_kwargs(method: MethodName) -> Dict[str, Any]:
     """Get `kwargs` from `st.session_state`.
 
     For `occulusion` method we have some additional arguments to pass.
@@ -171,14 +176,14 @@ def get_kwargs(method: str) -> Dict[str, Any]:
     except IndexError:
         pass
 
-    if method == "occulusion":
+    if method == MethodName.OCCULUSION:
         kwargs[Settings.window_value] = st.session_state[Settings.window_value]
         kwargs[Settings.stride_value] = st.session_state[Settings.stride_value]
 
     return kwargs
 
 
-def configure_params(method: str) -> None:
+def configure_params(method: MethodName) -> None:
     """Display widgets to configure parameters of explanation.
 
     Args:
@@ -201,7 +206,7 @@ def configure_params(method: str) -> None:
     target_class = st.session_state.get("target_class", None)
     st.session_state[Settings.target_class_index] = label_to_idx[target_class]
 
-    if method == "occulusion":
+    if method == MethodName.OCCULUSION:
         with st.expander("Parameters"):
             st.slider(
                 "Stride value",
@@ -275,7 +280,8 @@ def main_view() -> None:
     model: fx.GraphModule = load_model(model_path=model_path)
     model_layers = get_model_layers(model=model)
     st.session_state[Settings.model_layers_key] = model_layers
-    method = st.session_state[Settings.method_label]
+    method_string = st.session_state[Settings.method_label]
+    method = MethodName.from_string(method_string)
 
     st.markdown("## Configure parameters")
     configure_params(method=method)
@@ -284,7 +290,7 @@ def main_view() -> None:
     )
     if button:
         kwargs = get_kwargs(method=method)
-        explainer = explainer_map[method]
+        explainer = explainer_map[method.value]
         if check_if_layer_explainer(explainer=explainer):
             if not model_layers:
                 st.error(
@@ -297,7 +303,7 @@ def main_view() -> None:
                     kwargs[Settings.selected_layer_key] = layer
                     st.write(f"Selected layer: {layer}")
                     image = generate_feature_map(
-                        explainer=explainer_map[method],
+                        explainer=explainer_map[method.value],
                         selected_date=date_selectbox,
                         experiment_hash=hash_selectbox,
                         model=model,
@@ -306,7 +312,7 @@ def main_view() -> None:
                     st.image(image)
         else:
             image = generate_feature_map(
-                explainer=explainer_map[method],
+                explainer=explainer_map[method.value],
                 selected_date=date_selectbox,
                 experiment_hash=hash_selectbox,
                 model=model,
