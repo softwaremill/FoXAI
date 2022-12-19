@@ -37,5 +37,5 @@ logs/
         └── training
             └── 0
                 └── model.onnx
-                
+
 ```
