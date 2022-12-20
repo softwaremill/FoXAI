@@ -61,7 +61,9 @@ class LitMNIST(
             torch.nn.Linear(hidden_size, self.num_classes),
         )
 
-        mnist_full = MNIST(self.data_dir, train=True, transform=self.transform)
+        mnist_full = MNIST(
+            self.data_dir, train=True, download=True, transform=self.transform
+        )
         self.mnist_train, self.mnist_val = random_split(mnist_full, [55000, 5000])
 
         self.mnist_test = MNIST(self.data_dir, train=False, transform=self.transform)

@@ -4,7 +4,6 @@ from abc import abstractmethod
 
 import torch
 from captum.attr import LRP, LayerLRP
-from torch import fx
 
 from src.explainer.base_explainer import CVExplainer
 from src.explainer.model_utils import modify_modules
@@ -26,7 +25,7 @@ class BaseLRPCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: fx.GraphModule,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -64,7 +63,7 @@ class LRPCVExplainer(BaseLRPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("model", None)
+        model: torch.nn.Module = kwargs.get("model", None)
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
@@ -85,7 +84,7 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("model", None)
+        model: torch.nn.Module = kwargs.get("model", None)
         layer: torch.nn.Module = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(

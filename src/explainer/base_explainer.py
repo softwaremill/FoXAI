@@ -5,7 +5,6 @@ import matplotlib
 import numpy as np
 import torch
 from captum.attr import visualization as viz
-from torch import fx
 
 
 class CVExplainer(ABC):
@@ -14,7 +13,7 @@ class CVExplainer(ABC):
     @abstractmethod
     def calculate_features(
         self,
-        model: fx.GraphModule,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,

@@ -5,10 +5,10 @@ from typing import Any, Dict, cast
 
 import numpy as np
 import streamlit as st
-from method_names import MethodName
-from model_utils import get_model_layers, load_model
-from settings import Settings
-from streamlit_utils import (
+from method_names import MethodName  # pylint: disable = (import-error)
+from model_utils import get_model_layers, load_model  # pylint: disable = (import-error)
+from settings import Settings  # pylint: disable = (import-error)
+from streamlit_utils import (  # pylint: disable = (import-error)
     disable_explain,
     initialize_session_state,
     load_idx_to_labels,
@@ -16,8 +16,9 @@ from streamlit_utils import (
     load_original_data,
     load_subdir,
 )
-from torch import fx
-from visualization_utils import convert_figure_to_numpy
+from visualization_utils import (  # pylint: disable = (import-error)
+    convert_figure_to_numpy,
+)
 
 from src.explainer.base_explainer import CVExplainer
 from src.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
@@ -274,10 +275,10 @@ def main_view() -> None:
         hash_selectbox,
         "training",
         epoch_number,
-        "model.onnx",
+        "model.pt",
     )
 
-    model: fx.GraphModule = load_model(model_path=model_path)
+    model = load_model(model_path=model_path)
     model_layers = get_model_layers(model=model)
     st.session_state[Settings.model_layers_key] = model_layers
     method_string = st.session_state[Settings.method_label]

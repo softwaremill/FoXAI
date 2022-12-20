@@ -4,7 +4,6 @@ from abc import abstractmethod
 
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
-from torch import fx
 
 from src.explainer.occulusion import CVExplainer
 
@@ -25,7 +24,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: fx.GraphModule,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -64,7 +63,7 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("forward_func", None)
+        model: torch.nn.Module = kwargs.get("forward_func", None)
         if model is None:
             raise RuntimeError(
                 f"Missing or `None` argument `forward_func` passed: {kwargs}"
@@ -86,7 +85,7 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("forward_func", None)
+        model: torch.nn.Module = kwargs.get("forward_func", None)
         layer: torch.nn.Module = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(

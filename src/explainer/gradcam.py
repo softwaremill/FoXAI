@@ -4,7 +4,6 @@ from abc import abstractmethod
 
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
-from torch import fx
 
 from src.explainer.model_utils import modify_modules
 from src.explainer.occulusion import CVExplainer
@@ -26,7 +25,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: fx.GraphModule,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -69,7 +68,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("model", None)
+        model: torch.nn.Module = kwargs.get("model", None)
         layer: torch.nn.Module = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
@@ -93,7 +92,7 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("model", None)
+        model: torch.nn.Module = kwargs.get("model", None)
         layer: torch.nn.Module = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
