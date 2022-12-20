@@ -6,7 +6,7 @@ import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 from torch import fx
 
-from src.explainer.occulusion import CVExplainer
+from autoxai.explainer.occulusion import CVExplainer
 
 
 class BaseNoiseTunnelCVExplainer(CVExplainer):

@@ -7,7 +7,7 @@ import streamlit as st
 import torch
 from settings import Settings
 
-from src.cache_manager import LocalDirCacheManager
+from autoxai.cache_manager import LocalDirCacheManager
 
 
 def load_subdir(path: str) -> Union[Dict[str, Any], List[str]]:

@@ -6,7 +6,7 @@ import torch
 from captum.attr import GradientShap, LayerGradientShap
 from torch import fx
 
-from src.explainer.base_explainer import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
 
 
 class BaseGradientSHAPCVExplainer(CVExplainer):

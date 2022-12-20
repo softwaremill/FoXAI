@@ -6,8 +6,8 @@ import torch
 from captum.attr import LRP, LayerLRP
 from torch import fx
 
-from src.explainer.base_explainer import CVExplainer
-from src.explainer.model_utils import modify_modules
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
 class BaseLRPCVExplainer(CVExplainer):

@@ -11,8 +11,8 @@ import torch.nn.functional as F
 import torchvision
 from PIL import Image
 
-from src.cache_manager import LocalDirCacheManager
-from src.path_manager import ExperimentDataClass
+from autoxai.cache_manager import LocalDirCacheManager
+from autoxai.path_manager import ExperimentDataClass
 
 
 class DataTransformer:  # pylint: disable = (too-few-public-methods)

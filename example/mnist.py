@@ -10,9 +10,9 @@ from mnist_model import LitMNIST
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
-from src.cache_manager import LocalDirCacheManager
-from src.callback import CustomPytorchLightningCallback
-from src.path_manager import ExperimentDataClass
+from autoxai.cache_manager import LocalDirCacheManager
+from autoxai.callback import CustomPytorchLightningCallback
+from autoxai.path_manager import ExperimentDataClass
 
 
 def main() -> None:  # pylint: disable = (duplicate-code)

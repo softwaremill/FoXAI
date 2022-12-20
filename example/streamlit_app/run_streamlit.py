@@ -19,22 +19,22 @@ from streamlit_utils import (
 from torch import fx
 from visualization_utils import convert_figure_to_numpy
 
-from src.explainer.base_explainer import CVExplainer
-from src.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
-from src.explainer.gradient_shap import (
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
+from autoxai.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
 )
-from src.explainer.integrated_gradients import (
+from autoxai.explainer.integrated_gradients import (
     IntegratedGradientsCVExplainer,
     LayerIntegratedGradientsCVExplainer,
 )
-from src.explainer.lrp import LayerLRPCVExplainer, LRPCVExplainer
-from src.explainer.noise_tunnel import (
+from autoxai.explainer.lrp import LayerLRPCVExplainer, LRPCVExplainer
+from autoxai.explainer.noise_tunnel import (
     LayerNoiseTunnelCVExplainer,
     NoiseTunnelCVExplainer,
 )
-from src.explainer.occulusion import OcculusionCVExplainer
+from autoxai.explainer.occulusion import OcculusionCVExplainer
 
 cache_path = os.environ.get("LOGDIR", "logs")
 

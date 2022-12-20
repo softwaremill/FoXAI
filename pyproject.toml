@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "src"
+name = "autoxai"
 version = "0.2.0"
 description = ""
 authors = ["Adam Wawrzyński <adam.wawrzynski@reasonfieldlab.com>"]
 readme = "README.md"
-packages = [{include = "src"}]
+packages = [{include = "autoxai"}]
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11,!=3.9.7"
