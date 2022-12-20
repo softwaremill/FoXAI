@@ -23,7 +23,7 @@ application, the labels directory with the `idx_to_label.json.pkl` file,
 which contains the JSON with the index-class mapping, and the training
 directory, which contains directories corresponding to the training epoch
 number, in which the models are stored, always with the same name
-`model.onnx` in ONNX format.
+`model.pt` in PyTorch state dict format.
 
 Example log directory structure:
 ```bash
@@ -36,6 +36,6 @@ logs/
         |   └── idx_to_label.json.pkl
         └── training
             └── 0
-                └── model.onnx
+                └── model.pt
 
 ```
