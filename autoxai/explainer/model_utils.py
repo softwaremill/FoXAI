@@ -1,10 +1,9 @@
 """File contains functions to modifiy DNN models."""
 
 import torch
-from torch import fx
 
 
-def modify_modules(model: fx.GraphModule) -> fx.GraphModule:
+def modify_modules(model: torch.nn.Module) -> torch.nn.Module:
     """Modify modules of given model.
 
     Function iterates over all modules and sets property `inplace`

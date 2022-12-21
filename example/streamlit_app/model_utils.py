@@ -2,25 +2,25 @@
 
 from typing import List
 
-import onnx
-import onnx2torch
 import torch
-from torch import fx
+from mnist_model import LitMNIST  # pylint: disable = (import-error)
 
 
-def load_model(model_path: str) -> fx.GraphModule:
-    """Load model from local path and convert in into torch.fx.GraphModule.
+def load_model(model_path: str) -> torch.nn.Module:
+    """Load model's state dict from local path.
 
     Args:
-        model_path: Path to local ONNX model.
+        model_path: Path to local model's state dict.
 
     Returns:
-        Converted ONNX model to torch.fx.GraphModule.
+        Model with loaded state dict.
     """
-    return onnx2torch.convert(onnx.load(model_path))
+    model = LitMNIST(batch_size=1, data_dir=".")
+    model.load_state_dict(torch.load(model_path))
+    return model
 
 
-def get_model_layers(model: fx.GraphModule) -> List[torch.nn.Module]:
+def get_model_layers(model: torch.nn.Module) -> List[torch.nn.Module]:
     """Get all layers from given model.
 
     Args:
@@ -31,8 +31,7 @@ def get_model_layers(model: fx.GraphModule) -> List[torch.nn.Module]:
     """
     layers = []
     for module in model.modules():
-        if not isinstance(module, fx.graph_module.GraphModule):
-            if isinstance(module, torch.nn.Conv2d):
-                layers.append(module)
+        if isinstance(module, torch.nn.Conv2d):
+            layers.append(module)
 
     return layers

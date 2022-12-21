@@ -2,7 +2,6 @@
 
 import torch
 from captum.attr import Occlusion
-from torch import fx
 
 from autoxai.explainer.base_explainer import CVExplainer
 
@@ -12,7 +11,7 @@ class OcculusionCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: fx.GraphModule,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,

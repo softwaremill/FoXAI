@@ -1,10 +1,10 @@
 """File with LRP algorithm explainer classes."""
 
 from abc import abstractmethod
+from typing import Optional, Union
 
 import torch
 from captum.attr import LRP, LayerLRP
-from torch import fx
 
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import modify_modules
@@ -14,7 +14,7 @@ class BaseLRPCVExplainer(CVExplainer):
     """Base LRP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -26,7 +26,7 @@ class BaseLRPCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: fx.GraphModule,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -41,7 +41,7 @@ class BaseLRPCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        layer: torch.nn.Module = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
 
         lrp = self.create_explainer(model=model, layer=layer)
 
@@ -55,7 +55,7 @@ class BaseLRPCVExplainer(CVExplainer):
 class LRPCVExplainer(BaseLRPCVExplainer):
     """LRP algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -64,7 +64,7 @@ class LRPCVExplainer(BaseLRPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("model", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
@@ -76,7 +76,7 @@ class LRPCVExplainer(BaseLRPCVExplainer):
 class LayerLRPCVExplainer(BaseLRPCVExplainer):
     """Layer LRP algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -85,8 +85,8 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("model", None)
-        layer: torch.nn.Module = kwargs.get("layer", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
                 f"Missing or `None` arguments `model` and `layer` passed: {kwargs}"

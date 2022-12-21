@@ -176,19 +176,12 @@ def main():
         input_data,
     )
 
-    path: str = os.path.join(experiment.path, "training", "0", "model.onnx")
+    path: str = os.path.join(experiment.path, "training", "0", "model.pt")
 
     if not os.path.exists(path):
         os.makedirs(Path(path).parent)
 
-    torch.onnx.export(
-        model,
-        input_data,
-        path,
-        verbose=True,
-        input_names=["conv1"],
-        output_names=["output1"],
-    )
+    torch.save(model.state_dict(), path)
 
 
 if __name__ == "__main__":
