@@ -35,7 +35,7 @@ def main() -> None:  # pylint: disable = (duplicate-code)
 
     model = LitMNIST(data_dir=data_dir, batch_size=batch_size)
     trainer = Trainer(
-        accelerator="auto",
+        accelerator="gpu",
         devices=1 if torch.cuda.is_available() else None,
         max_epochs=max_epochs,
         callbacks=[TQDMProgressBar(refresh_rate=20), callback],
