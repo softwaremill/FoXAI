@@ -1,6 +1,7 @@
 """File with Gradient SHAP algorithm explainer classes."""
 
 from abc import abstractmethod
+from typing import Optional, Union
 
 import torch
 from captum.attr import GradientShap, LayerGradientShap
@@ -12,7 +13,7 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
     """Base Gradient SHAP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
 
         Raises:
@@ -41,7 +42,7 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         """
         stdevs: float = kwargs.get("stdevs", 0.0001)
         n_samples: int = kwargs.get("n_samples", 50)
-        layer: torch.nn.Module = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
 
         gradient_shap = self.create_explainer(forward_func=model, layer=layer)
 
@@ -63,7 +64,7 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
 class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
     """Gradient SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
 
         Raises:
@@ -72,7 +73,7 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: torch.nn.Module = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
         if model is None:
             raise RuntimeError(
                 f"Missing or `None` argument `forward_func` passed: {kwargs}"
@@ -84,7 +85,7 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
 class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
     """Layer Gradient SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
 
         Raises:
@@ -93,8 +94,8 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: torch.nn.Module = kwargs.get("forward_func", None)
-        layer: torch.nn.Module = kwargs.get("layer", None)
+        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
                 f"Missing or `None` arguments `forward_func` and `layer` passed: {kwargs}"

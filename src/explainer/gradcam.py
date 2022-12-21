@@ -1,6 +1,7 @@
 """File with GradCAM algorithm explainer classes."""
 
 from abc import abstractmethod
+from typing import Optional, Union
 
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
@@ -13,7 +14,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
     """Base GradCAM algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
 
         Raises:
@@ -40,7 +41,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        layer: torch.nn.Module = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
 
         guided_cam = self.create_explainer(model=model, layer=layer)
 
@@ -59,7 +60,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
 class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
     """GuidedGradCAM algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
 
         Raises:
@@ -68,8 +69,8 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
         Returns:
             Explainer object.
         """
-        model: torch.nn.Module = kwargs.get("model", None)
-        layer: torch.nn.Module = kwargs.get("layer", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
                 f"Missing or `None` arguments `model` and `layer` passed: {kwargs}"
@@ -83,7 +84,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
 class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
     """Layer GradCAM algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
 
         Raises:
@@ -92,8 +93,8 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         Returns:
             Explainer object.
         """
-        model: torch.nn.Module = kwargs.get("model", None)
-        layer: torch.nn.Module = kwargs.get("layer", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
                 f"Missing or `None` arguments `model` and `layer` passed: {kwargs}"
