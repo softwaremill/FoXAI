@@ -6,9 +6,9 @@ import os
 import uuid
 
 import torch
-from mnist_model import LitMNIST
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
+from streamlit_app.mnist_model import LitMNIST
 
 from src.cache_manager import LocalDirCacheManager
 from src.callback import CustomPytorchLightningCallback

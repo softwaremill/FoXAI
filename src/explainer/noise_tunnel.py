@@ -1,10 +1,10 @@
 """File with Noise Tunnel algorithm explainer classes."""
 
 from abc import abstractmethod
+from typing import Optional
 
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
-from torch import fx
 
 from src.explainer.occulusion import CVExplainer
 
@@ -13,7 +13,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
     """Base Noise Tunnel algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
         Raises:
@@ -25,7 +25,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
 
     def calculate_features(
         self,
-        model: fx.GraphModule,
+        model: torch.nn.Module,
         input_data: torch.Tensor,
         pred_label_idx: int,
         **kwargs,
@@ -42,7 +42,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         """
         nt_samples: int = kwargs.get("nt_samples", 10)
         nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
-        layer: torch.nn.Module = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
 
         noise_tunnel = self.create_explainer(forward_func=model, layer=layer)
 
@@ -55,7 +55,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
 class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
     """Noise Tunnel algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
         Raises:
@@ -64,7 +64,7 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
         if model is None:
             raise RuntimeError(
                 f"Missing or `None` argument `forward_func` passed: {kwargs}"
@@ -77,7 +77,7 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
 class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
     """Layer Noise Tunnel algorithm explainer."""
 
-    def create_explainer(self, **kwargs):
+    def create_explainer(self, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
         Raises:
@@ -86,8 +86,8 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         Returns:
             Explainer object.
         """
-        model: fx.GraphModule = kwargs.get("forward_func", None)
-        layer: torch.nn.Module = kwargs.get("layer", None)
+        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
                 f"Missing or `None` arguments `forward_func` and `layer` passed: {kwargs}"

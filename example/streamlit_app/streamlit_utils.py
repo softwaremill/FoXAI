@@ -1,11 +1,11 @@
-"""File contains functions """
+"""File contains functions to manipulate st.session_state and cache."""
 
 import os
 from typing import Any, Dict, List, Union, cast
 
 import streamlit as st
 import torch
-from settings import Settings
+from settings import Settings  # pylint: disable = (import-error)
 
 from src.cache_manager import LocalDirCacheManager
 

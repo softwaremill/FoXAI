@@ -2,15 +2,12 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
-import numpy as np
 import pytorch_lightning as pl
-import tensorflow as tf
 import torch
 
 from src.cache_manager import LocalDirCacheManager
-from src.explainer.base_explainer import CVExplainer
 from src.path_manager import ExperimentDataClass
 
 logger = logging.getLogger(__name__)
@@ -83,8 +80,7 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
         trainer: pl.Trainer,
         pl_module: pl.LightningModule,  # pylint: disable = (unused-argument)
     ) -> None:
-        """Export model checkpoint in ONNX format in log directory on validation
-        epoch end.
+        """Export model's state dict in log directory on validation epoch end.
 
         Args:
             trainer: Trainer object.
@@ -98,200 +94,14 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
         logger.info(  # pylint: disable = (logging-fstring-interpolation)
             f"Saving model checkpoint at epoch: {str(epoch)}."
         )
-
         model_path: str = os.path.join(
             self.experiment.path,
             "training",
             str(trainer.current_epoch),
-            "model.onnx",
+            "model.pt",
         )
         path = Path(model_path)
         if not os.path.exists(path.parent):
             os.makedirs(path.parent)
 
-        # TODO: check if no validation dataloader is provided it will work  # pylint: disable = (fixme)
-        input_sample: Optional[torch.Tensor] = None
-        if trainer.val_dataloaders:
-            for batch in trainer.val_dataloaders[0]:
-                items, _ = batch
-                input_sample = items[0]
-                break
-
-        if input_sample is None:
-            logger.warning(
-                "Unable to obtain `input_sample` for exportig model to ONNX."
-            )
-        else:
-            pl_module.to_onnx(
-                model_path,
-                input_sample,
-                export_params=True,
-            )
-
-
-class TensorboardCallback(pl.callbacks.Callback):
-    """Library callback for pytorch-lightning."""
-
-    def __init__(  # pylint: disable = (too-many-arguments)
-        self,
-        explainer: CVExplainer,
-        idx_to_label: Dict[int, str],
-        classes_to_explain: Optional[List[int]] = None,
-        experiment: Optional[ExperimentDataClass] = None,
-        cache_manager: Optional[LocalDirCacheManager] = None,
-    ):
-        """Initialize Callback class.
-
-        Args:
-            explainer: Generic `Explainer` class.
-            idx_to_label: Index to label mapping.
-            classes_to_explain: Selected classes to explain.
-            experiment: Helper object for creating paths to store artifacts.
-            cache_manager: Helper class to store artifacts in log direcotry.
-        """
-        super().__init__()
-        self.experiment = experiment
-        self.cache_manager = cache_manager
-        self.idx_to_label = idx_to_label
-        self.explainer = explainer
-        self.classes_to_explain = classes_to_explain
-        self.file_writer: Optional[tf.summary.SummaryWriter] = None
-        self.input_sample: Optional[torch.Tensor] = None
-
-    def convert_tensor(self, data: torch.Tensor) -> np.ndarray:
-        """Convert and transpose tensor to numpy array.
-
-        The function transforms a tensor in 4D or 3D form with dimensions
-        `(K x H x W x C)` to the form `(K x C x H x W)`, where `K` is number of
-        samples, `C` is colour dimension, `H` is height and `W` is width.
-        Additionally object is moved from accelerators (e.g. GPU) to CPU.
-
-        Args:
-            data: Tensor to convert.
-
-        Returns:
-            Converted and transposed numpy array on CPU.
-        """
-        if len(data.shape) == 4 and data.shape[1] == 1:
-            data = data.expand(1, 3, data.shape[2], data.shape[3])
-        elif data.shape[0] == 1:
-            data = data.expand(1, 3, data.shape[1], data.shape[2])
-
-        # change dimension from (K x C x H x W) to (K x H x W x C)
-        # where C is colour dimension, H and W are height and width dimensions
-        attributions_np: np.ndarray = data.detach().cpu().numpy()
-        attributions_np = np.transpose(attributions_np, (0, 2, 3, 1))
-        return attributions_np
-
-    def on_validation_epoch_end(
-        self,
-        trainer: pl.Trainer,
-        pl_module: pl.LightningModule,  # pylint: disable = (unused-argument)
-    ) -> None:
-        """Draw attributes at the end of validation epoch to Tensorboard.
-
-        Args:
-            trainer: Trainer object.
-            pl_module: Model to explain.
-        """
-        epoch: int = trainer.current_epoch
-        if self.experiment is None:
-            return
-
-        if self.file_writer is None:
-            self.file_writer = self._configure_file_writer(trainer)
-
-        if self.file_writer is None:
-            return
-
-        # if test sample was not set
-        if self.input_sample is None:
-            self.input_sample = self._get_sample_data(trainer)
-
-        org_img = self.convert_tensor(self.input_sample)
-        with self.file_writer.as_default():
-            tf.summary.image("Original image", org_img, step=epoch)
-
-        logger.info("Generate explanations")
-        classes_to_explain = list(range(0, len(self.idx_to_label.keys())))
-        if self.classes_to_explain is not None:
-            classes_to_explain = self.classes_to_explain
-
-        # explain all selected classes
-        for index in classes_to_explain:
-            attribution = self._explain_sample(pl_module, self.input_sample, index)
-
-            # save attributes to Tensorboard
-            if attribution is not None:
-                with self.file_writer.as_default():
-                    tf.summary.image(
-                        f"{self.explainer.algorithm_name} class: {index}",
-                        self.convert_tensor(attribution),
-                        step=epoch,
-                    )
-
-    def _explain_sample(
-        self,
-        pl_module: pl.LightningModule,
-        input_sample: torch.Tensor,
-        class_index: int,
-    ) -> Optional[torch.Tensor]:
-        """Get the model attribution on the given sample.
-
-        Args:
-            pl_module: Model object.
-            input_sample: Data sample to explain.
-            class_index: Index of class against which attribution was calculated.
-
-        Returns:
-            Tensor representing attribution of a model or None.
-        """
-        attribution: Optional[torch.Tensor] = None
-        if input_sample is not None:
-            input_data: torch.Tensor = input_sample.to(
-                "cuda" if pl_module.on_gpu else "cpu"
-            )
-            if isinstance(input_data, torch.Tensor):
-                attribution = self.explainer.calculate_features(
-                    model=pl_module,
-                    input_data=input_data,
-                    pred_label_idx=class_index,
-                )
-
-        return attribution
-
-    def _get_sample_data(self, trainer: pl.Trainer) -> torch.Tensor:
-        """Get sample data to explain during current epoch.
-
-        Args:
-            trainer: Trainer object.
-
-        Returns:
-            Tensor representing one sample data.
-        """
-        input_sample: torch.Tensor
-        if trainer.val_dataloaders:
-            for batch in trainer.val_dataloaders[0]:
-                items, _ = batch
-                input_sample = items[np.random.randint(0, len(items))]
-                break
-
-        return input_sample
-
-    def _configure_file_writer(
-        self, trainer: pl.Trainer
-    ) -> Optional[tf.summary.SummaryWriter]:
-        """Setup `file_writer` field to match experiment log directory.
-
-        Args:
-            trainer: Trainer object.
-        """
-        return_value: Optional[tf.summary.SummaryWriter] = None
-        for log in trainer.loggers:
-            if isinstance(log, pl.loggers.tensorboard.TensorBoardLogger):
-                version: str = str(log.version)
-                return_value = tf.summary.create_file_writer(
-                    f"lightning_logs/version_{str(version)}/"
-                )
-
-        return return_value
+        torch.save(pl_module.state_dict(), model_path)
