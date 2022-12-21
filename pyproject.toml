@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "src"
+name = "autoxai"
 version = "0.3.0"
 description = ""
 authors = ["Adam Wawrzyński <adam.wawrzynski@reasonfieldlab.com>"]
