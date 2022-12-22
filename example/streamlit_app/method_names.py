@@ -18,10 +18,11 @@ from src.explainer.noise_tunnel import (
     NoiseTunnelCVExplainer,
 )
 from src.explainer.occulusion import OcculusionCVExplainer
+from src.explainer.saliency import SaliencyCVExplainer
 
 
 class MethodName(Enum):
-    """XAI algorithm names."""
+    """XAI algorithms names."""
 
     OCCULUSION = OcculusionCVExplainer().algorithm_name
     NOISE_TUNNEL = NoiseTunnelCVExplainer().algorithm_name
@@ -34,6 +35,7 @@ class MethodName(Enum):
     LAYER_GRAD_CAM = LayerGradCAMCVExplainer().algorithm_name
     INTEGRATED_GRADIENTS = IntegratedGradientsCVExplainer().algorithm_name
     LAYER_INTEGRATED_GRADIENTS = LayerIntegratedGradientsCVExplainer().algorithm_name
+    SALIENCY = SaliencyCVExplainer().algorithm_name
 
     @classmethod
     def from_string(cls, name: str) -> "MethodName":

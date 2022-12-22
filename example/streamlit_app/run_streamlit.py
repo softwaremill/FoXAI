@@ -36,6 +36,7 @@ from src.explainer.noise_tunnel import (
     NoiseTunnelCVExplainer,
 )
 from src.explainer.occulusion import OcculusionCVExplainer
+from src.explainer.saliency import SaliencyCVExplainer
 
 cache_path = os.environ.get("LOGDIR", "logs")
 
@@ -51,6 +52,7 @@ explainer_list = [
     LayerGradientSHAPCVExplainer(),
     LayerLRPCVExplainer(),
     LayerGradCAMCVExplainer(),
+    SaliencyCVExplainer(),
 ]
 
 explainer_map = {entry.algorithm_name: entry for entry in explainer_list}
