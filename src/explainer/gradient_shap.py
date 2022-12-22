@@ -42,9 +42,9 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         """
         stdevs: float = kwargs.get("stdevs", 0.0001)
         n_samples: int = kwargs.get("n_samples", 50)
-        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        gradient_shap = self.create_explainer(forward_func=model, layer=layer)
+        gradient_shap = self.create_explainer(model=model, layer=layer)
 
         # Defining baseline distribution of images
         rand_img_dist = torch.cat(  # pylint: disable = (no-member,duplicate-code)
@@ -73,11 +73,9 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
         if model is None:
-            raise RuntimeError(
-                f"Missing or `None` argument `forward_func` passed: {kwargs}"
-            )
+            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
         return GradientShap(forward_func=model)
 
@@ -94,11 +92,11 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
-                f"Missing or `None` arguments `forward_func` and `layer` passed: {kwargs}"
+                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
         return LayerGradientShap(forward_func=model, layer=layer)

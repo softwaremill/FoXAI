@@ -42,9 +42,9 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         """
         nt_samples: int = kwargs.get("nt_samples", 10)
         nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
-        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        noise_tunnel = self.create_explainer(forward_func=model, layer=layer)
+        noise_tunnel = self.create_explainer(model=model, layer=layer)
 
         attributions = noise_tunnel.attribute(
             input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
@@ -64,11 +64,9 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
         if model is None:
-            raise RuntimeError(
-                f"Missing or `None` argument `forward_func` passed: {kwargs}"
-            )
+            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
         integrated_gradients = IntegratedGradients(forward_func=model)
         return NoiseTunnel(integrated_gradients)
@@ -86,11 +84,11 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
-                f"Missing or `None` arguments `forward_func` and `layer` passed: {kwargs}"
+                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
         integrated_gradients = LayerIntegratedGradients(forward_func=model, layer=layer)
