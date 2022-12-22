@@ -21,6 +21,7 @@ from visualization_utils import (  # pylint: disable = (import-error)
 )
 
 from src.explainer.base_explainer import CVExplainer
+from src.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
 from src.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
 from src.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
@@ -53,6 +54,8 @@ explainer_list = [
     LayerLRPCVExplainer(),
     LayerGradCAMCVExplainer(),
     SaliencyCVExplainer(),
+    DeepLIFTCVExplainer(),
+    LayerDeepLIFTCVExplainer(),
 ]
 
 explainer_map = {entry.algorithm_name: entry for entry in explainer_list}
@@ -62,6 +65,7 @@ layer_explainers = [
     LayerGradientSHAPCVExplainer,
     LayerIntegratedGradientsCVExplainer,
     LayerLRPCVExplainer,
+    LayerDeepLIFTCVExplainer,
 ]
 
 method_list = [e.value for e in MethodName]

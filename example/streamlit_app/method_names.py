@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Optional
 
+from src.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
 from src.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
 from src.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
@@ -36,6 +37,8 @@ class MethodName(Enum):
     INTEGRATED_GRADIENTS = IntegratedGradientsCVExplainer().algorithm_name
     LAYER_INTEGRATED_GRADIENTS = LayerIntegratedGradientsCVExplainer().algorithm_name
     SALIENCY = SaliencyCVExplainer().algorithm_name
+    DEEP_LIFT = DeepLIFTCVExplainer().algorithm_name
+    LAYER_DEEP_LIFT = LayerDeepLIFTCVExplainer().algorithm_name
 
     @classmethod
     def from_string(cls, name: str) -> "MethodName":
