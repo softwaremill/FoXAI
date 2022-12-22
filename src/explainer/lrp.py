@@ -31,7 +31,7 @@ class BaseLRPCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with occulusion algorithm explainer.
+        """Generate features image with LRP algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.

@@ -6,8 +6,8 @@ from typing import Optional, Union
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
 
+from src.explainer.base_explainer import CVExplainer
 from src.explainer.model_utils import modify_modules
-from src.explainer.occulusion import CVExplainer
 
 
 class BaseGradCAMCVExplainer(CVExplainer):
@@ -31,7 +31,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with occulusion algorithm explainer.
+        """Generate features image with GradCAM algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.

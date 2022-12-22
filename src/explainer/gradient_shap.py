@@ -30,7 +30,7 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with gradient SHAP algorithm explainer.
+        """Generate features image with Gradient SHAP algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.

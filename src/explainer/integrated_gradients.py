@@ -32,7 +32,7 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with integrated gradients algorithm explainer.
+        """Generate features image with Integrated Gradients algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.

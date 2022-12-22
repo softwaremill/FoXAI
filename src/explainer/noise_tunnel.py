@@ -6,7 +6,7 @@ from typing import Optional
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
-from src.explainer.occulusion import CVExplainer
+from src.explainer.base_explainer import CVExplainer
 
 
 class BaseNoiseTunnelCVExplainer(CVExplainer):
@@ -30,7 +30,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with noise tunnel algorithm explainer.
+        """Generate features image with Noise Tunnel algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
