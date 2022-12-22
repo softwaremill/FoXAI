@@ -32,6 +32,10 @@ from src.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
 )
+from src.explainer.input_x_gradient import (
+    InputXGradientCVExplainer,
+    LayerInputXGradientCVExplainer,
+)
 from src.explainer.integrated_gradients import (
     IntegratedGradientsCVExplainer,
     LayerIntegratedGradientsCVExplainer,
@@ -64,6 +68,8 @@ explainer_list = [
     DeepLIFTSHAPCVExplainer(),
     LayerDeepLIFTSHAPCVExplainer(),
     DeconvolutionCVExplainer(),
+    InputXGradientCVExplainer(),
+    LayerInputXGradientCVExplainer(),
 ]
 
 explainer_map = {entry.algorithm_name: entry for entry in explainer_list}
@@ -75,6 +81,7 @@ layer_explainers = [
     LayerLRPCVExplainer,
     LayerDeepLIFTCVExplainer,
     LayerDeepLIFTSHAPCVExplainer,
+    LayerInputXGradientCVExplainer,
 ]
 
 method_list = [e.value for e in MethodName]

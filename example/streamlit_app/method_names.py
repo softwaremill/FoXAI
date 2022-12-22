@@ -14,6 +14,10 @@ from src.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
 )
+from src.explainer.input_x_gradient import (
+    InputXGradientCVExplainer,
+    LayerInputXGradientCVExplainer,
+)
 from src.explainer.integrated_gradients import (
     IntegratedGradientsCVExplainer,
     LayerIntegratedGradientsCVExplainer,
@@ -47,6 +51,8 @@ class MethodName(Enum):
     DEEP_LIFT_SHAP = DeepLIFTSHAPCVExplainer().algorithm_name
     LAYER_DEEP_LIFT_SHAP = LayerDeepLIFTSHAPCVExplainer().algorithm_name
     DECONVOLUTION = DeconvolutionCVExplainer().algorithm_name
+    INPUT_X_GRADIENT = InputXGradientCVExplainer().algorithm_name
+    LAYER_INPUT_X_GRADIENT = LayerInputXGradientCVExplainer().algorithm_name
 
     @classmethod
     def from_string(cls, name: str) -> "MethodName":
