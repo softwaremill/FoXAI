@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Optional
 
+from src.explainer.conductance import LayerConductanceCVExplainer
 from src.explainer.deconv import DeconvolutionCVExplainer
 from src.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
 from src.explainer.deeplift_shap import (
@@ -53,6 +54,7 @@ class MethodName(Enum):
     DECONVOLUTION = DeconvolutionCVExplainer().algorithm_name
     INPUT_X_GRADIENT = InputXGradientCVExplainer().algorithm_name
     LAYER_INPUT_X_GRADIENT = LayerInputXGradientCVExplainer().algorithm_name
+    LAYER_CONDUCTANCE = LayerConductanceCVExplainer().algorithm_name
 
     @classmethod
     def from_string(cls, name: str) -> "MethodName":
