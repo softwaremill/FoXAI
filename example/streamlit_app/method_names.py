@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Optional
 
+from src.explainer.deconv import DeconvolutionCVExplainer
 from src.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
 from src.explainer.deeplift_shap import (
     DeepLIFTSHAPCVExplainer,
@@ -45,6 +46,7 @@ class MethodName(Enum):
     LAYER_DEEP_LIFT = LayerDeepLIFTCVExplainer().algorithm_name
     DEEP_LIFT_SHAP = DeepLIFTSHAPCVExplainer().algorithm_name
     LAYER_DEEP_LIFT_SHAP = LayerDeepLIFTSHAPCVExplainer().algorithm_name
+    DECONVOLUTION = DeconvolutionCVExplainer().algorithm_name
 
     @classmethod
     def from_string(cls, name: str) -> "MethodName":

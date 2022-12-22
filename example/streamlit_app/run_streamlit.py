@@ -21,6 +21,7 @@ from visualization_utils import (  # pylint: disable = (import-error)
 )
 
 from src.explainer.base_explainer import CVExplainer
+from src.explainer.deconv import DeconvolutionCVExplainer
 from src.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
 from src.explainer.deeplift_shap import (
     DeepLIFTSHAPCVExplainer,
@@ -62,6 +63,7 @@ explainer_list = [
     LayerDeepLIFTCVExplainer(),
     DeepLIFTSHAPCVExplainer(),
     LayerDeepLIFTSHAPCVExplainer(),
+    DeconvolutionCVExplainer(),
 ]
 
 explainer_map = {entry.algorithm_name: entry for entry in explainer_list}
