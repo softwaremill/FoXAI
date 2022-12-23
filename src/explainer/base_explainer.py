@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from captum.attr import visualization as viz
 
+from src.explainer.model_utils import standardize_matrix
+
 
 class CVExplainer(ABC):
     """Abstract explainer class."""
@@ -80,19 +82,36 @@ class CVExplainer(ABC):
         if len(transformed_img.shape) >= 3:
             transformed_img_np = np.transpose(transformed_img_np, (1, 2, 0))
 
-        figure, _ = viz.visualize_image_attr_multiple(
-            attr=attributions_np,
-            original_image=transformed_img_np,
-            methods=["original_image", "heat_map", "heat_map", "heat_map"],
-            signs=["all", "positive", "negative", "all"],
-            titles=[
-                "Original image",
-                "Positive attributes",
-                "Negative attributes",
-                "All attributes",
-            ],
-            show_colorbar=True,
-            use_pyplot=False,
-        )
+        attributions_np = standardize_matrix(matrix=attributions_np)
+        transformed_img_np = standardize_matrix(matrix=transformed_img_np)
+
+        try:
+            figure, _ = viz.visualize_image_attr_multiple(
+                attr=attributions_np,
+                original_image=transformed_img_np,
+                methods=["original_image", "heat_map", "heat_map", "heat_map"],
+                signs=["all", "positive", "negative", "all"],
+                titles=[
+                    "Original image",
+                    "Positive attributes",
+                    "Negative attributes",
+                    "All attributes",
+                ],
+                show_colorbar=True,
+                use_pyplot=False,
+            )
+        except AssertionError:
+            figure, _ = viz.visualize_image_attr_multiple(
+                attr=attributions_np,
+                original_image=transformed_img_np,
+                methods=["original_image", "heat_map"],
+                signs=["all", "positive"],
+                titles=[
+                    "Original image",
+                    "Positive attributes",
+                ],
+                show_colorbar=True,
+                use_pyplot=False,
+            )
 
         return figure
