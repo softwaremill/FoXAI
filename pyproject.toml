@@ -10,8 +10,8 @@ packages = [{include = "autoxai"}]
 python = "^3.8,<3.11,!=3.9.7"
 numpy = "1.23.4"
 captum = "0.5.0"
-torch = "1.13.0"
-torchvision = "0.14.0"
+torch = {version='1.12.1+cu102',source="pytorch"}
+torchvision = {version='0.13.1+cu102',source="pytorch"}
 pytorch-lightning = "1.5.0"
 torchmetrics = "0.11.0"
 
@@ -23,6 +23,12 @@ mypy = "0.982"
 [tool.poetry.group.example.dependencies]
 Pillow = "9.3.0"
 streamlit = "1.16.0"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu102"
+secondary = true
+default = false
 
 [build-system]
 requires = ["poetry-core"]
