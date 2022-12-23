@@ -10,9 +10,9 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 
 
-class LitMNIST(
+class LitMNIST(  # pylint: disable = (abstract-method, too-many-ancestors, too-many-instance-attributes)
     LightningModule
-):  # pylint: disable = (too-many-ancestors, too-many-instance-attributes)
+):
     """Model to classify MNIST images."""
 
     def __init__(

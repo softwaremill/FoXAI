@@ -29,7 +29,7 @@ repos:
       - id: mypy
         name: mypy
         language: system
-        files: src
+        files: autoxai
         types: [ python ]
         entry: poetry run mypy
       - id: locks

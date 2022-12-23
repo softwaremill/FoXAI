@@ -1,19 +1,19 @@
-"""File with Noise Tunnel algorithm explainer classes."""
+"""File with Gradient SHAP algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 import torch
-from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
+from captum.attr import GradientShap, LayerGradientShap
 
-from src.explainer.occulusion import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
 
 
-class BaseNoiseTunnelCVExplainer(CVExplainer):
-    """Base Noise Tunnel algorithm explainer."""
+class BaseGradientSHAPCVExplainer(CVExplainer):
+    """Base Gradient SHAP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
 
         Raises:
@@ -30,7 +30,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with noise tunnel algorithm explainer.
+        """Generate features image with gradient SHAP algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -40,22 +40,31 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        nt_samples: int = kwargs.get("nt_samples", 10)
-        nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
+        stdevs: float = kwargs.get("stdevs", 0.0001)
+        n_samples: int = kwargs.get("n_samples", 50)
         layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
 
-        noise_tunnel = self.create_explainer(forward_func=model, layer=layer)
+        gradient_shap = self.create_explainer(forward_func=model, layer=layer)
 
-        attributions = noise_tunnel.attribute(
-            input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
+        # Defining baseline distribution of images
+        rand_img_dist = torch.cat(  # pylint: disable = (no-member,duplicate-code)
+            [input_data * 0, input_data * 1]
+        )
+
+        attributions = gradient_shap.attribute(
+            input_data,
+            n_samples=n_samples,
+            stdevs=stdevs,
+            baselines=rand_img_dist,
+            target=pred_label_idx,
         )
         return attributions
 
 
-class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
-    """Noise Tunnel algorithm explainer."""
+class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
+    """Gradient SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
 
         Raises:
@@ -70,14 +79,13 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
                 f"Missing or `None` argument `forward_func` passed: {kwargs}"
             )
 
-        integrated_gradients = IntegratedGradients(forward_func=model)
-        return NoiseTunnel(integrated_gradients)
+        return GradientShap(forward_func=model)
 
 
-class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
-    """Layer Noise Tunnel algorithm explainer."""
+class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
+    """Layer Gradient SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
 
         Raises:
@@ -93,5 +101,4 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
                 f"Missing or `None` arguments `forward_func` and `layer` passed: {kwargs}"
             )
 
-        integrated_gradients = LayerIntegratedGradients(forward_func=model, layer=layer)
-        return NoiseTunnel(integrated_gradients)
+        return LayerGradientShap(forward_func=model, layer=layer)
