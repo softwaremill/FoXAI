@@ -16,7 +16,6 @@ from torch.nn import functional as F
 from torchvision import transforms
 
 from autoxai import explainer
-from autoxai.cache_manager import LocalDirCacheManager
 
 # TODO: does someone know why mypy and pylint is complaining?
 # pylint: disable = no-name-in-module
@@ -37,23 +36,6 @@ class Explainers(Enum):
     CV_LAYER_GRADIENT_SHAP_EXPLAINER: str = "LayerGradientSHAPCVExplainer"
     CV_LAYER_LRP_EXPLAINER: str = "LayerLRPCVExplainer"
     CV_LAYER_GRADCAM_EXPLAINER: str = "LayerGradCAMCVExplainer"
-
-
-def load_input_data(path: str) -> torch.Tensor:
-    """Load preprocessed input data sample from given path.
-
-    Args:
-        cache_path: Path to cache directory.
-        selected_date: Selected date.
-        experiment_hash: Selected experiment hash.
-
-    Returns:
-        Preprocessed data sample.
-    """
-    cache_manager = LocalDirCacheManager()
-    input_data = cache_manager.load_artifact(path)
-
-    return input_data
 
 
 class AutoXaiExplainer:
