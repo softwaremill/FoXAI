@@ -10,9 +10,9 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from streamlit_app.mnist_model import LitMNIST
 
-from src.cache_manager import LocalDirCacheManager
-from src.callback import CustomPytorchLightningCallback
-from src.path_manager import ExperimentDataClass
+from autoxai.cache_manager import LocalDirCacheManager
+from autoxai.callback import CustomPytorchLightningCallback
+from autoxai.path_manager import ExperimentDataClass
 
 
 def main() -> None:  # pylint: disable = (duplicate-code)
@@ -35,7 +35,7 @@ def main() -> None:  # pylint: disable = (duplicate-code)
 
     model = LitMNIST(data_dir=data_dir, batch_size=batch_size)
     trainer = Trainer(
-        accelerator="auto",
+        accelerator="gpu",
         devices=1 if torch.cuda.is_available() else None,
         max_epochs=max_epochs,
         callbacks=[TQDMProgressBar(refresh_rate=20), callback],

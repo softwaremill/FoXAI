@@ -6,8 +6,8 @@ from typing import Optional, Union
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
 
-from src.explainer.model_utils import modify_modules
-from src.explainer.occulusion import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
+from autoxai.explainer.occulusion import CVExplainer
 
 
 class BaseGradCAMCVExplainer(CVExplainer):
