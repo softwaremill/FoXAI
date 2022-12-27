@@ -7,7 +7,7 @@ Example:
             output, xai_explanations = xai_model(input_data)
 """
 from enum import Enum
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Generic, List, Tuple, cast
 
 import torch
 from PIL import Image
@@ -16,9 +16,6 @@ from torch.nn import functional as F
 from torchvision import transforms
 
 from autoxai import explainer
-
-# TODO: does someone know why mypy and pylint is complaining?
-# pylint: disable = no-name-in-module
 from autoxai.explainer.base_explainer import CVExplainerT
 
 
@@ -38,7 +35,7 @@ class Explainers(Enum):
     CV_LAYER_GRADCAM_EXPLAINER: str = "LayerGradCAMCVExplainer"
 
 
-class AutoXaiExplainer:
+class AutoXaiExplainer(Generic[CVExplainerT]):
     """Context menager for AutoXAI explanation.
 
     Example:
@@ -67,7 +64,7 @@ class AutoXaiExplainer:
         if not explainers:
             raise ValueError("At leas one explainer should be defined.")
 
-        self.explainer_map: Dict[str, CVExplainerT] = {  # type: ignore
+        self.explainer_map: Dict[str, CVExplainerT] = {
             explainer_name.name: getattr(explainer, explainer_name.value)()
             for explainer_name in explainers
         }
@@ -106,13 +103,21 @@ class AutoXaiExplainer:
         """
         model_output: Any = self.model(*args, **kwargs)
 
+        if len(args) != 1:
+            # TODO: add support in explainer for multiple input models
+            raise NotImplementedError(
+                "calculate_features() functions \
+                in explainers does not support multiple inputs to the model."
+            )
+        input_tensor: torch.Tensor = cast(torch.Tensor, args)
+
         explanations: Dict[str, torch.Tensor] = {}
         for explainer_name in self.explainer_map:
-            explanations[explainer_name] = self.explainer_map[  # type: ignore
+            explanations[explainer_name] = self.explainer_map[
                 explainer_name
             ].calculate_features(
                 model=self.model,
-                input_data=args,
+                input_data=input_tensor,
                 pred_label_idx=self.target,
             )
 
@@ -157,7 +162,7 @@ if __name__ == "__main__":
             x_tensor = self.sigmoid(x_tensor)
             return x_tensor
 
-    classifier: torch.nn.Module = SampleModel(in_channels=1).eval()
+    classifier: SampleModel = SampleModel(in_channels=1).eval()
     input_image: PngImageFile = Image.open("./example/images/pikachu_image.png")
     transform = transforms.Compose(
         [

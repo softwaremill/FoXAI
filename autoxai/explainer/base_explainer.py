@@ -11,6 +11,7 @@ from captum.attr import visualization as viz
 class CVExplainer(ABC):
     """Abstract explainer class."""
 
+    # TODO: add support in explainer for multiple input models
     @abstractmethod
     def calculate_features(
         self,
