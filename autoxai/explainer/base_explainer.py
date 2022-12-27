@@ -1,10 +1,35 @@
 """Abstract Explainer class."""
+import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import List
 
 import matplotlib
 import numpy as np
 import torch
 from captum.attr import visualization as viz
+
+from autoxai.logger import create_logger
+
+_LOGGER: logging.Logger | None = None
+
+
+def log() -> logging.Logger:
+    """Get or create logger."""
+    # pylint: disable = global-statement
+    global _LOGGER
+    if _LOGGER is None:
+        _LOGGER = create_logger(__name__)
+    return _LOGGER
+
+
+@dataclass
+class ExplanationMethods:
+    """Holder for the explainer attributes visualization method."""
+
+    method: viz.ImageVisualizationMethod
+    sign: viz.VisualizeSign
+    title: str
 
 
 class CVExplainer(ABC):
@@ -80,17 +105,50 @@ class CVExplainer(ABC):
         if len(transformed_img.shape) >= 3:
             transformed_img_np = np.transpose(transformed_img_np, (1, 2, 0))
 
+        explanation_methods: List[ExplanationMethods] = [
+            ExplanationMethods(
+                method=viz.ImageVisualizationMethod.original_image,
+                sign=viz.VisualizeSign.all,
+                title="Original image",
+            )
+        ]
+
+        # check whether we can explain model with positive and negative attributes
+        if np.any(attributions_np > 0):
+            explanation_methods.append(
+                ExplanationMethods(
+                    method=viz.ImageVisualizationMethod.heat_map,
+                    sign=viz.VisualizeSign.positive,
+                    title="Positive attributes",
+                )
+            )
+        else:
+            log().info(msg="No positive attributes in the explained model.")
+        if np.any(attributions_np < 0):
+            explanation_methods.append(
+                ExplanationMethods(
+                    method=viz.ImageVisualizationMethod.heat_map,
+                    sign=viz.VisualizeSign.negative,
+                    title="Negative attributes",
+                )
+            )
+        else:
+            log().info(msg="No negative attributes in the explained model.")
+        if np.any(attributions_np != 0):
+            explanation_methods.append(
+                ExplanationMethods(
+                    method=viz.ImageVisualizationMethod.heat_map,
+                    sign=viz.VisualizeSign.all,
+                    title="All attributes",
+                )
+            )
+
         figure, _ = viz.visualize_image_attr_multiple(
             attr=attributions_np,
             original_image=transformed_img_np,
-            methods=["original_image", "heat_map", "heat_map", "heat_map"],
-            signs=["all", "positive", "negative", "all"],
-            titles=[
-                "Original image",
-                "Positive attributes",
-                "Negative attributes",
-                "All attributes",
-            ],
+            methods=[explanation.method.name for explanation in explanation_methods],
+            signs=[explanation.sign.name for explanation in explanation_methods],
+            titles=[explanation.title for explanation in explanation_methods],
             show_colorbar=True,
             use_pyplot=False,
         )
