@@ -1,5 +1,6 @@
 """Abstract Explainer class."""
 from abc import ABC, abstractmethod
+from typing import TypeVar
 
 import matplotlib
 import numpy as np
@@ -28,6 +29,7 @@ class CVExplainer(ABC):
         Returns:
             Tensor of attributes.
         """
+        pass
 
     @property
     def algorithm_name(self) -> str:
@@ -96,3 +98,7 @@ class CVExplainer(ABC):
         )
 
         return figure
+
+
+CVExplainerT = TypeVar("CVExplainerT", bound=CVExplainer)
+"""CVExplainer subclass type."""

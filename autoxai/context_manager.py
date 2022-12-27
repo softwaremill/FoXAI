@@ -19,7 +19,7 @@ from autoxai import explainer
 
 # TODO: does someone know why mypy and pylint is complaining?
 # pylint: disable = no-name-in-module
-from autoxai.explainer.base_explainer import CVExplainerT  # type: ignore
+from autoxai.explainer.base_explainer import CVExplainerT
 
 
 class Explainers(Enum):
@@ -67,7 +67,7 @@ class AutoXaiExplainer:
         if not explainers:
             raise ValueError("At leas one explainer should be defined.")
 
-        self.explainer_map: Dict[str, CVExplainerT] = {
+        self.explainer_map: Dict[str, CVExplainerT] = {  # type: ignore
             explainer_name.name: getattr(explainer, explainer_name.value)()
             for explainer_name in explainers
         }
@@ -96,6 +96,11 @@ class AutoXaiExplainer:
     def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, torch.Tensor]]:
         """Run model prediction and explain the model with given explainers.
 
+        Explainers and model are defined as the class parameter.
+
+        Args:
+            list of arguments for the torch.nn.Module forward method.
+
         Return:
             the model output and explanations for each requested explainer.
         """
@@ -103,7 +108,7 @@ class AutoXaiExplainer:
 
         explanations: Dict[str, torch.Tensor] = {}
         for explainer_name in self.explainer_map:
-            explanations[explainer_name] = self.explainer_map[
+            explanations[explainer_name] = self.explainer_map[  # type: ignore
                 explainer_name
             ].calculate_features(
                 model=self.model,
