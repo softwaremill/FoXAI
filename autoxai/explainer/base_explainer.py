@@ -6,8 +6,6 @@ import numpy as np
 import torch
 from captum.attr import visualization as viz
 
-from autoxai.explainer.model_utils import standardize_matrix
-
 
 class CVExplainer(ABC):
     """Abstract explainer class."""
@@ -81,9 +79,6 @@ class CVExplainer(ABC):
             attributions_np = np.transpose(attributions_np, (1, 2, 0))
         if len(transformed_img.shape) >= 3:
             transformed_img_np = np.transpose(transformed_img_np, (1, 2, 0))
-
-        attributions_np = standardize_matrix(matrix=attributions_np)
-        transformed_img_np = standardize_matrix(matrix=transformed_img_np)
 
         figure, _ = viz.visualize_image_attr_multiple(
             attr=attributions_np,

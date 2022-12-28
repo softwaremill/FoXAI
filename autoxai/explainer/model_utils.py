@@ -1,6 +1,5 @@
 """File contains functions to modifiy DNN models."""
 
-import numpy as np
 import torch
 
 
@@ -21,15 +20,3 @@ def modify_modules(model: torch.nn.Module) -> torch.nn.Module:
             module.inplace = False
 
     return model
-
-
-def standardize_matrix(matrix: np.ndarray) -> np.ndarray:
-    """Standardize matrix to range [0-1].
-
-    Args:
-        matrix: Any matrix.
-
-    Returns:
-        Standardize matrix.
-    """
-    return (matrix - np.min(matrix)) / np.max(matrix)
