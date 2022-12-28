@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from captum.attr import visualization as viz
 
+from autoxai.array_utils import convert_float_to_uint8
+
 
 class CVExplainer(ABC):
     """Abstract explainer class."""
@@ -81,8 +83,8 @@ class CVExplainer(ABC):
             transformed_img_np = np.transpose(transformed_img_np, (1, 2, 0))
 
         figure, _ = viz.visualize_image_attr_multiple(
-            attr=transformed_img_np,
-            original_image=transformed_img_np,
+            attr=attributions_np,
+            original_image=convert_float_to_uint8(array=transformed_img_np),
             methods=["original_image", "heat_map", "heat_map", "heat_map"],
             signs=["all", "positive", "negative", "all"],
             titles=[
@@ -96,17 +98,3 @@ class CVExplainer(ABC):
         )
 
         return figure
-
-
-def convert_float_to_uint8(array: np.ndarray) -> np.ndarray:
-    """Convert numpy array with float values to uint8 with scaled values.
-
-    Args:
-        array: Numpy array with float values.
-
-    Returns:
-        Numpy array with scaled values in uint8.
-    """
-    return (((array - np.min(array)) / (np.max(array) - np.min(array))) * 255).astype(
-        np.uint8
-    )
