@@ -14,7 +14,7 @@ class CVExplainer(ABC):
     def calculate_features(
         self,
         model: torch.nn.Module,
-        input_data: torch.Tensor,
+        input_data: torch.Tensor,  # TODO: add more generic way of passing model inputs # pylint: disable = (fixme)
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
@@ -94,5 +94,4 @@ class CVExplainer(ABC):
             show_colorbar=True,
             use_pyplot=False,
         )
-
         return figure

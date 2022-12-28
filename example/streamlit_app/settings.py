@@ -16,6 +16,6 @@ class Settings:  # pylint: disable = (too-few-public-methods)
     sample_name_key: str = "sample_name"
     epoch_number_key: str = "epoch_number"
     date_selectbox_key: str = "date_selectbox"
-    selected_layer_key: str = "selected_layer"
+    selected_layer_key: str = "layer"
     model_layers_key: str = "model_layers"
     explain_key: str = "explain"

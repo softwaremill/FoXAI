@@ -3,10 +3,21 @@
 from enum import Enum
 from typing import Optional
 
+from autoxai.explainer.conductance import LayerConductanceCVExplainer
+from autoxai.explainer.deconv import DeconvolutionCVExplainer
+from autoxai.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
+from autoxai.explainer.deeplift_shap import (
+    DeepLIFTSHAPCVExplainer,
+    LayerDeepLIFTSHAPCVExplainer,
+)
 from autoxai.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
 from autoxai.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
+)
+from autoxai.explainer.input_x_gradient import (
+    InputXGradientCVExplainer,
+    LayerInputXGradientCVExplainer,
 )
 from autoxai.explainer.integrated_gradients import (
     IntegratedGradientsCVExplainer,
@@ -18,10 +29,11 @@ from autoxai.explainer.noise_tunnel import (
     NoiseTunnelCVExplainer,
 )
 from autoxai.explainer.occulusion import OcculusionCVExplainer
+from autoxai.explainer.saliency import SaliencyCVExplainer
 
 
 class MethodName(Enum):
-    """XAI algorithm names."""
+    """XAI algorithms names."""
 
     OCCULUSION = OcculusionCVExplainer().algorithm_name
     NOISE_TUNNEL = NoiseTunnelCVExplainer().algorithm_name
@@ -34,6 +46,15 @@ class MethodName(Enum):
     LAYER_GRAD_CAM = LayerGradCAMCVExplainer().algorithm_name
     INTEGRATED_GRADIENTS = IntegratedGradientsCVExplainer().algorithm_name
     LAYER_INTEGRATED_GRADIENTS = LayerIntegratedGradientsCVExplainer().algorithm_name
+    SALIENCY = SaliencyCVExplainer().algorithm_name
+    DEEP_LIFT = DeepLIFTCVExplainer().algorithm_name
+    LAYER_DEEP_LIFT = LayerDeepLIFTCVExplainer().algorithm_name
+    DEEP_LIFT_SHAP = DeepLIFTSHAPCVExplainer().algorithm_name
+    LAYER_DEEP_LIFT_SHAP = LayerDeepLIFTSHAPCVExplainer().algorithm_name
+    DECONVOLUTION = DeconvolutionCVExplainer().algorithm_name
+    INPUT_X_GRADIENT = InputXGradientCVExplainer().algorithm_name
+    LAYER_INPUT_X_GRADIENT = LayerInputXGradientCVExplainer().algorithm_name
+    LAYER_CONDUCTANCE = LayerConductanceCVExplainer().algorithm_name
 
     @classmethod
     def from_string(cls, name: str) -> "MethodName":

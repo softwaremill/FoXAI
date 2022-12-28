@@ -21,10 +21,21 @@ from visualization_utils import (  # pylint: disable = (import-error)
 )
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.conductance import LayerConductanceCVExplainer
+from autoxai.explainer.deconv import DeconvolutionCVExplainer
+from autoxai.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
+from autoxai.explainer.deeplift_shap import (
+    DeepLIFTSHAPCVExplainer,
+    LayerDeepLIFTSHAPCVExplainer,
+)
 from autoxai.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
 from autoxai.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
+)
+from autoxai.explainer.input_x_gradient import (
+    InputXGradientCVExplainer,
+    LayerInputXGradientCVExplainer,
 )
 from autoxai.explainer.integrated_gradients import (
     IntegratedGradientsCVExplainer,
@@ -36,6 +47,7 @@ from autoxai.explainer.noise_tunnel import (
     NoiseTunnelCVExplainer,
 )
 from autoxai.explainer.occulusion import OcculusionCVExplainer
+from autoxai.explainer.saliency import SaliencyCVExplainer
 
 cache_path = os.environ.get("LOGDIR", "logs")
 
@@ -51,6 +63,15 @@ explainer_list = [
     LayerGradientSHAPCVExplainer(),
     LayerLRPCVExplainer(),
     LayerGradCAMCVExplainer(),
+    SaliencyCVExplainer(),
+    DeepLIFTCVExplainer(),
+    LayerDeepLIFTCVExplainer(),
+    DeepLIFTSHAPCVExplainer(),
+    LayerDeepLIFTSHAPCVExplainer(),
+    DeconvolutionCVExplainer(),
+    InputXGradientCVExplainer(),
+    LayerInputXGradientCVExplainer(),
+    LayerConductanceCVExplainer(),
 ]
 
 explainer_map = {entry.algorithm_name: entry for entry in explainer_list}
@@ -60,9 +81,12 @@ layer_explainers = [
     LayerGradientSHAPCVExplainer,
     LayerIntegratedGradientsCVExplainer,
     LayerLRPCVExplainer,
+    LayerDeepLIFTCVExplainer,
+    LayerDeepLIFTSHAPCVExplainer,
+    LayerInputXGradientCVExplainer,
+    LayerConductanceCVExplainer,
     GuidedGradCAMCVExplainer,
 ]
-
 
 method_list = [e.value for e in MethodName]
 
