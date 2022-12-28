@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-from src.explainer.base_explainer import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
 
 
 def convert_figure_to_numpy(figure: matplotlib.pyplot.Figure) -> np.ndarray:

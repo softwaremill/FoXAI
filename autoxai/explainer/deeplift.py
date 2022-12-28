@@ -1,21 +1,20 @@
-"""File with Input X Gradient algorithm explainer classes."""
+"""File with DeepLIFT algorithm explainer classes."""
 
 from abc import abstractmethod
 from typing import Optional, Union
 
 import torch
-from captum.attr import InputXGradient, LayerGradientXActivation
+from captum.attr import DeepLift, LayerDeepLift
 
-from src.explainer.base_explainer import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
-class BaseInputXGradientSHAPCVExplainer(CVExplainer):
-    """Base Input X Gradient algorithm explainer."""
+class BaseDeepLIFTCVExplainer(CVExplainer):
+    """Base DeepLIFT algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(
-        self, **kwargs
-    ) -> Union[InputXGradient, LayerGradientXActivation]:
+    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Raises:
@@ -32,7 +31,7 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Input X Gradient algorithm explainer.
+        """Generate features image with DeepLIFT algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -44,21 +43,24 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        input_x_gradient = self.create_explainer(model=model, layer=layer)
+        deeplift = self.create_explainer(model=model, layer=layer)
 
-        attributions = input_x_gradient.attribute(
+        attributions = deeplift.attribute(
             input_data,
             target=pred_label_idx,
         )
+        if attributions.shape[0] == 0:
+            raise RuntimeError(
+                "Error occured during attribution calculation. "
+                + "Make sure You are applying this method to CNN network.",
+            )
         return attributions
 
 
-class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
-    """Input X Gradient algorithm explainer."""
+class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """DeepLIFTC algorithm explainer."""
 
-    def create_explainer(
-        self, **kwargs
-    ) -> Union[InputXGradient, LayerGradientXActivation]:
+    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Raises:
@@ -71,15 +73,15 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
-        return InputXGradient(forward_func=model)
+        model = modify_modules(model)
+
+        return DeepLift(model=model)
 
 
-class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
-    """Layer Input X Gradient algorithm explainer."""
+class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """Layer DeepLIFT algorithm explainer."""
 
-    def create_explainer(
-        self, **kwargs
-    ) -> Union[InputXGradient, LayerGradientXActivation]:
+    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Raises:
@@ -95,4 +97,6 @@ class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
                 f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
-        return LayerGradientXActivation(forward_func=model, layer=layer)
+        model = modify_modules(model)
+
+        return LayerDeepLift(model=model, layer=layer)

@@ -3,33 +3,33 @@
 from enum import Enum
 from typing import Optional
 
-from src.explainer.conductance import LayerConductanceCVExplainer
-from src.explainer.deconv import DeconvolutionCVExplainer
-from src.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
-from src.explainer.deeplift_shap import (
+from autoxai.explainer.conductance import LayerConductanceCVExplainer
+from autoxai.explainer.deconv import DeconvolutionCVExplainer
+from autoxai.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
+from autoxai.explainer.deeplift_shap import (
     DeepLIFTSHAPCVExplainer,
     LayerDeepLIFTSHAPCVExplainer,
 )
-from src.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
-from src.explainer.gradient_shap import (
+from autoxai.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
+from autoxai.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
 )
-from src.explainer.input_x_gradient import (
+from autoxai.explainer.input_x_gradient import (
     InputXGradientCVExplainer,
     LayerInputXGradientCVExplainer,
 )
-from src.explainer.integrated_gradients import (
+from autoxai.explainer.integrated_gradients import (
     IntegratedGradientsCVExplainer,
     LayerIntegratedGradientsCVExplainer,
 )
-from src.explainer.lrp import LayerLRPCVExplainer, LRPCVExplainer
-from src.explainer.noise_tunnel import (
+from autoxai.explainer.lrp import LayerLRPCVExplainer, LRPCVExplainer
+from autoxai.explainer.noise_tunnel import (
     LayerNoiseTunnelCVExplainer,
     NoiseTunnelCVExplainer,
 )
-from src.explainer.occulusion import OcculusionCVExplainer
-from src.explainer.saliency import SaliencyCVExplainer
+from autoxai.explainer.occulusion import OcculusionCVExplainer
+from autoxai.explainer.saliency import SaliencyCVExplainer
 
 
 class MethodName(Enum):

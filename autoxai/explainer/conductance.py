@@ -5,7 +5,7 @@ from typing import Optional
 import torch
 from captum.attr import LayerConductance
 
-from src.explainer.base_explainer import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
 
 
 class LayerConductanceCVExplainer(CVExplainer):

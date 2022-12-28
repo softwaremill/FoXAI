@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from captum.attr import visualization as viz
 
-from src.explainer.model_utils import standardize_matrix
+from autoxai.explainer.model_utils import standardize_matrix
 
 
 class CVExplainer(ABC):

@@ -6,8 +6,8 @@ from typing import Optional, Union
 import torch
 from captum.attr import Deconvolution, NeuronDeconvolution
 
-from src.explainer.base_explainer import CVExplainer
-from src.explainer.model_utils import modify_modules
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
 class BaseDeconvolutionCVExplainer(CVExplainer):

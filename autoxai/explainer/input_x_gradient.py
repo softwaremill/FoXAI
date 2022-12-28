@@ -1,21 +1,21 @@
-"""File with Integrated Gradients algorithm explainer classes."""
+"""File with Input X Gradient algorithm explainer classes."""
 
 from abc import abstractmethod
 from typing import Optional, Union
 
 import torch
-from captum.attr import IntegratedGradients, LayerIntegratedGradients
+from captum.attr import InputXGradient, LayerGradientXActivation
 
-from src.explainer.base_explainer import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
 
 
-class BaseIntegratedGradientsCVExplainer(CVExplainer):
-    """Base Integrated Gradients algorithm explainer."""
+class BaseInputXGradientSHAPCVExplainer(CVExplainer):
+    """Base Input X Gradient algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
         self, **kwargs
-    ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
+    ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
 
         Raises:
@@ -32,33 +32,33 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Integrated Gradients algorithm explainer.
+        """Generate features image with Input X Gradient algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
-            layer: Layer from DNN to explain.
             input_data: Input image.
             pred_label_idx: Predicted label.
 
         Returns:
             Features matrix.
         """
-        n_steps = kwargs.get("n_steps", 100)
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        integrated_gradients = self.create_explainer(model=model, layer=layer)
-        attributions = integrated_gradients.attribute(
-            input_data, target=pred_label_idx, n_steps=n_steps
+        input_x_gradient = self.create_explainer(model=model, layer=layer)
+
+        attributions = input_x_gradient.attribute(
+            input_data,
+            target=pred_label_idx,
         )
         return attributions
 
 
-class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
-    """Integrated Gradients algorithm explainer."""
+class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
+    """Input X Gradient algorithm explainer."""
 
     def create_explainer(
         self, **kwargs
-    ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
+    ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
 
         Raises:
@@ -71,15 +71,15 @@ class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
-        return IntegratedGradients(forward_func=model)
+        return InputXGradient(forward_func=model)
 
 
-class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
-    """Layer Integrated Gradients algorithm explainer."""
+class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
+    """Layer Input X Gradient algorithm explainer."""
 
     def create_explainer(
         self, **kwargs
-    ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
+    ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
 
         Raises:
@@ -95,4 +95,4 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
                 f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
-        return LayerIntegratedGradients(forward_func=model, layer=layer)
+        return LayerGradientXActivation(forward_func=model, layer=layer)

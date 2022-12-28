@@ -1,20 +1,20 @@
-"""File with DeepLIFT algorithm explainer classes."""
+"""File with DeepLIFT SHAP algorithm explainer classes."""
 
 from abc import abstractmethod
 from typing import Optional, Union
 
 import torch
-from captum.attr import DeepLift, LayerDeepLift
+from captum.attr import DeepLiftShap, LayerDeepLiftShap
 
-from src.explainer.base_explainer import CVExplainer
-from src.explainer.model_utils import modify_modules
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
-class BaseDeepLIFTCVExplainer(CVExplainer):
-    """Base DeepLIFT algorithm explainer."""
+class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
+    """Base DeepLIFT SHAP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
+    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -31,7 +31,7 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with DeepLIFT algorithm explainer.
+        """Generate features image with DeepLIFT SHAP algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -42,12 +42,19 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
             Features matrix.
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        number_of_samples: int = kwargs.get("number_of_samples", 100)
 
         deeplift = self.create_explainer(model=model, layer=layer)
-
+        baselines = torch.randn(  # pylint: disable = (no-member)
+            number_of_samples,
+            input_data.shape[1],
+            input_data.shape[2],
+            input_data.shape[3],
+        )
         attributions = deeplift.attribute(
             input_data,
             target=pred_label_idx,
+            baselines=baselines,
         )
         if attributions.shape[0] == 0:
             raise RuntimeError(
@@ -57,10 +64,10 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
         return attributions
 
 
-class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
-    """DeepLIFTC algorithm explainer."""
+class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
+    """DeepLIFTC SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
+    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -75,13 +82,13 @@ class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
 
         model = modify_modules(model)
 
-        return DeepLift(model=model)
+        return DeepLiftShap(model=model)
 
 
-class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
-    """Layer DeepLIFT algorithm explainer."""
+class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
+    """Layer DeepLIFT SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
+    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -99,4 +106,4 @@ class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
 
         model = modify_modules(model)
 
-        return LayerDeepLift(model=model, layer=layer)
+        return LayerDeepLiftShap(model=model, layer=layer)

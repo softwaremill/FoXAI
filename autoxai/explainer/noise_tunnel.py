@@ -1,20 +1,19 @@
-"""File with LRP algorithm explainer classes."""
+"""File with Noise Tunnel algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Optional, Union
+from typing import Optional
 
 import torch
-from captum.attr import LRP, LayerLRP
+from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
-from src.explainer.base_explainer import CVExplainer
-from src.explainer.model_utils import modify_modules
+from autoxai.explainer.occulusion import CVExplainer
 
 
-class BaseLRPCVExplainer(CVExplainer):
-    """Base LRP algorithm explainer."""
+class BaseNoiseTunnelCVExplainer(CVExplainer):
+    """Base Noise Tunnel algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
+    def create_explainer(self, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
         Raises:
@@ -31,7 +30,7 @@ class BaseLRPCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with LRP algorithm explainer.
+        """Generate features image with Noise Tunnel algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -41,21 +40,22 @@ class BaseLRPCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
+        nt_samples: int = kwargs.get("nt_samples", 10)
+        nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        lrp = self.create_explainer(model=model, layer=layer)
+        noise_tunnel = self.create_explainer(model=model, layer=layer)
 
-        attributions = lrp.attribute(
-            input_data,
-            target=pred_label_idx,
+        attributions = noise_tunnel.attribute(
+            input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
         )
         return attributions
 
 
-class LRPCVExplainer(BaseLRPCVExplainer):
-    """LRP algorithm explainer."""
+class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
+    """Noise Tunnel algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
+    def create_explainer(self, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
         Raises:
@@ -68,15 +68,14 @@ class LRPCVExplainer(BaseLRPCVExplainer):
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
-        model = modify_modules(model)
+        integrated_gradients = IntegratedGradients(forward_func=model)
+        return NoiseTunnel(integrated_gradients)
 
-        return LRP(model=model)
 
+class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
+    """Layer Noise Tunnel algorithm explainer."""
 
-class LayerLRPCVExplainer(BaseLRPCVExplainer):
-    """Layer LRP algorithm explainer."""
-
-    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
+    def create_explainer(self, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
         Raises:
@@ -92,6 +91,5 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
                 f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
-        model = modify_modules(model)
-
-        return LayerLRP(model=model, layer=layer)
+        integrated_gradients = LayerIntegratedGradients(forward_func=model, layer=layer)
+        return NoiseTunnel(integrated_gradients)

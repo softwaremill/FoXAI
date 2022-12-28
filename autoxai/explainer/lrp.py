@@ -1,19 +1,20 @@
-"""File with Gradient SHAP algorithm explainer classes."""
+"""File with LRP algorithm explainer classes."""
 
 from abc import abstractmethod
 from typing import Optional, Union
 
 import torch
-from captum.attr import GradientShap, LayerGradientShap
+from captum.attr import LRP, LayerLRP
 
-from src.explainer.base_explainer import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
-class BaseGradientSHAPCVExplainer(CVExplainer):
-    """Base Gradient SHAP algorithm explainer."""
+class BaseLRPCVExplainer(CVExplainer):
+    """Base LRP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -30,7 +31,7 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Gradient SHAP algorithm explainer.
+        """Generate features image with LRP algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -40,31 +41,21 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        stdevs: float = kwargs.get("stdevs", 0.0001)
-        n_samples: int = kwargs.get("n_samples", 50)
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        gradient_shap = self.create_explainer(model=model, layer=layer)
+        lrp = self.create_explainer(model=model, layer=layer)
 
-        # Defining baseline distribution of images
-        rand_img_dist = torch.cat(  # pylint: disable = (no-member,duplicate-code)
-            [input_data * 0, input_data * 1]
-        )
-
-        attributions = gradient_shap.attribute(
+        attributions = lrp.attribute(
             input_data,
-            n_samples=n_samples,
-            stdevs=stdevs,
-            baselines=rand_img_dist,
             target=pred_label_idx,
         )
         return attributions
 
 
-class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
-    """Gradient SHAP algorithm explainer."""
+class LRPCVExplainer(BaseLRPCVExplainer):
+    """LRP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -77,13 +68,15 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
-        return GradientShap(forward_func=model)
+        model = modify_modules(model)
+
+        return LRP(model=model)
 
 
-class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
-    """Layer Gradient SHAP algorithm explainer."""
+class LayerLRPCVExplainer(BaseLRPCVExplainer):
+    """Layer LRP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -99,4 +92,6 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
                 f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
-        return LayerGradientShap(forward_func=model, layer=layer)
+        model = modify_modules(model)
+
+        return LayerLRP(model=model, layer=layer)
