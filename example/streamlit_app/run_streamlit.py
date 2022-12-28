@@ -1,7 +1,7 @@
 """File with app entry point and functions to display widgets and views."""
 
 import os
-from typing import Any, Dict, cast
+from typing import Any, Dict, Optional, cast
 
 import numpy as np
 import streamlit as st
@@ -60,6 +60,7 @@ layer_explainers = [
     LayerGradientSHAPCVExplainer,
     LayerIntegratedGradientsCVExplainer,
     LayerLRPCVExplainer,
+    GuidedGradCAMCVExplainer,
 ]
 
 
@@ -113,7 +114,7 @@ def generate_feature_map(
     experiment_hash: str,
     model: Any,
     **kwargs,
-) -> np.ndarray:
+) -> Optional[np.ndarray]:
     """Generate explanation for given model and given input data sample.
 
     Args:
@@ -143,16 +144,27 @@ def generate_feature_map(
     if len(original_data.shape) == 3:
         original_data = original_data[None, :]
 
-    attributions = explainer.calculate_features(
-        model=model,
-        input_data=input_data,
-        pred_label_idx=st.session_state[Settings.target_class_index],
-        **kwargs,
-    )
+    try:
+        attributions = explainer.calculate_features(
+            model=model,
+            input_data=input_data,
+            pred_label_idx=st.session_state[Settings.target_class_index],
+            **kwargs,
+        )
+    except TypeError as exception:
+        st.error(f"Error occured in explanation: {exception}. Try another data sample.")
+        return None
 
-    figure = CVExplainer.visualize(
-        attributions=attributions, transformed_img=original_data
-    )
+    try:
+        figure = CVExplainer.visualize(
+            attributions=attributions, transformed_img=original_data
+        )
+    except AssertionError as exception:
+        st.error(
+            f"Error occured in drawing attribution heat maps: {exception}. Try another data sample."
+        )
+        return None
+
     return convert_figure_to_numpy(figure)
 
 
@@ -310,7 +322,8 @@ def main_view() -> None:
                         model=model,
                         **kwargs if kwargs else kwargs,
                     )
-                    st.image(image)
+                    if image is not None:
+                        st.image(image)
         else:
             image = generate_feature_map(
                 explainer=explainer_map[method.value],
@@ -319,7 +332,8 @@ def main_view() -> None:
                 model=model,
                 **kwargs if kwargs else kwargs,
             )
-            st.image(image)
+            if image is not None:
+                st.image(image)
 
 
 def main() -> None:
