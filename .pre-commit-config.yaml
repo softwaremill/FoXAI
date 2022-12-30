@@ -32,6 +32,7 @@ repos:
         files: autoxai
         types: [ python ]
         entry: poetry run mypy
+        args: ["--ignore-missing-imports"]
       - id: locks
         name: Update locks
         files: pyproject.toml

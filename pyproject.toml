@@ -14,6 +14,7 @@ torch = {version='1.12.1+cu102',source="pytorch"}
 torchvision = {version='0.13.1+cu102',source="pytorch"}
 pytorch-lightning = "1.5.0"
 torchmetrics = "0.11.0"
+wandb = "^0.13.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.10.0"
