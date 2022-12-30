@@ -8,9 +8,7 @@ import torch
 from pytorch_lightning.loggers import WandbLogger
 
 import wandb
-from autoxai.cache_manager import LocalDirCacheManager
 from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.path_manager import ExperimentDataClass
 
 
 class WandBCallback(pl.callbacks.Callback):
@@ -21,28 +19,25 @@ class WandBCallback(pl.callbacks.Callback):
         wandb_logger: WandbLogger,
         explainers: List[CVExplainer],
         idx_to_label: Dict[int, str],
-        experiment: Optional[ExperimentDataClass] = None,
-        cache_manager: Optional[LocalDirCacheManager] = None,
         max_artifacts: int = 20,
     ):
         """Initialize Callback class.
 
         Args:
+            wandb_logger: Pytorch-lightning wandb logger.
             idx_to_label: Index to label mapping.
-            experiment: Helper object for creating paths to store artifacts.
-            cache_manager: Helper class to store artifacts in log direcotry.
+            explaienrs: List of explainer algorithms.
+            idx_to_label: Dictionary with mapping from model index to label.
+            max_artifacts: Number of maximum number of artifacts to be logged.
         """
         super().__init__()
-        self.experiment = experiment
         self.explainers = explainers
-        self.cache_manager = cache_manager
         self.wandb_logger = wandb_logger
         self.idx_to_label = idx_to_label
         self.max_artifacts = max_artifacts
 
     def _save_idx_mapping(self) -> None:
         """Saving index to label mapping to experiment logs directory."""
-        # if self.cache_manager is not None and self.experiment is not None:
         self.wandb_logger.log_table(
             key="idx2label",
             columns=["index", "label"],
@@ -59,7 +54,7 @@ class WandBCallback(pl.callbacks.Callback):
             max_items: Max items to return.
 
         Yields:
-            Generator of tuples containing training sample and label.
+            Tuple containing training sample and corresponding label.
         """
         index: int = 0
         for dataloader in dataloader_list:
@@ -88,8 +83,8 @@ class WandBCallback(pl.callbacks.Callback):
         """Calculate explainer attributes, creates captions and figures.
 
         Args:
-            pl_module: Model module.
-            item: Input tensor.
+            pl_module: Model to explain.
+            item: Input data sample tensor.
             prediction: Sample label.
             attributes_dict: List of attributes for every explainer and sample.
             caption_dict: List of captions for every explainer and sample.
@@ -120,7 +115,7 @@ class WandBCallback(pl.callbacks.Callback):
         trainer: pl.Trainer,
         pl_module: pl.LightningModule,  # pylint: disable = (unused-argument)
     ) -> None:
-        """Save index to labels mapping and validation samples to log directory
+        """Save index to labels mapping and validation samples to experiment
         before `fit`.
 
         Args:
