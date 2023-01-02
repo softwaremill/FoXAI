@@ -10,11 +10,12 @@ packages = [{include = "autoxai"}]
 python = "^3.8,<3.11,!=3.9.7"
 numpy = "1.23.4"
 captum = "0.5.0"
-torch = {version='1.12.1+cu102',source="pytorch"}
-torchvision = {version='0.13.1+cu102',source="pytorch"}
+torch = {url='https://download.pytorch.org/whl/cu102/torch-1.12.1%2Bcu102-cp38-cp38-linux_x86_64.whl'}
+torchvision = {url='https://download.pytorch.org/whl/cu102/torchvision-0.13.1%2Bcu102-cp38-cp38-linux_x86_64.whl'}
 pytorch-lightning = "1.5.0"
 torchmetrics = "0.11.0"
 wandb = "^0.13.7"
+pandas = "^1.5.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.10.0"
@@ -25,11 +26,8 @@ mypy = "0.982"
 Pillow = "9.3.0"
 streamlit = "1.16.0"
 
-[[tool.poetry.source]]
-name = "pytorch"
-url = "https://download.pytorch.org/whl/cu102"
-secondary = true
-default = false
+[tool.poetry.scripts]
+autoxai-wandb-updater = "autoxai.cli.experiment_update:main"
 
 [build-system]
 requires = ["poetry-core"]

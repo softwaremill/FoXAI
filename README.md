@@ -88,6 +88,16 @@ from autoxai.explainer.integrated_gradients import IntegratedGradientsCVExplaine
     trainer.fit(model)
 ```
 
+## CLI
+
+A CLI tool is available to update the artifacts of an experiment tracked in
+Weights and Biases. Allows you to create XAI explanations and send them to
+W&B offline. To check options type:
+
+```bash
+autoxai-wandb-updater --help
+```
+
 # Development
 
 ## Requirements
