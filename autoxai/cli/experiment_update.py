@@ -1,8 +1,6 @@
 """File contains CLI application for updating W&B experiment artifacts."""
 
 import argparse
-
-# from example.streamlit_app.mnist_model import LitMNIST
 import importlib
 import os
 from typing import Any, Dict, List
