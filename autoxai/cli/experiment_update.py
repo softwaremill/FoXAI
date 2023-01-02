@@ -220,6 +220,10 @@ def main() -> None:  # pylint: disable = (too-many-locals)
     sorted_paths = sorted(
         model_paths, key=lambda x: int(x.split("/")[-2].split(":v")[-1])
     )
+    # filter out artifacts from different runs
+    sorted_paths = [
+        val for val in sorted_paths if args.run_id in val.split("/")[-2].split(":")[0]
+    ]
     explainer = NoiseTunnelCVExplainer()
 
     for path in sorted_paths:
