@@ -2,6 +2,7 @@
 
 import argparse
 import importlib
+import json
 import os
 from typing import Any, Dict, List
 
@@ -11,7 +12,9 @@ import torch
 from torchvision.io import ImageReadMode, read_image
 
 import wandb
-from autoxai.explainer.noise_tunnel import NoiseTunnelCVExplainer
+from autoxai.cli.config_model import ConfigDataModel, MethodDataModel
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer_helper import get_explainer_class
 
 
 def parse_args() -> argparse.Namespace:
@@ -39,6 +42,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--run_id", dest="run_id", type=str, required=True, help="Run ID."
+    )
+    parser.add_argument(
+        "--config_path",
+        dest="config_path",
+        type=str,
+        required=True,
+        help="Path to config containing list of explainers to use and their parameters.",
     )
     parser.add_argument(
         "--import_path",
@@ -162,6 +172,27 @@ def get_model_class(import_path: str, class_name: str) -> pl.LightningModule:
     return model
 
 
+def load_config(path: str) -> ConfigDataModel:
+    """Load and validate config with explainers to apply.
+
+    Args:
+        path: Path to config JSON file.
+
+    Returns:
+        ConfigDataModel object.
+
+    Raises:
+        jsonschema.exceptions.SchemaError if config is invalid.
+    """
+    with open(path, "r", encoding="utf-8") as file:
+        config = json.load(file)
+
+    config_data = ConfigDataModel(
+        method_config_list=[MethodDataModel(**c) for c in config]
+    )
+    return config_data
+
+
 def main() -> None:  # pylint: disable = (too-many-locals)
     """Entry point for CLI application."""
     args = parse_args()
@@ -171,6 +202,8 @@ def main() -> None:  # pylint: disable = (too-many-locals)
         class_name=args.class_name,
     )
     wandb.login()
+
+    config: ConfigDataModel = load_config(path=args.config_path)
 
     # resume experiment run that has to be updated
     run = wandb.init(
@@ -222,21 +255,39 @@ def main() -> None:  # pylint: disable = (too-many-locals)
     sorted_paths = [
         val for val in sorted_paths if args.run_id in val.split("/")[-2].split(":")[0]
     ]
-    explainer = NoiseTunnelCVExplainer()
 
-    for path in sorted_paths:
-        model = model_class.load_from_checkpoint(path, batch_size=1, data_dir=".")
+    for explainer_config in config.method_config_list:
+        explainer: CVExplainer = get_explainer_class(
+            algorithm_name=explainer_config.name
+        )
+        artifact_name: str
+        if explainer_config.artifact_name is None:
+            artifact_name = explainer.algorithm_name
+        else:
+            artifact_name = explainer_config.artifact_name
 
-        explanations: List[wandb.Image] = []
-        for input_data, label in zip(image_list, labels):
-            attributes = explainer.calculate_features(
-                model=model,
-                input_data=input_data,
-                pred_label_idx=label,
-            )
-            explanations.append(wandb.Image(attributes, caption=f"label: {label}"))
+        for path in sorted_paths:
+            model = model_class.load_from_checkpoint(path, batch_size=1, data_dir=".")
 
-        wandb.log({explainer.algorithm_name: explanations})
+            explanations: List[wandb.Image] = []
+            for input_data, label in zip(image_list, labels):
+                try:
+                    attributes = explainer.calculate_features(
+                        model=model,
+                        input_data=input_data,
+                        pred_label_idx=label,
+                        **explainer_config.params,
+                    )
+                    explanations.append(
+                        wandb.Image(attributes, caption=f"label: {label}")
+                    )
+                except RuntimeError as exception:
+                    print(f"RuntimeError occured: {exception}. Skipping...")
+                except Exception as exception:  # pylint: disable = (broad-except)
+                    print(f"Unexcpected exception occured: {exception}. Skipping...")
+
+            if explanations:
+                wandb.log({artifact_name: explanations})
 
 
 if __name__ == "__main__":
