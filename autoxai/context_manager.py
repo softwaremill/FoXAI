@@ -139,7 +139,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
                 "calculate_features() functions \
                 in explainers does not support multiple inputs to the model."
             )
-        input_tensor: torch.Tensor = cast(torch.Tensor, args)
+        input_tensor: torch.Tensor = cast(torch.Tensor, args)[0]
 
         explanations: Dict[str, torch.Tensor] = {}
         for explainer_name in self.explainer_map:
