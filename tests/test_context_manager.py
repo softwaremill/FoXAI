@@ -1,5 +1,6 @@
 # pylint: disable = missing-class-docstring
 import logging
+from typing import List
 
 import numpy as np
 import pytest
@@ -117,9 +118,14 @@ class TestAutoXaiExplainer:
 
     @pytest.fixture
     def classifier(self) -> SampleModel:
+        """Sample model to run AutoXaiExplainer on."""
         return SampleModel()
 
     def test_evel_mode(self, classifier: SampleModel, caplog: pytest.LogCaptureFixture):
+        """Test whether AutoXaiExplainer correctly switches to eval mode
+        if the model was given in train mode and if the proper WARNING
+        massage if provided."""
+
         classifier.train()
         transform = transforms.Compose(
             [
@@ -141,3 +147,88 @@ class TestAutoXaiExplainer:
 
                 assert not xai_model.model.training
                 assert "The model should be in the eval model" in caplog.text
+
+    def test_no_explainers_given(self, classifier: torch.nn.Module):
+        """Test whether AutoXaiExplainer correctly raises error,
+        if explainers not provided.
+
+        There should be at least on explainer provided.
+        """
+
+        classifier.eval()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
+
+        with pytest.raises(ValueError):
+            with torch.no_grad():
+                with AutoXaiExplainer(
+                    model=classifier,
+                    explainers=[],
+                ) as xai_model:
+                    _, _ = xai_model(img_tensor)
+
+    def test_whether_output_match_requested_inputs(self, classifier: torch.nn.Module):
+        """Test whether AutoXaiExplainer returns explanations,
+        for each requested explainer.
+        """
+
+        classifier.eval()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
+
+        explainers: List[Explainers] = [
+            Explainers.CV_GRADIENT_SHAP_EXPLAINER,
+            Explainers.CV_NOISE_TUNNEL_EXPLAINER,
+            Explainers.CV_OCCLUSION_EXPLAINER,
+        ]
+        with torch.no_grad():
+            with AutoXaiExplainer(
+                model=classifier,
+                explainers=explainers,
+            ) as xai_model:
+                _, xai_explanations = xai_model(img_tensor)
+
+                assert list(map(lambda explainer: explainer.name, explainers)) == list(
+                    xai_explanations.keys()
+                )
+
+    def test_model_inference_with_explainer(self, classifier: torch.nn.Module):
+        """Test whether regular inference and inference with AutoXaiExplainer
+        gives same results.
+        """
+
+        classifier.eval()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
+
+        with torch.no_grad():
+            inference_output = classifier(img_tensor)
+
+            with AutoXaiExplainer(
+                model=classifier,
+                explainers=[Explainers.CV_NOISE_TUNNEL_EXPLAINER],
+            ) as xai_model:
+                autoxai_inference_output, _ = xai_model(img_tensor)
+
+                assert autoxai_inference_output == inference_output
