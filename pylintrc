@@ -6,6 +6,7 @@
 #   https://google.github.io/styleguide/pylintrc
 
 [MASTER]
+extension-pkg-whitelist=numpy,torch
 
 # Files or directories to be skipped. They should be base names, not paths.
 ignore=third_party
@@ -148,7 +149,8 @@ disable=abstract-method,
         zip-builtin-not-iterating,
         missing-module-docstring,
         logging-fstring-interpolation,
-        consider-using-dict-items
+        consider-using-dict-items,
+        missing-docstring-magic-method
 
 
 [REPORTS]
@@ -262,13 +264,12 @@ ignored-classes=optparse.Values,thread._local,_thread._local
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E1101 when accessed. Python regular
 # expressions are accepted.
-generated-members=
-
+generated-members=numpy.*,torch.*
 
 [FORMAT]
 
 # Maximum number of characters on a single line.
-max-line-length=98
+max-line-length=120
 
 # TODO(https://github.com/PyCQA/pylint/issues/3352): Direct pylint to exempt
 # lines made too long by directives to pytype.

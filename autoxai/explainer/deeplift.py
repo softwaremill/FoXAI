@@ -1,19 +1,20 @@
-"""File with Noise Tunnel algorithm explainer classes."""
+"""File with DeepLIFT algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 import torch
-from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
+from captum.attr import DeepLift, LayerDeepLift
 
-from autoxai.explainer.occulusion import CVExplainer
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
-class BaseNoiseTunnelCVExplainer(CVExplainer):
-    """Base Noise Tunnel algorithm explainer."""
+class BaseDeepLIFTCVExplainer(CVExplainer):
+    """Base DeepLIFT algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Raises:
@@ -30,7 +31,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Noise Tunnel algorithm explainer.
+        """Generate features image with DeepLIFT algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -40,22 +41,26 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        nt_samples: int = kwargs.get("nt_samples", 10)
-        nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        noise_tunnel = self.create_explainer(model=model, layer=layer)
+        deeplift = self.create_explainer(model=model, layer=layer)
 
-        attributions = noise_tunnel.attribute(
-            input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
+        attributions = deeplift.attribute(
+            input_data,
+            target=pred_label_idx,
         )
+        if attributions.shape[0] == 0:
+            raise RuntimeError(
+                "Error occured during attribution calculation. "
+                + "Make sure You are applying this method to CNN network.",
+            )
         return attributions
 
 
-class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
-    """Noise Tunnel algorithm explainer."""
+class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """DeepLIFTC algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Raises:
@@ -68,14 +73,15 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
-        integrated_gradients = IntegratedGradients(forward_func=model)
-        return NoiseTunnel(integrated_gradients)
+        model = modify_modules(model)
+
+        return DeepLift(model=model)
 
 
-class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
-    """Layer Noise Tunnel algorithm explainer."""
+class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """Layer DeepLIFT algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, **kwargs) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Raises:
@@ -91,5 +97,6 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
                 f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
-        integrated_gradients = LayerIntegratedGradients(forward_func=model, layer=layer)
-        return NoiseTunnel(integrated_gradients)
+        model = modify_modules(model)
+
+        return LayerDeepLift(model=model, layer=layer)

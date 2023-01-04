@@ -31,7 +31,7 @@ class BaseLRPCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with occulusion algorithm explainer.
+        """Generate features image with LRP algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -41,7 +41,7 @@ class BaseLRPCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
         lrp = self.create_explainer(model=model, layer=layer)
 
@@ -89,7 +89,7 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
-                f"Missing or `None` arguments `model` and `layer` passed: {kwargs}"
+                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
         model = modify_modules(model)

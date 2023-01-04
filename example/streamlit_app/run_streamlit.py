@@ -1,7 +1,7 @@
 """File with app entry point and functions to display widgets and views."""
 
 import os
-from typing import Any, Dict, cast
+from typing import Any, Dict, Optional, cast
 
 import numpy as np
 import streamlit as st
@@ -21,10 +21,21 @@ from visualization_utils import (  # pylint: disable = (import-error)
 )
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.conductance import LayerConductanceCVExplainer
+from autoxai.explainer.deconv import DeconvolutionCVExplainer
+from autoxai.explainer.deeplift import DeepLIFTCVExplainer, LayerDeepLIFTCVExplainer
+from autoxai.explainer.deeplift_shap import (
+    DeepLIFTSHAPCVExplainer,
+    LayerDeepLIFTSHAPCVExplainer,
+)
 from autoxai.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
 from autoxai.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
+)
+from autoxai.explainer.input_x_gradient import (
+    InputXGradientCVExplainer,
+    LayerInputXGradientCVExplainer,
 )
 from autoxai.explainer.integrated_gradients import (
     IntegratedGradientsCVExplainer,
@@ -36,6 +47,7 @@ from autoxai.explainer.noise_tunnel import (
     NoiseTunnelCVExplainer,
 )
 from autoxai.explainer.occulusion import OcculusionCVExplainer
+from autoxai.explainer.saliency import SaliencyCVExplainer
 
 cache_path = os.environ.get("LOGDIR", "logs")
 
@@ -51,6 +63,15 @@ explainer_list = [
     LayerGradientSHAPCVExplainer(),
     LayerLRPCVExplainer(),
     LayerGradCAMCVExplainer(),
+    SaliencyCVExplainer(),
+    DeepLIFTCVExplainer(),
+    LayerDeepLIFTCVExplainer(),
+    DeepLIFTSHAPCVExplainer(),
+    LayerDeepLIFTSHAPCVExplainer(),
+    DeconvolutionCVExplainer(),
+    InputXGradientCVExplainer(),
+    LayerInputXGradientCVExplainer(),
+    LayerConductanceCVExplainer(),
 ]
 
 explainer_map = {entry.algorithm_name: entry for entry in explainer_list}
@@ -60,8 +81,12 @@ layer_explainers = [
     LayerGradientSHAPCVExplainer,
     LayerIntegratedGradientsCVExplainer,
     LayerLRPCVExplainer,
+    LayerDeepLIFTCVExplainer,
+    LayerDeepLIFTSHAPCVExplainer,
+    LayerInputXGradientCVExplainer,
+    LayerConductanceCVExplainer,
+    GuidedGradCAMCVExplainer,
 ]
-
 
 method_list = [e.value for e in MethodName]
 
@@ -113,7 +138,7 @@ def generate_feature_map(
     experiment_hash: str,
     model: Any,
     **kwargs,
-) -> np.ndarray:
+) -> Optional[np.ndarray]:
     """Generate explanation for given model and given input data sample.
 
     Args:
@@ -143,16 +168,27 @@ def generate_feature_map(
     if len(original_data.shape) == 3:
         original_data = original_data[None, :]
 
-    attributions = explainer.calculate_features(
-        model=model,
-        input_data=input_data,
-        pred_label_idx=st.session_state[Settings.target_class_index],
-        **kwargs,
-    )
+    try:
+        attributions = explainer.calculate_features(
+            model=model,
+            input_data=input_data,
+            pred_label_idx=st.session_state[Settings.target_class_index],
+            **kwargs,
+        )
+    except TypeError as exception:
+        st.error(f"Error occured in explanation: {exception}. Try another data sample.")
+        return None
 
-    figure = CVExplainer.visualize(
-        attributions=attributions, transformed_img=original_data
-    )
+    try:
+        figure = CVExplainer.visualize(
+            attributions=attributions, transformed_img=original_data
+        )
+    except AssertionError as exception:
+        st.error(
+            f"Error occured in drawing attribution heat maps: {exception}. Try another data sample."
+        )
+        return None
+
     return convert_figure_to_numpy(figure)
 
 
@@ -310,7 +346,8 @@ def main_view() -> None:
                         model=model,
                         **kwargs if kwargs else kwargs,
                     )
-                    st.image(image)
+                    if image is not None:
+                        st.image(image)
         else:
             image = generate_feature_map(
                 explainer=explainer_map[method.value],
@@ -319,7 +356,8 @@ def main_view() -> None:
                 model=model,
                 **kwargs if kwargs else kwargs,
             )
-            st.image(image)
+            if image is not None:
+                st.image(image)
 
 
 def main() -> None:
