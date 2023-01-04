@@ -16,23 +16,38 @@ from torch.nn import functional as F
 from torchvision import transforms
 
 from autoxai import explainer
+from autoxai.explainer import (
+    GradientSHAPCVExplainer,
+    GuidedGradCAMCVExplainer,
+    IntegratedGradientsCVExplainer,
+    LayerGradCAMCVExplainer,
+    LayerGradientSHAPCVExplainer,
+    LayerIntegratedGradientsCVExplainer,
+    LayerLRPCVExplainer,
+    LayerNoiseTunnelCVExplainer,
+    LRPCVExplainer,
+    NoiseTunnelCVExplainer,
+    OcculusionCVExplainer,
+)
 from autoxai.explainer.base_explainer import CVExplainerT
 
 
 class Explainers(Enum):
     """Enum of supported explainers types."""
 
-    CV_OCCLUSION_EXPLAINER: str = "OcculusionCVExplainer"
-    CV_INTEGRATED_GRADIENTS_EXPLAINER: str = "IntegratedGradientsCVExplainer"
-    CV_NOISE_TUNNEL_EXPLAINER: str = "NoiseTunnelCVExplainer"
-    CV_GRADIENT_SHAP_EXPLAINER: str = "GradientSHAPCVExplainer"
-    CV_LRP_EXPLAINER: str = "LRPCVExplainer"
-    CV_GUIDEDGRADCAM_EXPLAINER: str = "GuidedGradCAMCVExplainer"
-    CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER: str = "LayerIntegratedGradientsCVExplainer"
-    CV_LAYER_NOISE_TUNNEL_EXPLAINER: str = "LayerNoiseTunnelCVExplainer"
-    CV_LAYER_GRADIENT_SHAP_EXPLAINER: str = "LayerGradientSHAPCVExplainer"
-    CV_LAYER_LRP_EXPLAINER: str = "LayerLRPCVExplainer"
-    CV_LAYER_GRADCAM_EXPLAINER: str = "LayerGradCAMCVExplainer"
+    CV_OCCLUSION_EXPLAINER: str = OcculusionCVExplainer.__name__
+    CV_INTEGRATED_GRADIENTS_EXPLAINER: str = IntegratedGradientsCVExplainer.__name__
+    CV_NOISE_TUNNEL_EXPLAINER: str = NoiseTunnelCVExplainer.__name__
+    CV_GRADIENT_SHAP_EXPLAINER: str = GradientSHAPCVExplainer.__name__
+    CV_LRP_EXPLAINER: str = LRPCVExplainer.__name__
+    CV_GUIDEDGRADCAM_EXPLAINER: str = GuidedGradCAMCVExplainer.__name__
+    CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER: str = (
+        LayerIntegratedGradientsCVExplainer.__name__
+    )
+    CV_LAYER_NOISE_TUNNEL_EXPLAINER: str = LayerNoiseTunnelCVExplainer.__name__
+    CV_LAYER_GRADIENT_SHAP_EXPLAINER: str = LayerGradientSHAPCVExplainer.__name__
+    CV_LAYER_LRP_EXPLAINER: str = LayerLRPCVExplainer.__name__
+    CV_LAYER_GRADCAM_EXPLAINER: str = LayerGradCAMCVExplainer.__name__
 
 
 class AutoXaiExplainer(Generic[CVExplainerT]):
@@ -60,9 +75,10 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
             target: predicted target index. For which class to generate xai.
         """
 
-        self.model: torch.nn.Module = model
         if not explainers:
             raise ValueError("At leas one explainer should be defined.")
+
+        self.model: torch.nn.Module = model
 
         self.explainer_map: Dict[str, CVExplainerT] = {
             explainer_name.name: getattr(explainer, explainer_name.value)()
