@@ -23,5 +23,6 @@ def create_logger(logger_name: str, level: int = logging.DEBUG) -> logging.Logge
     console_handler = StreamHandler()
     console_handler.setFormatter(formatter)
     result.addHandler(console_handler)
+    result.propagate = True
 
     return result
