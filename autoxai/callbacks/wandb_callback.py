@@ -6,6 +6,7 @@ import matplotlib
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.loggers import WandbLogger
+from torch.utils.data import DataLoader
 
 import wandb
 from autoxai.explainer.base_explainer import CVExplainer
@@ -45,8 +46,8 @@ class WandBCallback(pl.callbacks.Callback):
         )
 
     def iterate_dataloader(
-        self, dataloader_list, max_items: int
-    ) -> Generator[Tuple, None, None]:
+        self, dataloader_list: List[DataLoader], max_items: int
+    ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
         """Iterate over dataloader list with constraint on max items returned.
 
         Args:
@@ -57,6 +58,9 @@ class WandBCallback(pl.callbacks.Callback):
             Tuple containing training sample and corresponding label.
         """
         index: int = 0
+        dataloader: DataLoader
+        items: torch.Tensor
+        predictions: torch.Tensor
         for dataloader in dataloader_list:
             for batch in dataloader:
                 items, predictions = batch
@@ -69,7 +73,7 @@ class WandBCallback(pl.callbacks.Callback):
 
     def explain(  # pylint: disable = (too-many-arguments)
         self,
-        pl_module: pl.LightningModule,
+        model: pl.LightningModule,
         item: torch.Tensor,
         prediction: torch.Tensor,
         attributes_dict: Dict[str, List[torch.Tensor]],
@@ -83,7 +87,7 @@ class WandBCallback(pl.callbacks.Callback):
         """Calculate explainer attributes, creates captions and figures.
 
         Args:
-            pl_module: Model to explain.
+            model: Model to explain.
             item: Input data sample tensor.
             prediction: Sample label.
             attributes_dict: List of attributes for every explainer and sample.
@@ -98,8 +102,8 @@ class WandBCallback(pl.callbacks.Callback):
         for explainer in self.explainers:
             explainer_name = explainer.algorithm_name
             attributes = explainer.calculate_features(
-                model=pl_module,
-                input_data=item.to(pl_module.device),
+                model=model,
+                input_data=item.to(model.device),
                 pred_label_idx=int(prediction.item()),
             )
             attributes_dict[explainer_name].append(attributes.detach().cpu().numpy())
@@ -110,13 +114,13 @@ class WandBCallback(pl.callbacks.Callback):
 
         return attributes_dict, caption_dict, figures_dict
 
-    def on_sanity_check_end(
+    def on_train_start(
         self,
         trainer: pl.Trainer,
         pl_module: pl.LightningModule,  # pylint: disable = (unused-argument)
     ) -> None:
         """Save index to labels mapping and validation samples to experiment
-        before `fit`.
+        at `fit`.
 
         Args:
             trainer: Trainer object.
@@ -175,7 +179,7 @@ class WandBCallback(pl.callbacks.Callback):
             max_items=self.max_artifacts,
         ):
             attributes_dict, caption_dict, figures_dict = self.explain(
-                pl_module=pl_module,
+                model=pl_module,
                 item=item,
                 prediction=prediction,
                 attributes_dict=attributes_dict,
