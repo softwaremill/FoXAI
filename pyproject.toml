@@ -14,11 +14,14 @@ torch = {version='1.12.1+cu102',source="pytorch"}
 torchvision = {version='0.13.1+cu102',source="pytorch"}
 pytorch-lightning = "1.5.0"
 torchmetrics = "0.11.0"
+single-source = "0.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.10.0"
 pylint = "2.15.4"
 mypy = "0.982"
+pytest = "7.2.0"
+pre-commit = "2.21.0"
 
 [tool.poetry.group.example.dependencies]
 Pillow = "9.3.0"
