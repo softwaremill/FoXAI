@@ -2,16 +2,17 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 import matplotlib
 import numpy as np
 import torch
 from captum.attr import visualization as viz
 
+from autoxai.array_utils import convert_float_to_uint8
 from autoxai.logger import create_logger
 
-_LOGGER: logging.Logger | None = None
+_LOGGER: Optional[logging.Logger] = None
 
 
 def log() -> logging.Logger:
@@ -168,7 +169,7 @@ class CVExplainer(ABC):
 
         figure, _ = viz.visualize_image_attr_multiple(
             attr=attributions_np,
-            original_image=transformed_img_np,
+            original_image=convert_float_to_uint8(array=transformed_img_np),
             methods=[explanation.method.name for explanation in explanation_methods],
             signs=[explanation.sign.name for explanation in explanation_methods],
             titles=[explanation.title for explanation in explanation_methods],
