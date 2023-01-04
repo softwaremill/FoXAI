@@ -6,6 +6,7 @@ from typing import Optional, Union
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
 
+from autoxai.explainer.model_utils import modify_modules
 from autoxai.explainer.occulusion import CVExplainer
 
 
@@ -75,7 +76,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
                 f"Missing or `None` arguments `model` and `layer` passed: {kwargs}"
             )
 
-        model = self.modify_modules(model)
+        model = modify_modules(model)
 
         return GuidedGradCam(model=model, layer=layer)
 
@@ -99,6 +100,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
                 f"Missing or `None` arguments `model` and `layer` passed: {kwargs}"
             )
 
-        model = self.modify_modules(model)
+        model = modify_modules(model)
 
         return LayerGradCam(forward_func=model, layer=layer)

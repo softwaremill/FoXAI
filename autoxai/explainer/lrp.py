@@ -8,6 +8,7 @@ from captum.attr import LRP, LayerLRP
 from captum.attr._utils.lrp_rules import EpsilonRule, GammaRule
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
 class BaseLRPCVExplainer(CVExplainer):
@@ -48,11 +49,9 @@ class BaseLRPCVExplainer(CVExplainer):
         attributions = lrp.attribute(input_data, target=pred_label_idx)
         return attributions
 
-    def modify_modules(self, model: torch.nn.Module) -> torch.nn.Module:
-        """Modify modules of given model.
-
-        Function iterates over all modules and sets property `inplace`
-        to `False` for every `torch.nn.ReLU` activation function.
+    def add_rules(self, model: torch.nn.Module) -> torch.nn.Module:
+        """Add rules for the LRP explainer,
+        according to https://arxiv.org/pdf/1910.09840.pdf.
 
         Args:
             model: DNN object to be modified.
@@ -62,8 +61,6 @@ class BaseLRPCVExplainer(CVExplainer):
         """
         layers_number: int = len(list(model.modules()))
         for idx_layer, module in enumerate(model.modules()):
-            if isinstance(module, torch.nn.ReLU):
-                module.inplace = False
             if idx_layer <= layers_number // 2:
                 setattr(module, "rule", GammaRule())
             elif idx_layer != (layers_number - 1):
@@ -90,7 +87,7 @@ class LRPCVExplainer(BaseLRPCVExplainer):
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
-        model = self.modify_modules(model)
+        model = self.add_rules(modify_modules(model))
 
         return LRP(model=model)
 
@@ -114,6 +111,6 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
                 f"Missing or `None` arguments `model` and `layer` passed: {kwargs}"
             )
 
-        model = self.modify_modules(model)
+        model = self.add_rules(modify_modules(model))
 
         return LayerLRP(model=model, layer=layer)
