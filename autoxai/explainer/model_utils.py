@@ -1,4 +1,4 @@
-# pylint: disable = missing-module-docstring
+"""File contains functions to modifiy DNN models."""
 import torch
 
 
