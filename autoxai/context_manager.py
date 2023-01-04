@@ -6,6 +6,7 @@ Example:
         with AutoXaiExplainer(model=model) as xai_model:
             output, xai_explanations = xai_model(input_data)
 """
+import logging
 from enum import Enum
 from typing import Any, Dict, Generic, List, Tuple, cast
 
@@ -30,6 +31,18 @@ from autoxai.explainer import (
     OcculusionCVExplainer,
 )
 from autoxai.explainer.base_explainer import CVExplainerT
+from autoxai.logger import create_logger
+
+_LOGGER: logging.Logger | None = None
+
+
+def log() -> logging.Logger:
+    """Get or create logger."""
+    # pylint: disable = global-statement
+    global _LOGGER
+    if _LOGGER is None:
+        _LOGGER = create_logger(__name__)
+    return _LOGGER
 
 
 class Explainers(Enum):
@@ -91,15 +104,16 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         """Verify if model is in eval() mode.
 
         Raises:
-            ValueError: if the model is in trainin mode.
+            ValueError: if the model is in training mode.
 
-        Return:
+        Returns:
             the autoxai class instance.
         """
 
         if self.model.training:
-            raise ValueError(
-                "The autoxai should be run on model, which is in eval mode."
+            self.model.eval()
+            log().warning(
+                "The model should be in the eval model. Toggling it to eval mode right now."
             )
         return self
 
@@ -114,7 +128,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         Args:
             list of arguments for the torch.nn.Module forward method.
 
-        Return:
+        Returns:
             the model output and explanations for each requested explainer.
         """
         model_output: Any = self.model(*args, **kwargs)
