@@ -20,7 +20,7 @@ class WandBCallback(pl.callbacks.Callback):
         wandb_logger: WandbLogger,
         explainers: List[CVExplainer],
         idx_to_label: Dict[int, str],
-        max_artifacts: int = 20,
+        max_artifacts: int = 3,
     ):
         """Initialize Callback class.
 
@@ -30,6 +30,7 @@ class WandBCallback(pl.callbacks.Callback):
             explaienrs: List of explainer algorithms.
             idx_to_label: Dictionary with mapping from model index to label.
             max_artifacts: Number of maximum number of artifacts to be logged.
+                Defaults to 3.
         """
         super().__init__()
         self.explainers = explainers
