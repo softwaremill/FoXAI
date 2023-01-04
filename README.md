@@ -10,6 +10,7 @@ add support for text, tabular and multimodal data problems in the future.
 
 ## Table of content:
 * [Installation](#installation)
+    * [GPU acceleration](#gpu-acceleration)
     * [Manual installation](#manual-installation)
 * [Getting started](#getting-started)
 * [Development](#development)
@@ -27,7 +28,14 @@ add support for text, tabular and multimodal data problems in the future.
 
 Installation requirements:
 * `Python` >= 3.8 & < 3.11
-* `CUDA` == 10.2
+
+## GPU acceleration
+
+In order to use the torch library with GPU acceleration, you need to install
+a dedicated version of torch with support for the installed version of CUDA
+drivers in the version supported by the library, at the moment `torch==1.12.1`.
+List of `torch` wheels with CUDA support can be found at
+[https://download.pytorch.org/whl/torch/](https://download.pytorch.org/whl/torch/).
 
 ## Manual installation
 
