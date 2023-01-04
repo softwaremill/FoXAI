@@ -1203,7 +1203,35 @@ typing-extensions = "*"
 
 [package.source]
 type = "url"
-url = 'https://download.pytorch.org/whl/cu102/torch-1.12.1%2Bcu102-cp38-cp38-linux_x86_64.whl'
+url = "https://download.pytorch.org/whl/cu102/torch-1.12.1%2Bcu102-cp310-cp310-linux_x86_64.whl"
+[[package]]
+name = "torch"
+version = "1.12.1+cu102"
+description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
+category = "main"
+optional = false
+python-versions = ">=3.7.0"
+
+[package.dependencies]
+typing-extensions = "*"
+
+[package.source]
+type = "url"
+url = "https://download.pytorch.org/whl/cu102/torch-1.12.1%2Bcu102-cp38-cp38-linux_x86_64.whl"
+[[package]]
+name = "torch"
+version = "1.12.1+cu102"
+description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
+category = "main"
+optional = false
+python-versions = ">=3.7.0"
+
+[package.dependencies]
+typing-extensions = "*"
+
+[package.source]
+type = "url"
+url = "https://download.pytorch.org/whl/cu102/torch-1.12.1%2Bcu102-cp39-cp39-linux_x86_64.whl"
 [[package]]
 name = "torchmetrics"
 version = "0.11.0"
@@ -1249,7 +1277,49 @@ scipy = ["scipy"]
 
 [package.source]
 type = "url"
-url = 'https://download.pytorch.org/whl/cu102/torchvision-0.13.1%2Bcu102-cp38-cp38-linux_x86_64.whl'
+url = "https://download.pytorch.org/whl/cu102/torchvision-0.13.1%2Bcu102-cp310-cp310-linux_x86_64.whl"
+[[package]]
+name = "torchvision"
+version = "0.13.1+cu102"
+description = "image and video datasets and models for torch deep learning"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = "*"
+pillow = ">=5.3.0,<8.3.0 || >=8.4.0"
+requests = "*"
+torch = "1.12.1"
+typing-extensions = "*"
+
+[package.extras]
+scipy = ["scipy"]
+
+[package.source]
+type = "url"
+url = "https://download.pytorch.org/whl/cu102/torchvision-0.13.1%2Bcu102-cp38-cp38-linux_x86_64.whl"
+[[package]]
+name = "torchvision"
+version = "0.13.1+cu102"
+description = "image and video datasets and models for torch deep learning"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = "*"
+pillow = ">=5.3.0,<8.3.0 || >=8.4.0"
+requests = "*"
+torch = "1.12.1"
+typing-extensions = "*"
+
+[package.extras]
+scipy = ["scipy"]
+
+[package.source]
+type = "url"
+url = "https://download.pytorch.org/whl/cu102/torchvision-0.13.1%2Bcu102-cp39-cp39-linux_x86_64.whl"
 [[package]]
 name = "tornado"
 version = "6.2"
@@ -1444,7 +1514,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.11,!=3.9.7"
-content-hash = "2ff6a286908a113902b1c11a3d72861724704d68c2b1374ccb70b09e7500bb8b"
+content-hash = "b249e02055cfdfd5fcd105c89b79a41c639d2a12520b4650e78b96e3ac3f7bd5"
 
 [metadata.files]
 absl-py = [
