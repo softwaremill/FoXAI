@@ -18,7 +18,7 @@ Example:
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Generic, List, Tuple, cast
+from typing import Any, Dict, Generic, List, Optional, Tuple, cast
 
 import torch
 
@@ -39,7 +39,7 @@ from autoxai.explainer import (
 from autoxai.explainer.base_explainer import CVExplainerT
 from autoxai.logger import create_logger
 
-_LOGGER: logging.Logger | None = None
+_LOGGER: Optional[logging.Logger] = None
 
 
 def log() -> logging.Logger:
@@ -222,6 +222,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
                 .detach()
                 .cpu()
             )
+            input_tensor.grad = None
 
         # restore tensor requires grad state
         input_tensor.requires_grad = prev_requires_grad
