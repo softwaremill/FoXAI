@@ -157,13 +157,15 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         Returns:
             the autoxai class instance.
         """
-
-        if not torch.is_grad_enabled():
-            raise ValueError(
+        self.prev_torch_grad = torch.is_grad_enabled()
+        if not self.prev_torch_grad:
+            log().warning(
                 "Torch model explainer can be called only with enabled\
-                gradients, as it depends on gradients computations. For the \
+                gradients, as it depends on gradients computations. The model is going \
+                to be toggled to gradients enabled. For the \
                 model prediction, the gradient is temporary turned off."
             )
+            torch.set_grad_enabled(True)
 
         if self.model.training:
             self.model.eval()
@@ -174,7 +176,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        pass
+        torch.set_grad_enabled(self.prev_torch_grad)
 
     def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, torch.Tensor]]:
         """Run model prediction and explain the model with given explainers.

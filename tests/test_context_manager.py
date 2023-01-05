@@ -1,6 +1,6 @@
 # pylint: disable = missing-class-docstring
 import logging
-from typing import List
+from typing import Any, Dict, List
 
 import numpy as np
 import pytest
@@ -228,3 +228,61 @@ class TestAutoXaiExplainer:
             autoxai_inference_output, _ = xai_model(img_tensor)
 
             assert autoxai_inference_output == inference_output
+
+    def test_model_with_disabled_gradients(self, classifier: torch.nn.Module):
+        """Test whether model properly turns gradients enabled, when feed
+        with model without gradients enabled and whether model correctly
+        turns gradient back to the input state.
+        """
+
+        classifier.eval()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
+
+        with torch.no_grad():
+            with AutoXaiExplainer(
+                model=classifier,
+                explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+            ) as xai_model:
+                assert torch.is_grad_enabled()
+                _, _ = xai_model(img_tensor)
+
+            assert not torch.is_grad_enabled()
+
+    def test_explainers_kwargs(self, classifier: torch.nn.Module):
+        """Test whether kwargs are correctly set up in AutoXaiExplainer."""
+
+        classifier.eval()
+
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=[
+                ExplainerWithParams(
+                    explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER,
+                    n_samples=100,
+                    stdevs=0.0005,
+                ),
+                ExplainerWithParams(
+                    explainer_name=Explainers.CV_OCCLUSION_EXPLAINER,
+                    stride_value=5,
+                    window_value=5,
+                ),
+            ],
+            target=0,
+        ) as xai_model:
+            explainer_kwargs: Dict[str, Any] = xai_model.explainer_map[
+                "CV_GRADIENT_SHAP_EXPLAINER"
+            ].kwargs
+            assert explainer_kwargs["n_samples"] == 100
+            assert explainer_kwargs["stdevs"] == 0.0005
+
+            explainer_kwargs = xai_model.explainer_map["CV_OCCLUSION_EXPLAINER"].kwargs
+            assert explainer_kwargs["stride_value"] == 5
+            assert explainer_kwargs["window_value"] == 5
