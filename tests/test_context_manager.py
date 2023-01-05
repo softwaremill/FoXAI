@@ -8,7 +8,7 @@ import torch
 from torch.nn import functional as F
 from torchvision import transforms
 
-from autoxai.context_manager import AutoXaiExplainer, Explainers
+from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
 
 w = [255, 255, 255]
 c = [0, 0, 0]
@@ -138,15 +138,14 @@ class TestAutoXaiExplainer:
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
         caplog.set_level(level=logging.WARNING, logger="autoxai.context_manager")
 
-        with torch.no_grad():
-            with AutoXaiExplainer(
-                model=classifier,
-                explainers=[Explainers.CV_NOISE_TUNNEL_EXPLAINER],
-            ) as xai_model:
-                _, _ = xai_model(img_tensor)
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+        ) as xai_model:
+            _, _ = xai_model(img_tensor)
 
-                assert not xai_model.model.training
-                assert "The model should be in the eval model" in caplog.text
+            assert not xai_model.model.training
+            assert "The model should be in the eval model" in caplog.text
 
     def test_no_explainers_given(self, classifier: torch.nn.Module):
         """Test whether AutoXaiExplainer correctly raises error,
@@ -167,12 +166,11 @@ class TestAutoXaiExplainer:
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
         with pytest.raises(ValueError):
-            with torch.no_grad():
-                with AutoXaiExplainer(
-                    model=classifier,
-                    explainers=[],
-                ) as xai_model:
-                    _, _ = xai_model(img_tensor)
+            with AutoXaiExplainer(
+                model=classifier,
+                explainers=[],
+            ) as xai_model:
+                _, _ = xai_model(img_tensor)
 
     def test_whether_output_match_requested_inputs(self, classifier: torch.nn.Module):
         """Test whether AutoXaiExplainer returns explanations,
@@ -190,21 +188,20 @@ class TestAutoXaiExplainer:
         )
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
-        explainers: List[Explainers] = [
-            Explainers.CV_GRADIENT_SHAP_EXPLAINER,
-            Explainers.CV_NOISE_TUNNEL_EXPLAINER,
-            Explainers.CV_OCCLUSION_EXPLAINER,
+        explainers: List[ExplainerWithParams] = [
+            ExplainerWithParams(Explainers.CV_GRADIENT_SHAP_EXPLAINER),
+            ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER),
+            ExplainerWithParams(Explainers.CV_OCCLUSION_EXPLAINER),
         ]
-        with torch.no_grad():
-            with AutoXaiExplainer(
-                model=classifier,
-                explainers=explainers,
-            ) as xai_model:
-                _, xai_explanations = xai_model(img_tensor)
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=explainers,
+        ) as xai_model:
+            _, xai_explanations = xai_model(img_tensor)
 
-                assert list(map(lambda explainer: explainer.name, explainers)) == list(
-                    xai_explanations.keys()
-                )
+            assert list(
+                map(lambda explainer: explainer.explainer_name.name, explainers)
+            ) == list(xai_explanations.keys())
 
     def test_model_inference_with_explainer(self, classifier: torch.nn.Module):
         """Test whether regular inference and inference with AutoXaiExplainer
@@ -222,13 +219,12 @@ class TestAutoXaiExplainer:
         )
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
-        with torch.no_grad():
-            inference_output = classifier(img_tensor)
+        inference_output = classifier(img_tensor)
 
-            with AutoXaiExplainer(
-                model=classifier,
-                explainers=[Explainers.CV_NOISE_TUNNEL_EXPLAINER],
-            ) as xai_model:
-                autoxai_inference_output, _ = xai_model(img_tensor)
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+        ) as xai_model:
+            autoxai_inference_output, _ = xai_model(img_tensor)
 
-                assert autoxai_inference_output == inference_output
+            assert autoxai_inference_output == inference_output

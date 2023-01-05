@@ -138,7 +138,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
 
         self.explainer_map: Dict[str, ExplainerClassWithParams] = {
             explainer_with_params.explainer_name.name: ExplainerClassWithParams(
-                explainer=getattr(
+                explainer_class=getattr(
                     explainer, explainer_with_params.explainer_name.value
                 )(),
                 **explainer_with_params.kwargs,
