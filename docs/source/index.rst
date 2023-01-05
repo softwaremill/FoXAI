@@ -8,7 +8,13 @@ Welcome to AutoXAI's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting started:
+
+   install
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference:
 
    modules
 
