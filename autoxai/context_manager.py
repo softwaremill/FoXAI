@@ -2,19 +2,25 @@
 Run xai alongside with inference.
 
 Example:
-    with torch.no_grad():
-        with AutoXaiExplainer(model=model) as xai_model:
-            output, xai_explanations = xai_model(input_data)
+    with AutoXaiExplainer(
+        model=classifier,
+        explainers=[
+            ExplainerWithParams(
+                explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER,
+                n_samples=100,
+                stdevs=0.0005,
+            ),
+        ],
+        target=pred_label_idx,
+    ) as xai_model:
+        output, xai_explanations = xai_model(img_tensor)
 """
 import logging
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Generic, List, Tuple, cast
 
 import torch
-from PIL import Image
-from PIL.PngImagePlugin import PngImageFile
-from torch.nn import functional as F
-from torchvision import transforms
 
 from autoxai import explainer
 from autoxai.explainer import (
@@ -63,13 +69,50 @@ class Explainers(Enum):
     CV_LAYER_GRADCAM_EXPLAINER: str = LayerGradCAMCVExplainer.__name__
 
 
+@dataclass
+class ExplainerWithParams:
+    explainer_name: Explainers
+    kwargs: Dict[str, Any] = field(default_factory=dict)
+
+    def __init__(self, explainer_name: Explainers, **kwargs) -> None:
+        self.explainer_name = explainer_name
+        if kwargs:
+            self.kwargs = kwargs
+        else:
+            self.kwargs = {}
+
+
+@dataclass
+class ExplainerClassWithParams(Generic[CVExplainerT]):
+    """Holder for explainer class and it's params"""
+
+    explainer_class: CVExplainerT
+    kwargs: Dict[str, Any] = field(default_factory=dict)
+
+    def __init__(self, explainer_class: CVExplainerT, **kwargs) -> None:
+        self.explainer_class = explainer_class
+        if kwargs:
+            self.kwargs = kwargs
+        else:
+            self.kwargs = {}
+
+
 class AutoXaiExplainer(Generic[CVExplainerT]):
     """Context menager for AutoXAI explanation.
 
     Example:
-        with torch.no_grad():
-            with AutoXaiExplainer(model=model) as xai_model:
-                output, xai_explanations = xai_model(input_data)
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=[
+                ExplainerWithParams(
+                    explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER,
+                    n_samples=100,
+                    stdevs=0.0005,
+                ),
+            ],
+            target=pred_label_idx,
+        ) as xai_model:
+            output, xai_explanations = xai_model(img_tensor)
 
     Raises:
         ValueError: if no explainer provided
@@ -78,7 +121,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
     def __init__(
         self,
         model: torch.nn.Module,
-        explainers: List[Explainers],
+        explainers: List[ExplainerWithParams],
         target: int = 0,
     ) -> None:
         """
@@ -93,9 +136,14 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
 
         self.model: torch.nn.Module = model
 
-        self.explainer_map: Dict[str, CVExplainerT] = {
-            explainer_name.name: getattr(explainer, explainer_name.value)()
-            for explainer_name in explainers
+        self.explainer_map: Dict[str, ExplainerClassWithParams] = {
+            explainer_with_params.explainer_name.name: ExplainerClassWithParams(
+                explainer=getattr(
+                    explainer, explainer_with_params.explainer_name.value
+                )(),
+                **explainer_with_params.kwargs,
+            )
+            for explainer_with_params in explainers
         }
 
         self.target: int = target
@@ -110,11 +158,19 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
             the autoxai class instance.
         """
 
+        if not torch.is_grad_enabled():
+            raise ValueError(
+                "Torch model explainer can be called only with enabled\
+                gradients, as it depends on gradients computations. For the \
+                model prediction, the gradient is temporary turned off."
+            )
+
         if self.model.training:
             self.model.eval()
             log().warning(
                 "The model should be in the eval model. Toggling it to eval mode right now."
             )
+
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
@@ -131,7 +187,9 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         Returns:
             the model output and explanations for each requested explainer.
         """
-        model_output: Any = self.model(*args, **kwargs)
+
+        with torch.no_grad():
+            model_output: Any = self.model(*args, **kwargs)
 
         if len(args) != 1:
             # TODO: add support in explainer for multiple input models
@@ -140,73 +198,30 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
                 in explainers does not support multiple inputs to the model."
             )
         input_tensor: torch.Tensor = cast(torch.Tensor, args)[0]
+        # cashe tensor requires grad state
+        prev_requires_grad: bool = input_tensor.requires_grad
+        # turn on requires grad for the input tensor
+        input_tensor.requires_grad = True
 
         explanations: Dict[str, torch.Tensor] = {}
         for explainer_name in self.explainer_map:
-            explanations[explainer_name] = self.explainer_map[
-                explainer_name
-            ].calculate_features(
-                model=self.model,
-                input_data=input_tensor,
-                pred_label_idx=self.target,
+            # zero the previous gradient for the model
+            self.model.zero_grad()
+            # run explainer
+            explainer_kwargs: Dict[str, Any] = self.explainer_map[explainer_name].kwargs
+            explanations[explainer_name] = (
+                self.explainer_map[explainer_name]
+                .explainer_class.calculate_features(
+                    model=self.model,
+                    input_data=input_tensor,
+                    pred_label_idx=self.target,
+                    **explainer_kwargs,
+                )
+                .detach()
+                .cpu()
             )
+
+        # restore tensor requires grad state
+        input_tensor.requires_grad = prev_requires_grad
 
         return model_output, explanations
-
-
-if __name__ == "__main__":
-
-    class SampleModel(torch.nn.Module):
-        """Sample pytorch model for experiment."""
-
-        def __init__(
-            self,
-            in_channels: int = 1,
-            resolution: int = 224,
-        ):
-            super().__init__()
-            self.stride: int = 16
-            self.out_channels: int = 16
-            self.conv1 = torch.nn.Conv2d(
-                in_channels=in_channels,
-                out_channels=self.out_channels,
-                kernel_size=5,
-                stride=16,
-            )
-
-            output_channels: int = (
-                (resolution // self.stride) ** 2
-            ) * self.out_channels
-            self.cls = torch.nn.Sequential(
-                torch.nn.Dropout(),
-                torch.nn.Linear(in_features=output_channels, out_features=1, bias=True),
-            )
-            self.sigmoid = torch.nn.Sigmoid()
-            self.name = "SampleModel"
-
-        def forward(self, x_tensor: torch.Tensor) -> torch.Tensor:
-            """Forward methid for the module."""
-            x_tensor = F.relu(self.conv1(x_tensor))
-            x_tensor = x_tensor.view(x_tensor.size(0), -1)
-            x_tensor = self.cls(x_tensor)
-            x_tensor = self.sigmoid(x_tensor)
-            return x_tensor
-
-    classifier: SampleModel = SampleModel(in_channels=1).eval()
-    input_image: PngImageFile = Image.open("./example/images/pikachu_image.png")
-    transform = transforms.Compose(
-        [
-            transforms.Grayscale(),
-            transforms.Resize(size=224),
-            transforms.CenterCrop(size=224),
-            transforms.ToTensor(),
-        ]
-    )
-    img_tensor: torch.Tensor = transform(input_image).unsqueeze(0)
-
-    with torch.no_grad():
-        with AutoXaiExplainer(
-            model=classifier,
-            explainers=[Explainers.CV_NOISE_TUNNEL_EXPLAINER],
-        ) as xai_model:
-            output, xai_explanations = xai_model(img_tensor)
