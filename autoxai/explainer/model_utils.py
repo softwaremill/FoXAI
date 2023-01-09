@@ -1,5 +1,4 @@
 """File contains functions to modifiy DNN models."""
-
 import torch
 
 
