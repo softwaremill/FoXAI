@@ -65,8 +65,8 @@ class CustomPytorchLightningCallback(pl.callbacks.Callback):
         index: int = 0
         for dataloader in trainer.val_dataloaders:
             for batch in dataloader:
-                items, predictions = batch
-                for item, _ in zip(items, predictions):
+                items, target_labels = batch
+                for item, _ in zip(items, target_labels):
                     self.cache_manager.save_artifact(
                         path=os.path.join(self.experiment.path_to_data, str(index)),
                         obj=item,

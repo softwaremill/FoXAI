@@ -62,22 +62,22 @@ class WandBCallback(pl.callbacks.Callback):
         index: int = 0
         dataloader: DataLoader
         items: torch.Tensor
-        predictions: torch.Tensor
+        target_labels: torch.Tensor
         for dataloader in dataloader_list:
             for batch in dataloader:
-                items, predictions = batch
-                for item, prediction in zip(items, predictions):
+                items, target_labels = batch
+                for item, taret_label in zip(items, target_labels):
                     if index >= max_items:
                         break
 
                     index += 1
-                    yield item, prediction
+                    yield item, taret_label
 
     def explain(  # pylint: disable = (too-many-arguments)
         self,
         model: pl.LightningModule,
         item: torch.Tensor,
-        prediction: torch.Tensor,
+        target_label: torch.Tensor,
         attributes_dict: Dict[str, List[torch.Tensor]],
         caption_dict: Dict[str, List[str]],
         figures_dict: Dict[str, List[matplotlib.pyplot.Figure]],
@@ -91,7 +91,7 @@ class WandBCallback(pl.callbacks.Callback):
         Args:
             model: Model to explain.
             item: Input data sample tensor.
-            prediction: Sample label.
+            target_label: Sample label.
             attributes_dict: List of attributes for every explainer and sample.
             caption_dict: List of captions for every explainer and sample.
             figures_dict: List of figures for every explainer and sample.
@@ -103,7 +103,7 @@ class WandBCallback(pl.callbacks.Callback):
         with AutoXaiExplainer(
             model=model,
             explainers=self.explainers,
-            target=int(prediction.item()),
+            target=int(target_label.item()),
         ) as xai_model:
             _, attributes = xai_model(item.to(model.device))
 
@@ -111,7 +111,7 @@ class WandBCallback(pl.callbacks.Callback):
             explainer_name: str = explainer.explainer_name.name
             explainer_attributes: torch.Tensor = attributes[explainer_name]
             attributes_dict[explainer_name].append(explainer_attributes)
-            caption_dict[explainer_name].append(f"label: {prediction}")
+            caption_dict[explainer_name].append(f"label: {target_label}")
             figure = CVExplainer.visualize(
                 attributions=explainer_attributes,
                 transformed_img=item,
@@ -140,7 +140,7 @@ class WandBCallback(pl.callbacks.Callback):
         image_matrix: Optional[torch.Tensor] = None
         image_labels: List[str] = []
 
-        for item, prediction in self.iterate_dataloader(
+        for item, target_label in self.iterate_dataloader(
             dataloader_list=trainer.val_dataloaders, max_items=self.max_artifacts
         ):
             if image_matrix is None:
@@ -150,7 +150,7 @@ class WandBCallback(pl.callbacks.Callback):
                     [image_matrix, item]
                 )
 
-            image_labels.append(f"label: {prediction.item()}")
+            image_labels.append(f"label: {target_label.item()}")
 
         if image_matrix is None:
             return
@@ -180,14 +180,14 @@ class WandBCallback(pl.callbacks.Callback):
         caption_dict: Dict[str, List[str]] = defaultdict(list)
         figures_dict: Dict[str, List[matplotlib.pyplot.Figure]] = defaultdict(list)
 
-        for item, prediction in self.iterate_dataloader(
+        for item, target_label in self.iterate_dataloader(
             dataloader_list=trainer.val_dataloaders,
             max_items=self.max_artifacts,
         ):
             attributes_dict, caption_dict, figures_dict = self.explain(
                 model=pl_module,
                 item=item,
-                prediction=prediction,
+                target_label=target_label,
                 attributes_dict=attributes_dict,
                 caption_dict=caption_dict,
                 figures_dict=figures_dict,
