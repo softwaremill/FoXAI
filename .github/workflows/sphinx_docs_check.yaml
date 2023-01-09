@@ -33,7 +33,7 @@ jobs:
         poetry install
       working-directory: ""
     - name: Build docs
-      run: sphinx-apidoc -o docs/source autoxai && cd docs && make html
+      run: poetry run sphinx-apidoc -o docs/source autoxai && cd docs && poetry run make html
     - name: Compress production artifacts
       run: tar -czvf docs/build/html.tar.gz docs/build/html/
     - name: Archive production artifacts
