@@ -2,6 +2,9 @@ name: "Pull Request Docs Check"
 on:
 - pull_request
 
+env:
+  POETRY_VERSION: '1.2.1'
+  PYTHON_VERSION: '3.8'
 jobs:
   docs:
     runs-on: ubuntu-latest
@@ -10,9 +13,25 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.8"
+        python-version: ${{ env.PYTHON_VERSION }}
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: ".venv"
+        key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}--${{ hashFiles('poetry.lock') }}
+        restore-keys: |
+          venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('poetry.lock') }}
+          venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
+    - name: Setup poetry
+      uses: abatilo/actions-poetry@v2.1.5
+      with:
+        poetry-version: ${{ env.POETRY_VERSION }}
     - name: Install dependencies
-      run: python -m pip install Sphinx==5.3.0 sphinx_rtd_theme==1.1.1 single-source==0.3.0
+      shell: bash
+      run: |
+        poetry install
+      working-directory: ""
     - name: Build docs
       run: sphinx-apidoc -o docs/source autoxai && cd docs && make html
     - name: Compress production artifacts
