@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autoxai"
-version = "0.3.1"
+version = "0.3.5"
 description = ""
 authors = ["Adam Wawrzyński <adam.wawrzynski@reasonfieldlab.com>"]
 readme = "README.md"
@@ -16,11 +16,14 @@ pytorch-lightning = "1.5.0"
 torchmetrics = "0.11.0"
 wandb = "^0.13.7"
 pandas = "^1.5.2"
+single-source = "0.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.10.0"
 pylint = "2.15.4"
 mypy = "0.982"
+pytest = "7.2.0"
+pre-commit = "2.21.0"
 
 [tool.poetry.group.example.dependencies]
 Pillow = "9.3.0"
@@ -28,6 +31,9 @@ streamlit = "1.16.0"
 
 [tool.poetry.scripts]
 autoxai-wandb-updater = "autoxai.cli.experiment_update:main"
+[tool.poetry.group.docs.dependencies]
+Sphinx = "5.3.0"
+sphinx-rtd-theme = "^1.1.1"
 
 [build-system]
 requires = ["poetry-core"]

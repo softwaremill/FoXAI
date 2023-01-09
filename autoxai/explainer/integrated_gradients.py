@@ -32,7 +32,7 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with integrated gradients algorithm explainer.
+        """Generate features image with Integrated Gradients algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -44,9 +44,9 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
             Features matrix.
         """
         n_steps = kwargs.get("n_steps", 100)
-        layer: Optional[torch.nn.Module] = kwargs.get("selected_layer", None)
+        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        integrated_gradients = self.create_explainer(forward_func=model, layer=layer)
+        integrated_gradients = self.create_explainer(model=model, layer=layer)
         attributions = integrated_gradients.attribute(
             input_data, target=pred_label_idx, n_steps=n_steps
         )
@@ -67,9 +67,9 @@ class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
         if model is None:
-            raise RuntimeError(f"Missing or `None` arguments passed: {kwargs}")
+            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
         return IntegratedGradients(forward_func=model)
 
@@ -88,11 +88,11 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("forward_func", None)
+        model: Optional[torch.nn.Module] = kwargs.get("model", None)
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if model is None or layer is None:
             raise RuntimeError(
-                f"Missing or `None` arguments `forward_func` and `layer` passed: {kwargs}"
+                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
         return LayerIntegratedGradients(forward_func=model, layer=layer)

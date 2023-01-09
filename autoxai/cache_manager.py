@@ -18,11 +18,14 @@ class CacheManager(ABC):
         """
 
     @abstractmethod
-    def load_artifact(self, path: str):
+    def load_artifact(self, path: str) -> Any:
         """Load artifact from given path.
 
         Args:
             path: Path to saved object.
+
+        Returns:
+            Any saved data.
         """
 
 
@@ -49,6 +52,9 @@ class LocalDirCacheManager(CacheManager):
 
         Args:
             path: Path to saved object.
+
+        Retruns:
+            Any saved data.
         """
         with open(path, "rb") as file:
             data = pickle.load(file)

@@ -1,5 +1,4 @@
 """File contains functions to modifiy DNN models."""
-
 import torch
 
 
@@ -10,10 +9,10 @@ def modify_modules(model: torch.nn.Module) -> torch.nn.Module:
     to `False` for every `torch.nn.ReLU` activation function.
 
     Args:
-        model: DNN object to be modified.
+        model: Neural network object to be modified.
 
     Returns:
-        Modified DNN object.
+        Modified neural network object.
     """
     for module in model.modules():  # pylint: disable = (duplicate-code)
         if isinstance(module, torch.nn.ReLU):

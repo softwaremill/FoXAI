@@ -17,6 +17,7 @@ def load_model(model_path: str) -> torch.nn.Module:
     """
     model = LitMNIST(batch_size=1, data_dir=".")
     model.load_state_dict(torch.load(model_path))
+    model.eval()
     return model
 
 

@@ -1,19 +1,20 @@
-"""File with Gradient SHAP algorithm explainer classes."""
+"""File with DeepLIFT SHAP algorithm explainer classes."""
 
 from abc import abstractmethod
 from typing import Optional, Union
 
 import torch
-from captum.attr import GradientShap, LayerGradientShap
+from captum.attr import DeepLiftShap, LayerDeepLiftShap
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import modify_modules
 
 
-class BaseGradientSHAPCVExplainer(CVExplainer):
-    """Base Gradient SHAP algorithm explainer."""
+class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
+    """Base DeepLIFT SHAP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -30,7 +31,7 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Gradient SHAP algorithm explainer.
+        """Generate features image with DeepLIFT SHAP algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -40,31 +41,33 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        stdevs: float = kwargs.get("stdevs", 0.0001)
-        n_samples: int = kwargs.get("n_samples", 50)
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        number_of_samples: int = kwargs.get("number_of_samples", 100)
 
-        gradient_shap = self.create_explainer(model=model, layer=layer)
-
-        # Defining baseline distribution of images
-        rand_img_dist = torch.cat(  # pylint: disable = (no-member,duplicate-code)
-            [input_data * 0, input_data * 1]
+        deeplift = self.create_explainer(model=model, layer=layer)
+        baselines = torch.randn(  # pylint: disable = (no-member)
+            number_of_samples,
+            input_data.shape[1],
+            input_data.shape[2],
+            input_data.shape[3],
         )
-
-        attributions = gradient_shap.attribute(
+        attributions = deeplift.attribute(
             input_data,
-            n_samples=n_samples,
-            stdevs=stdevs,
-            baselines=rand_img_dist,
             target=pred_label_idx,
+            baselines=baselines,
         )
+        if attributions.shape[0] == 0:
+            raise RuntimeError(
+                "Error occured during attribution calculation. "
+                + "Make sure You are applying this method to CNN network.",
+            )
         return attributions
 
 
-class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
-    """Gradient SHAP algorithm explainer."""
+class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
+    """DeepLIFTC SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -77,13 +80,15 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         if model is None:
             raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
-        return GradientShap(forward_func=model)
+        model = modify_modules(model)
+
+        return DeepLiftShap(model=model)
 
 
-class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
-    """Layer Gradient SHAP algorithm explainer."""
+class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
+    """Layer DeepLIFT SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -99,4 +104,6 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
                 f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
             )
 
-        return LayerGradientShap(forward_func=model, layer=layer)
+        model = modify_modules(model)
+
+        return LayerDeepLiftShap(model=model, layer=layer)
