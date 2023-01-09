@@ -1,15 +1,16 @@
 """File contains definition of CLI program config data model."""
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import List, Optional
+
+from autoxai.context_manager import ExplainerWithParams
 
 
 @dataclass
 class MethodDataModel:
     """Method data model for CLI program."""
 
-    name: str
-    params: Dict[str, str]
+    explainer_with_params: ExplainerWithParams
     artifact_name: Optional[str] = None
 
 

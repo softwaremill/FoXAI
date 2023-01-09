@@ -13,8 +13,7 @@ from torchvision.io import ImageReadMode, read_image
 
 import wandb
 from autoxai.cli.config_model import ConfigDataModel, MethodDataModel
-from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer_helper import get_explainer_class
+from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
 
 
 def parse_args() -> argparse.Namespace:
@@ -187,9 +186,21 @@ def load_config(path: str) -> ConfigDataModel:
     with open(path, "r", encoding="utf-8") as file:
         config = json.load(file)
 
-    config_data = ConfigDataModel(
-        method_config_list=[MethodDataModel(**c) for c in config]
-    )
+    method_config_list: List[MethodDataModel] = []
+    for entry in config:
+        explainer_config: Dict[str, Any] = entry["explainer_with_params"]
+        explainer: ExplainerWithParams = ExplainerWithParams(
+            explainer_name=Explainers[explainer_config["explainer_name"]],
+            kwargs=explainer_config.get("kwargs", {}),
+        )
+        method_config_list.append(
+            MethodDataModel(
+                explainer_with_params=explainer,
+                artifact_name=entry.get("artifact_name", None),
+            )
+        )
+
+    config_data = ConfigDataModel(method_config_list=method_config_list)
     return config_data
 
 
@@ -257,12 +268,9 @@ def main() -> None:  # pylint: disable = (too-many-locals)
     ]
 
     for explainer_config in config.method_config_list:
-        explainer: CVExplainer = get_explainer_class(
-            algorithm_name=explainer_config.name
-        )
         artifact_name: str
         if explainer_config.artifact_name is None:
-            artifact_name = explainer.algorithm_name
+            artifact_name = explainer_config.explainer_with_params.explainer_name.name
         else:
             artifact_name = explainer_config.artifact_name
 
@@ -271,20 +279,20 @@ def main() -> None:  # pylint: disable = (too-many-locals)
 
             explanations: List[wandb.Image] = []
             for input_data, label in zip(image_list, labels):
-                try:
-                    attributes = explainer.calculate_features(
-                        model=model,
-                        input_data=input_data,
-                        pred_label_idx=label,
-                        **explainer_config.params,
+                with AutoXaiExplainer(
+                    model=model,
+                    explainers=[explainer_config.explainer_with_params],
+                    target=label,
+                ) as xai_model:
+                    input_data = input_data.float()
+                    _, attributes_dict = xai_model(input_data.to(model.device))
+                    explainer_name: str = (
+                        explainer_config.explainer_with_params.explainer_name.name
                     )
+                    attributes: torch.Tensor = attributes_dict[explainer_name]
                     explanations.append(
                         wandb.Image(attributes, caption=f"label: {label}")
                     )
-                except RuntimeError as exception:
-                    print(f"RuntimeError occured: {exception}. Skipping...")
-                except Exception as exception:  # pylint: disable = (broad-except)
-                    print(f"Unexcpected exception occured: {exception}. Skipping...")
 
             if explanations:
                 wandb.log({artifact_name: explanations})
