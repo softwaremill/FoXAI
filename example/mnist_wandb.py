@@ -10,8 +10,7 @@ from streamlit_app.mnist_model import LitMNIST
 
 import wandb
 from autoxai.callbacks.wandb_callback import WandBCallback
-from autoxai.explainer.gradient_shap import GradientSHAPCVExplainer
-from autoxai.explainer.integrated_gradients import IntegratedGradientsCVExplainer
+from autoxai.context_manager import Explainers, ExplainerWithParams
 
 
 def main() -> None:  # pylint: disable = (duplicate-code)
@@ -26,14 +25,16 @@ def main() -> None:  # pylint: disable = (duplicate-code)
     callback = WandBCallback(
         wandb_logger=wandb_logger,
         explainers=[
-            IntegratedGradientsCVExplainer(),
-            GradientSHAPCVExplainer(),
+            ExplainerWithParams(
+                explainer_name=Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER
+            ),
+            ExplainerWithParams(explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER),
         ],
         idx_to_label={index: index for index in range(0, 10)},
     )
     model = LitMNIST(data_dir=data_dir, batch_size=batch_size)
     trainer = Trainer(
-        accelerator="gpu",
+        accelerator="cpu",
         devices=1 if torch.cuda.is_available() else None,
         max_epochs=max_epochs,
         logger=wandb_logger,

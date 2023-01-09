@@ -9,6 +9,7 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
 import wandb
+from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
 from autoxai.explainer.base_explainer import CVExplainer
 
 
@@ -18,7 +19,7 @@ class WandBCallback(pl.callbacks.Callback):
     def __init__(  # pylint: disable = (too-many-arguments)
         self,
         wandb_logger: WandbLogger,
-        explainers: List[CVExplainer],
+        explainers: List[ExplainerWithParams],
         idx_to_label: Dict[int, str],
         max_artifacts: int = 3,
     ):
@@ -27,7 +28,7 @@ class WandBCallback(pl.callbacks.Callback):
         Args:
             wandb_logger: Pytorch-lightning wandb logger.
             idx_to_label: Index to label mapping.
-            explaienrs: List of explainer algorithms.
+            explainers: List of explainer algorithms of type ExplainerWithParams.
             idx_to_label: Dictionary with mapping from model index to label.
             max_artifacts: Number of maximum number of artifacts to be logged.
                 Defaults to 3.
@@ -99,18 +100,22 @@ class WandBCallback(pl.callbacks.Callback):
             Tuple of maps containing attributes, captions and figures for
             every explainer and sample.
         """
-        # for all explainers calculate attributes and create figures
-        for explainer in self.explainers:
-            explainer_name = explainer.algorithm_name
-            attributes = explainer.calculate_features(
-                model=model,
-                input_data=item.to(model.device),
-                pred_label_idx=int(prediction.item()),
-            )
-            attributes_dict[explainer_name].append(attributes.detach().cpu().numpy())
-            caption_dict[explainer_name].append(f"label: {prediction}")
+        with AutoXaiExplainer(
+            model=model,
+            explainers=self.explainers,
+            target=int(prediction.item()),
+        ) as xai_model:
+            _, attributes = xai_model(item.to(model.device))
 
-            figure = explainer.visualize(attributions=attributes, transformed_img=item)
+        for explainer in self.explainers:
+            explainer_name: str = explainer.explainer_name.name
+            explainer_attributes: torch.Tensor = attributes[explainer_name]
+            attributes_dict[explainer_name].append(explainer_attributes)
+            caption_dict[explainer_name].append(f"label: {prediction}")
+            figure = CVExplainer.visualize(
+                attributions=explainer_attributes,
+                transformed_img=item,
+            )
             figures_dict[explainer_name].append(figure)
 
         return attributes_dict, caption_dict, figures_dict
@@ -209,10 +214,10 @@ class WandBCallback(pl.callbacks.Callback):
         """
         # upload artifacts to the wandb experiment
         for explainer in self.explainers:
-            explainer_name = explainer.algorithm_name
+            explainer_name: str = explainer.explainer_name.name
             self.wandb_logger.log_image(
                 key=f"{explainer_name}",
-                images=attributes_dict[explainer_name],
+                images=[val.numpy() for val in attributes_dict[explainer_name]],
                 caption=caption_dict[explainer_name],
             )
 
