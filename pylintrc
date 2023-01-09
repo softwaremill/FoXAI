@@ -147,9 +147,11 @@ disable=abstract-method,
         wrong-import-order,
         xrange-builtin,
         zip-builtin-not-iterating,
-        missing-docstring-magic-method,
         missing-module-docstring,
-        logging-fstring-interpolation
+        logging-fstring-interpolation,
+        consider-using-dict-items,
+        missing-docstring-magic-method
+
 
 [REPORTS]
 
@@ -158,6 +160,11 @@ disable=abstract-method,
 # mypackage.mymodule.MyReporterClass.
 output-format=text
 
+# Put messages in a separate file for each module / package specified on the
+# command line instead of printing them on stdout. Reports (if any) will be
+# written in a file name "pylint_global.[txt|html]". This option is deprecated
+# and it will be removed in Pylint 2.0.
+#files-output=no
 
 # Tells whether to display a full report or only the messages
 reports=no
@@ -269,12 +276,18 @@ max-line-length=120
 
 # Regexp for a line that is allowed to be longer than the limit.
 ignore-long-lines=(?x)(
-  ^\s*(\#\ )?<?https?://\S+>?$|
+  ^\s*(\#\ )?'?"?<?https?://\S+>?$|
   ^\s*(from\s+\S+\s+)?import\s+.+$)
 
 # Allow the body of an if to be on the same line as the test if there is no
 # else.
 single-line-if-stmt=yes
+
+# List of optional constructs for which whitespace checking is disabled. `dict-
+# separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
+# `trailing-comma` allows a space between comma and closing bracket: (a, ).
+# `empty-line` allows space-only lines.
+#no-space-check=dict-separator
 
 # Maximum number of lines in a module
 max-module-lines=99999

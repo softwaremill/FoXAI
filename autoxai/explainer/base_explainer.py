@@ -2,7 +2,7 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 
 import matplotlib
 import numpy as np
@@ -93,6 +93,7 @@ def determine_visualization_methods(
 class CVExplainer(ABC):
     """Abstract explainer class."""
 
+    # TODO: add support in explainer for multiple input models
     @abstractmethod
     def calculate_features(
         self,
@@ -177,3 +178,7 @@ class CVExplainer(ABC):
             use_pyplot=False,
         )
         return figure
+
+
+CVExplainerT = TypeVar("CVExplainerT", bound=CVExplainer)
+"""CVExplainer subclass type."""
