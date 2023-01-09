@@ -176,6 +176,12 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        """If the torch was not recording gradient, before entering in the
+        context manager mode, switch it back to no gradient recording mode.
+
+        If the torch was recording gradient before entering in the context
+        manager modes, nothings changes.
+        """
         torch.set_grad_enabled(self.prev_torch_grad)
 
     def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, torch.Tensor]]:
