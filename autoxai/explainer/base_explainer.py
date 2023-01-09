@@ -41,10 +41,10 @@ def determine_visualization_methods(
     in the explained image.
 
     Args:
-        attributions_np: attributes of the exolained image
+        attributions_np: Attributes of the explained image.
 
     Returns:
-        list of visualization methods to be used,
+        List of visualization methods to be used,
         for the given image attributes.
     """
     explanation_methods: List[ExplanationMethods] = [
@@ -105,7 +105,7 @@ class CVExplainer(ABC):
         """Calculate features of given explainer.
 
         Args:
-            model: Any DNN model You want to use.
+            model: Neural network model You want to explain.
             input_data: Input image.
             pred_label_idx: Predicted label.
 
