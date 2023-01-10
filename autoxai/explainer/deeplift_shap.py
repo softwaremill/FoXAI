@@ -7,14 +7,18 @@ import torch
 from captum.attr import DeepLiftShap, LayerDeepLiftShap
 
 from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer.model_utils import modify_modules
+from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
 
 class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
     """Base DeepLIFT SHAP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -67,7 +71,11 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
 class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
     """DeepLIFTC SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -76,10 +84,6 @@ class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
-
         model = modify_modules(model)
 
         return DeepLiftShap(model=model)
@@ -88,7 +92,12 @@ class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
 class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
     """Layer DeepLIFT SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[DeepLiftShap, LayerDeepLiftShap]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: Optional[torch.nn.Module] = None,
+        **kwargs,
+    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Raises:
@@ -97,12 +106,8 @@ class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
+        if layer is None:
+            layer = get_last_conv_model_layer(model=model)
 
         model = modify_modules(model)
 

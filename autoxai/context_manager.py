@@ -218,9 +218,12 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
             self.model.zero_grad()
             # run explainer
             explainer_kwargs: Dict[str, Any] = self.explainer_map[explainer_name].kwargs
+            explainer_class: CVExplainerT = self.explainer_map[
+                explainer_name
+            ].explainer_class
+
             explanations[explainer_name] = (
-                self.explainer_map[explainer_name]
-                .explainer_class.calculate_features(
+                explainer_class.calculate_features(
                     model=self.model,
                     input_data=input_tensor,
                     pred_label_idx=self.target,

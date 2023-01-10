@@ -11,7 +11,13 @@ from autoxai.explainer.base_explainer import CVExplainer
 class LayerConductanceCVExplainer(CVExplainer):
     """Layer Conductance algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> LayerConductance:
+    # pylint: disable = unused-argument
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: torch.nn.Module,
+        **kwargs,
+    ) -> LayerConductance:
         """Create explainer object.
 
         Raises:
@@ -20,13 +26,6 @@ class LayerConductanceCVExplainer(CVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
-
         conductance = LayerConductance(forward_func=model, layer=layer)
 
         return conductance
@@ -49,6 +48,8 @@ class LayerConductanceCVExplainer(CVExplainer):
             Features matrix.
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        if layer is None:
+            raise ValueError("LayerConductanceCVExplainer requires layer argument.")
 
         conductance = self.create_explainer(model=model, layer=layer)
         attributions = conductance.attribute(

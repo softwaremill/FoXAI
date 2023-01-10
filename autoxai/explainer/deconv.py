@@ -14,7 +14,9 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
     """Base Deconvolution algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[Deconvolution, NeuronDeconvolution]:
+    def create_explainer(
+        self, model: torch.nn.Module, **kwargs
+    ) -> Union[Deconvolution, NeuronDeconvolution]:
         """Create explainer object.
 
         Raises:
@@ -59,7 +61,11 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
 class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
     """Base Deconvolution algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[Deconvolution, NeuronDeconvolution]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> Union[Deconvolution, NeuronDeconvolution]:
         """Create explainer object.
 
         Raises:
@@ -68,10 +74,6 @@ class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
-
         model = modify_modules(model=model)
         deconv = Deconvolution(model=model)
 

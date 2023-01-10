@@ -7,6 +7,7 @@ import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import get_last_conv_model_layer
 
 
 class BaseIntegratedGradientsCVExplainer(CVExplainer):
@@ -14,7 +15,9 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
 
     @abstractmethod
     def create_explainer(
-        self, **kwargs
+        self,
+        model: torch.nn.Module,
+        **kwargs,
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
         """Create explainer object.
 
@@ -57,7 +60,9 @@ class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
     """Integrated Gradients algorithm explainer."""
 
     def create_explainer(
-        self, **kwargs
+        self,
+        model: torch.nn.Module,
+        **kwargs,
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
         """Create explainer object.
 
@@ -67,9 +72,6 @@ class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
         return IntegratedGradients(forward_func=model)
 
@@ -78,7 +80,10 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
     """Layer Integrated Gradients algorithm explainer."""
 
     def create_explainer(
-        self, **kwargs
+        self,
+        model: torch.nn.Module,
+        layer: Optional[torch.nn.Module] = None,
+        **kwargs,
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
         """Create explainer object.
 
@@ -88,11 +93,7 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
+        if layer is None:
+            layer = get_last_conv_model_layer(model=model)
 
         return LayerIntegratedGradients(forward_func=model, layer=layer)

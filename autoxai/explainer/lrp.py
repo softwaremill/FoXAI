@@ -8,14 +8,18 @@ from captum.attr import LRP, LayerLRP
 from captum.attr._utils.lrp_rules import EpsilonRule, GammaRule
 
 from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer.model_utils import modify_modules
+from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
 
 class BaseLRPCVExplainer(CVExplainer):
     """Base LRP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -74,7 +78,11 @@ class BaseLRPCVExplainer(CVExplainer):
 class LRPCVExplainer(BaseLRPCVExplainer):
     """LRP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -83,10 +91,6 @@ class LRPCVExplainer(BaseLRPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
-
         model = self.add_rules(modify_modules(model))
 
         return LRP(model=model)
@@ -95,7 +99,12 @@ class LRPCVExplainer(BaseLRPCVExplainer):
 class LayerLRPCVExplainer(BaseLRPCVExplainer):
     """Layer LRP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[LRP, LayerLRP]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: Optional[torch.nn.Module] = None,
+        **kwargs,
+    ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Raises:
@@ -104,12 +113,8 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
+        if layer is None:
+            layer = get_last_conv_model_layer(model=model)
 
         model = self.add_rules(modify_modules(model))
 
