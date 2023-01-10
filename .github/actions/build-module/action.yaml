@@ -48,3 +48,7 @@ runs:
       run: |
         poetry run mypy . --show-error-context --pretty --namespace-packages --explicit-package-bases
       working-directory: "${{ inputs.moduleFolder }}"
+    - name: Run tests
+      shell: bash
+      run: poetry run pytest
+      working-directory: "${{ inputs.moduleFolder }}"
