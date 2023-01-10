@@ -159,12 +159,13 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         """
         self.prev_torch_grad = torch.is_grad_enabled()
         if not self.prev_torch_grad:
-            log().warning(
-                "Torch model explainer can be called only with enabled\
-                gradients, as it depends on gradients computations. The model is going \
-                to be toggled to gradients enabled. For the \
-                model prediction, the gradient is temporary turned off."
+            log_msg: str = (
+                "Torch model explainer can be called only with enabled "
+                + "gradients, as it depends on gradients computations. The model is going "
+                + "to be toggled to gradients enabled. For the "
+                + "model prediction, the gradient is temporary turned off."
             )
+            log().warning(log_msg)
             torch.set_grad_enabled(True)
 
         if self.model.training:
@@ -202,8 +203,8 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
         if len(args) != 1:
             # TODO: add support in explainer for multiple input models
             raise NotImplementedError(
-                "calculate_features() functions \
-                in explainers does not support multiple inputs to the model."
+                "calculate_features() functions "
+                + "in explainers does not support multiple inputs to the model."
             )
         input_tensor: torch.Tensor = cast(torch.Tensor, args)[0]
         # cashe tensor requires grad state
