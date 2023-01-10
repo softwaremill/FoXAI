@@ -12,9 +12,9 @@ import wandb
 from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
 from autoxai.explainer.base_explainer import CVExplainer
 
-AttributeMap = Dict[str, List[torch.Tensor]]
-CaptionMap = Dict[str, List[str]]
-FigureMap = Dict[str, List[matplotlib.pyplot.Figure]]
+AttributeMapType = Dict[str, List[torch.Tensor]]
+CaptionMapType = Dict[str, List[str]]
+FigureMapType = Dict[str, List[matplotlib.pyplot.Figure]]
 
 
 class WandBCallback(pl.callbacks.Callback):
@@ -81,10 +81,10 @@ class WandBCallback(pl.callbacks.Callback):
         model: pl.LightningModule,
         item: torch.Tensor,
         target_label: torch.Tensor,
-        attributes_dict: AttributeMap,
-        caption_dict: CaptionMap,
-        figures_dict: AttributeMap,
-    ) -> Tuple[AttributeMap, CaptionMap, AttributeMap,]:
+        attributes_dict: AttributeMapType,
+        caption_dict: CaptionMapType,
+        figures_dict: AttributeMapType,
+    ) -> Tuple[AttributeMapType, CaptionMapType, AttributeMapType,]:
         """Calculate explainer attributes, creates captions and figures.
 
         Args:
@@ -175,9 +175,9 @@ class WandBCallback(pl.callbacks.Callback):
         if trainer.val_dataloaders is None:
             return
 
-        attributes_dict: AttributeMap = defaultdict(list)
-        caption_dict: CaptionMap = defaultdict(list)
-        figures_dict: AttributeMap = defaultdict(list)
+        attributes_dict: AttributeMapType = defaultdict(list)
+        caption_dict: CaptionMapType = defaultdict(list)
+        figures_dict: AttributeMapType = defaultdict(list)
 
         for item, target_label in self.iterate_dataloader(
             dataloader_list=trainer.val_dataloaders,
@@ -200,9 +200,9 @@ class WandBCallback(pl.callbacks.Callback):
 
     def log_explanations(
         self,
-        attributes_dict: AttributeMap,
-        caption_dict: CaptionMap,
-        figures_dict: AttributeMap,
+        attributes_dict: AttributeMapType,
+        caption_dict: CaptionMapType,
+        figures_dict: AttributeMapType,
     ) -> None:
         """Log explanation artifacts to W&B experiment.
 
