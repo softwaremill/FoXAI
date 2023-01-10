@@ -6,9 +6,8 @@ from typing import Dict, Optional
 
 import pytorch_lightning as pl
 import torch
-
-from autoxai.cache_manager import LocalDirCacheManager
-from autoxai.path_manager import ExperimentDataClass
+from cache_manager import LocalDirCacheManager
+from path_manager import ExperimentDataClass
 
 logger = logging.getLogger(__name__)
 

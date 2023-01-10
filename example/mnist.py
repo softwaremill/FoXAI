@@ -6,13 +6,12 @@ import os
 import uuid
 
 import torch
+from custom_callback.cache_manager import LocalDirCacheManager
+from custom_callback.callback import CustomPytorchLightningCallback
+from custom_callback.path_manager import ExperimentDataClass
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from streamlit_app.mnist_model import LitMNIST
-
-from autoxai.cache_manager import LocalDirCacheManager
-from autoxai.callback import CustomPytorchLightningCallback
-from autoxai.path_manager import ExperimentDataClass
 
 
 def main() -> None:  # pylint: disable = (duplicate-code)

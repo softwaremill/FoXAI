@@ -9,10 +9,9 @@ from typing import Dict
 import torch
 import torch.nn.functional as F
 import torchvision
+from custom_callback.cache_manager import LocalDirCacheManager
+from custom_callback.path_manager import ExperimentDataClass
 from PIL import Image
-
-from autoxai.cache_manager import LocalDirCacheManager
-from autoxai.path_manager import ExperimentDataClass
 
 
 class DataTransformer:  # pylint: disable = (too-few-public-methods)
