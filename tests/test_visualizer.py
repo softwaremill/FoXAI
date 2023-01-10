@@ -41,7 +41,7 @@ class TestVisualizer:
         visualization_methods = determine_visualization_methods(
             attributions_np=ones_image.numpy()
         )
-        assert len(visualization_methods) == 3
+        assert len(visualization_methods) == 2
 
     def test_no_positive_values(self, minus_ones_image: torch.Tensor):
         _: matplotlib.pyplot.Figure = CVExplainer.visualize(
@@ -52,7 +52,7 @@ class TestVisualizer:
         visualization_methods = determine_visualization_methods(
             attributions_np=minus_ones_image.numpy()
         )
-        assert len(visualization_methods) == 3
+        assert len(visualization_methods) == 2
 
     def test_zeros_image(self, zeros_image: torch.Tensor):
         _: matplotlib.pyplot.Figure = CVExplainer.visualize(

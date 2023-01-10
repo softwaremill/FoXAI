@@ -78,7 +78,7 @@ def determine_visualization_methods(
     else:
         log().info(msg="No negative attributes in the explained model.")
 
-    if np.any(attributions_np != 0):
+    if np.any(attributions_np < 0) and np.any(attributions_np > 0):
         explanation_methods.append(
             ExplanationMethods(
                 method=viz.ImageVisualizationMethod.heat_map,
