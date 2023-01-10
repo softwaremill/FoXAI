@@ -44,7 +44,10 @@ runs:
       working-directory: "${{ inputs.moduleFolder }}"
     - name: Run MyPy checks
       shell: bash
-      continue-on-error: true
       run: |
-        poetry run mypy . --show-error-context --pretty --namespace-packages --explicit-package-bases
+        poetry run mypy -p autoxai --show-error-context --pretty --namespace-packages --explicit-package-bases --ignore-missing-imports
+      working-directory: "${{ inputs.moduleFolder }}"
+    - name: Run tests
+      shell: bash
+      run: poetry run pytest
       working-directory: "${{ inputs.moduleFolder }}"

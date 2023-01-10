@@ -69,19 +69,18 @@ class TestExplainers:
         self, classifier: SampleModel, explainer_function_kwargs: GetExplainerKwargsT
     ):
         """Test all available explainers on a simple classifier model using cpu."""
+        classifier.train()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
         for explainer_name in Explainers:
-            classifier.train()
-            transform = transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Grayscale(),
-                    transforms.Resize(size=224),
-                    transforms.CenterCrop(size=224),
-                ]
-            )
-            img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
-
             function_kwargs: Dict[str, Any] = explainer_function_kwargs(
                 explainer_name=explainer_name, classifier=classifier
             )
@@ -109,18 +108,18 @@ class TestExplainers:
         else:
             log().info("GPU detected. Runing GPU tests...")
 
-        for explainer_name in Explainers:
-            classifier.train()
-            transform = transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Grayscale(),
-                    transforms.Resize(size=224),
-                    transforms.CenterCrop(size=224),
-                ]
-            )
-            img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
+        classifier.train().to(device)
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0).to(device)
 
+        for explainer_name in Explainers:
             function_kwargs: Dict[str, Any] = explainer_function_kwargs(
                 explainer_name=explainer_name, classifier=classifier
             )

@@ -7,6 +7,7 @@ import torch
 from torchvision import transforms
 
 from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
+from autoxai.explainer import IntegratedGradientsCVExplainer
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
 
@@ -187,3 +188,39 @@ class TestAutoXaiExplainer:
             explainer_kwargs = xai_model.explainer_map["CV_OCCLUSION_EXPLAINER"].kwargs
             assert explainer_kwargs["stride_value"] == 5
             assert explainer_kwargs["window_value"] == 5
+
+    def test_model_explanation_with_context_manager_and_raw(
+        self, classifier: torch.nn.Module
+    ):
+        """Test whether explanations from context manager and explainer class
+        gives same results.
+        """
+
+        classifier.eval()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
+
+        explainer_attributes = IntegratedGradientsCVExplainer().calculate_features(
+            model=classifier,
+            input_data=img_tensor,
+            pred_label_idx=0,
+        )
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=[
+                ExplainerWithParams(Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER)
+            ],
+        ) as xai_model:
+            _, autoxai_attributes_dict = xai_model(img_tensor)
+
+        assert torch.equal(
+            autoxai_attributes_dict[Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER.name],
+            explainer_attributes,
+        )

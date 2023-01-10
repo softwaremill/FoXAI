@@ -24,17 +24,26 @@ import torch
 
 from autoxai import explainer
 from autoxai.explainer import (
+    DeconvolutionCVExplainer,
+    DeepLIFTCVExplainer,
+    DeepLIFTSHAPCVExplainer,
     GradientSHAPCVExplainer,
     GuidedGradCAMCVExplainer,
+    InputXGradientCVExplainer,
     IntegratedGradientsCVExplainer,
+    LayerConductanceCVExplainer,
+    LayerDeepLIFTCVExplainer,
+    LayerDeepLIFTSHAPCVExplainer,
     LayerGradCAMCVExplainer,
     LayerGradientSHAPCVExplainer,
+    LayerInputXGradientCVExplainer,
     LayerIntegratedGradientsCVExplainer,
     LayerLRPCVExplainer,
     LayerNoiseTunnelCVExplainer,
     LRPCVExplainer,
     NoiseTunnelCVExplainer,
     OcculusionCVExplainer,
+    SaliencyCVExplainer,
 )
 from autoxai.explainer.base_explainer import CVExplainerT
 from autoxai.logger import create_logger
@@ -67,6 +76,15 @@ class Explainers(Enum):
     CV_LAYER_GRADIENT_SHAP_EXPLAINER: str = LayerGradientSHAPCVExplainer.__name__
     CV_LAYER_LRP_EXPLAINER: str = LayerLRPCVExplainer.__name__
     CV_LAYER_GRADCAM_EXPLAINER: str = LayerGradCAMCVExplainer.__name__
+    CV_INPUT_X_GRADIENT_EXPLAINER: str = InputXGradientCVExplainer.__name__
+    CV_LAYER_INPUT_X_GRADIENT_EXPLAINER: str = LayerInputXGradientCVExplainer.__name__
+    CV_DEEPLIFT_EXPLAINER: str = DeepLIFTCVExplainer.__name__
+    CV_LAYER_DEEPLIFT_EXPLAINER: str = LayerDeepLIFTCVExplainer.__name__
+    CV_DEEPLIFT_SHAP_EXPLAINER: str = DeepLIFTSHAPCVExplainer.__name__
+    CV_LAYER_DEEPLIFT_SHAP_EXPLAINER: str = LayerDeepLIFTSHAPCVExplainer.__name__
+    CV_DECONVOLUTION_EXPLAINER: str = DeconvolutionCVExplainer.__name__
+    CV_LAYER_CONDUCTANCE_EXPLAINER: str = LayerConductanceCVExplainer.__name__
+    CV_SALIENCY_EXPLAINER: str = SaliencyCVExplainer.__name__
 
 
 @dataclass

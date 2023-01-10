@@ -33,6 +33,12 @@ repos:
         types: [ python ]
         entry: poetry run mypy
         args: ["--ignore-missing-imports"]
+      - id: pytest
+        name: pytest
+        files: tests/
+        entry: poetry run pytest
+        language: system
+        pass_filenames: false
       - id: locks
         name: Update locks
         files: pyproject.toml

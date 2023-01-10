@@ -59,7 +59,8 @@ class LayerConductanceCVExplainer(CVExplainer):
                 input_data.shape[1],
                 input_data.shape[2],
                 input_data.shape[3],
-            ),
+                requires_grad=True,
+            ).to(device=input_data.device),
             target=pred_label_idx,
         )
         if attributions.shape[0] == 0:

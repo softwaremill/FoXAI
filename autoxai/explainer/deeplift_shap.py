@@ -54,7 +54,8 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
             input_data.shape[1],
             input_data.shape[2],
             input_data.shape[3],
-        )
+            requires_grad=True,
+        ).to(device=input_data.device)
         attributions = deeplift.attribute(
             input_data,
             target=pred_label_idx,
