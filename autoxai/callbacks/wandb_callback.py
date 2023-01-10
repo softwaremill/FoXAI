@@ -12,6 +12,10 @@ import wandb
 from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
 from autoxai.explainer.base_explainer import CVExplainer
 
+AttributeMap = Dict[str, List[torch.Tensor]]
+CaptionMap = Dict[str, List[str]]
+FigureMap = Dict[str, List[matplotlib.pyplot.Figure]]
+
 
 class WandBCallback(pl.callbacks.Callback):
     """Library callback for Weights and Biases."""
@@ -61,31 +65,26 @@ class WandBCallback(pl.callbacks.Callback):
         """
         index: int = 0
         dataloader: DataLoader
-        items: torch.Tensor
-        target_labels: torch.Tensor
+        item: torch.Tensor
+        target_label: torch.Tensor
         for dataloader in dataloader_list:
             for batch in dataloader:
-                items, target_labels = batch
-                for item, taret_label in zip(items, target_labels):
+                for item, target_label in zip(*batch):
                     if index >= max_items:
                         break
 
                     index += 1
-                    yield item, taret_label
+                    yield item, target_label
 
     def explain(  # pylint: disable = (too-many-arguments)
         self,
         model: pl.LightningModule,
         item: torch.Tensor,
         target_label: torch.Tensor,
-        attributes_dict: Dict[str, List[torch.Tensor]],
-        caption_dict: Dict[str, List[str]],
-        figures_dict: Dict[str, List[matplotlib.pyplot.Figure]],
-    ) -> Tuple[
-        Dict[str, List[torch.Tensor]],
-        Dict[str, List[str]],
-        Dict[str, List[matplotlib.pyplot.Figure]],
-    ]:
+        attributes_dict: AttributeMap,
+        caption_dict: CaptionMap,
+        figures_dict: AttributeMap,
+    ) -> Tuple[AttributeMap, CaptionMap, AttributeMap,]:
         """Calculate explainer attributes, creates captions and figures.
 
         Args:
@@ -176,9 +175,9 @@ class WandBCallback(pl.callbacks.Callback):
         if trainer.val_dataloaders is None:
             return
 
-        attributes_dict: Dict[str, List[torch.Tensor]] = defaultdict(list)
-        caption_dict: Dict[str, List[str]] = defaultdict(list)
-        figures_dict: Dict[str, List[matplotlib.pyplot.Figure]] = defaultdict(list)
+        attributes_dict: AttributeMap = defaultdict(list)
+        caption_dict: CaptionMap = defaultdict(list)
+        figures_dict: AttributeMap = defaultdict(list)
 
         for item, target_label in self.iterate_dataloader(
             dataloader_list=trainer.val_dataloaders,
@@ -201,9 +200,9 @@ class WandBCallback(pl.callbacks.Callback):
 
     def log_explanations(
         self,
-        attributes_dict: Dict[str, List[torch.Tensor]],
-        caption_dict: Dict[str, List[str]],
-        figures_dict: Dict[str, List[matplotlib.pyplot.Figure]],
+        attributes_dict: AttributeMap,
+        caption_dict: CaptionMap,
+        figures_dict: AttributeMap,
     ) -> None:
         """Log explanation artifacts to W&B experiment.
 
