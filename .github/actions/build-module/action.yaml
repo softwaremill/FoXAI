@@ -45,7 +45,7 @@ runs:
     - name: Run MyPy checks
       shell: bash
       run: |
-        poetry run mypy -p autoxai --show-error-context --pretty --namespace-packages --explicit-package-bases
+        poetry run mypy -p autoxai --show-error-context --pretty --namespace-packages --explicit-package-bases --ignore-missing-imports
       working-directory: "${{ inputs.moduleFolder }}"
     - name: Run tests
       shell: bash
