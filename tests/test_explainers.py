@@ -1,7 +1,7 @@
 # pylint: disable = missing-class-docstring
 import inspect
 import logging
-from typing import Any, Callable, Dict, List, Optional, TypeAlias
+from typing import Any, Callable, Dict, List, Optional  # , TypeAlias
 
 import pytest
 import torch
@@ -14,7 +14,7 @@ from autoxai.logger import create_logger
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
 
-GetExplainerKwargsT: TypeAlias = Callable[[Explainers, torch.nn.Module], Dict[str, Any]]
+GetExplainerKwargsT = Callable[[Explainers, torch.nn.Module], Dict[str, Any]]
 
 _LOGGER: Optional[logging.Logger] = None
 
