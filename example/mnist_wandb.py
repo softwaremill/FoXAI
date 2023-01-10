@@ -18,8 +18,9 @@ def main() -> None:  # pylint: disable = (duplicate-code)
 
     data_dir: str = os.environ.get("PATH_DATASETS", ".")
     project_name: str = os.environ.get("PROJECT_NAME", "mnist-classifier")
-    batch_size: int = 256 if torch.cuda.is_available() else 64
-    max_epochs: int = 3
+    accelerator: str = os.environ.get("ACCELERATOR", "cpu")
+    batch_size: int = int(os.environ.get("BATCH_SIZE", "64"))
+    max_epochs: int = int(os.environ.get("EPOCHS", "3"))
     wandb.login()
     wandb_logger = WandbLogger(project=project_name, log_model="all")
     callback = WandBCallback(
@@ -34,7 +35,7 @@ def main() -> None:  # pylint: disable = (duplicate-code)
     )
     model = LitMNIST(data_dir=data_dir, batch_size=batch_size)
     trainer = Trainer(
-        accelerator="cpu",
+        accelerator=accelerator,
         devices=1 if torch.cuda.is_available() else None,
         max_epochs=max_epochs,
         logger=wandb_logger,
