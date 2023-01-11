@@ -89,6 +89,8 @@ class Explainers(Enum):
 
 @dataclass
 class ExplainerWithParams:
+    """Holder for explainer name (class name) and it's params"""
+
     explainer_name: Explainers
     kwargs: Dict[str, Any] = field(default_factory=dict)
 

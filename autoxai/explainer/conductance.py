@@ -16,7 +16,6 @@ class LayerConductanceCVExplainer(CVExplainer):
         self,
         model: torch.nn.Module,
         layer: torch.nn.Module,
-        **kwargs,
     ) -> LayerConductance:
         """Create explainer object.
 

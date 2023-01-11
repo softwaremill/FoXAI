@@ -17,7 +17,6 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
     def create_explainer(
         self,
         model: torch.nn.Module,
-        layer: Optional[torch.nn.Module],
         **kwargs,
     ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
@@ -68,7 +67,6 @@ class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
     def create_explainer(
         self,
         model: torch.nn.Module,
-        layer: Optional[torch.nn.Module],
         **kwargs,
     ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.

@@ -1,7 +1,7 @@
 """File with Deconvolution algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Optional, Union
+from typing import Union
 
 import torch
 from captum.attr import Deconvolution, NeuronDeconvolution
@@ -15,7 +15,8 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
 
     @abstractmethod
     def create_explainer(
-        self, model: torch.nn.Module, **kwargs
+        self,
+        model: torch.nn.Module,
     ) -> Union[Deconvolution, NeuronDeconvolution]:
         """Create explainer object.
 
@@ -43,9 +44,8 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        deconv = self.create_explainer(model=model, layer=layer)
+        deconv = self.create_explainer(model=model)
         attributions = deconv.attribute(
             input_data,
             target=pred_label_idx,
@@ -64,7 +64,6 @@ class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
     def create_explainer(
         self,
         model: torch.nn.Module,
-        **kwargs,
     ) -> Union[Deconvolution, NeuronDeconvolution]:
         """Create explainer object.
 
