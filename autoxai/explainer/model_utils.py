@@ -32,7 +32,7 @@ def get_last_conv_model_layer(model: torch.nn.Module) -> torch.nn.Module:
     Returns:
         the last conv layer of the model
 
-    Raise:
+    Raises:
         ValueError if the model does not contain conv layers.
     """
 
