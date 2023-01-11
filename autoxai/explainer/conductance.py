@@ -46,6 +46,7 @@ class LayerConductanceCVExplainer(CVExplainer):
 
         Raises:
             ValueError: if layer is None
+            RuntimeError: if attributions has shape (0)
         """
 
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
