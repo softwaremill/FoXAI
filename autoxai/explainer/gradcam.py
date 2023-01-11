@@ -43,6 +43,9 @@ class BaseGradCAMCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            ValueError: if layer is None
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:

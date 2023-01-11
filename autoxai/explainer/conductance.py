@@ -20,9 +20,6 @@ class LayerConductanceCVExplainer(CVExplainer):
     ) -> LayerConductance:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -46,7 +43,11 @@ class LayerConductanceCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            ValueError: if layer is None
         """
+
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:
             raise ValueError("LayerConductanceCVExplainer" + LAYER_ARGUMENT_MISSING)
