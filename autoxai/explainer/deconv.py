@@ -4,7 +4,7 @@ from abc import abstractmethod
 from typing import Union
 
 import torch
-from captum.attr import Deconvolution, NeuronDeconvolution
+from captum.attr import Deconvolution
 
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import modify_modules
