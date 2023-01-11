@@ -21,9 +21,6 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -65,9 +62,6 @@ class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         **kwargs,
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.

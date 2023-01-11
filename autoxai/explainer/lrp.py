@@ -22,9 +22,6 @@ class BaseLRPCVExplainer(CVExplainer):
     ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -84,9 +81,6 @@ class LRPCVExplainer(BaseLRPCVExplainer):
         **kwargs,
     ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.

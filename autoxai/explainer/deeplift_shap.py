@@ -21,9 +21,6 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
     ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -78,9 +75,6 @@ class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
         **kwargs,
     ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.

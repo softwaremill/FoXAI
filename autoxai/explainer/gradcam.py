@@ -20,9 +20,6 @@ class BaseGradCAMCVExplainer(CVExplainer):
     ) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -76,9 +73,6 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
     ) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -97,9 +91,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         **kwargs,
     ) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.

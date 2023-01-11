@@ -21,9 +21,6 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -65,9 +62,6 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
         **kwargs,
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.

@@ -21,9 +21,6 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
     ) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -75,9 +72,6 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         **kwargs,
     ) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.

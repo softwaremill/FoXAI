@@ -17,9 +17,6 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
     def create_explainer(self, model: torch.nn.Module, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -62,9 +59,6 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
         **kwargs,
     ) -> NoiseTunnel:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.

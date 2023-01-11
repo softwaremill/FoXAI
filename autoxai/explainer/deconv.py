@@ -20,9 +20,6 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
     ) -> Union[Deconvolution, NeuronDeconvolution]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
         """
@@ -66,9 +63,6 @@ class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
         model: torch.nn.Module,
     ) -> Union[Deconvolution, NeuronDeconvolution]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
