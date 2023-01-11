@@ -6,6 +6,7 @@ import torch
 from captum.attr import LayerConductance
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.errors import LAYER_ARGUMENT_MISSING
 
 
 class LayerConductanceCVExplainer(CVExplainer):
@@ -48,7 +49,7 @@ class LayerConductanceCVExplainer(CVExplainer):
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:
-            raise ValueError("LayerConductanceCVExplainer requires layer argument.")
+            raise ValueError("LayerConductanceCVExplainer" + LAYER_ARGUMENT_MISSING)
 
         conductance = self.create_explainer(model=model, layer=layer)
         attributions = conductance.attribute(

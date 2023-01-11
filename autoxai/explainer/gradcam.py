@@ -6,6 +6,7 @@ from typing import Optional, Union
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
 
+from autoxai.explainer.errors import LAYER_ARGUMENT_MISSING
 from autoxai.explainer.model_utils import modify_modules
 from autoxai.explainer.occulusion import CVExplainer
 
@@ -45,7 +46,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:
-            raise ValueError("GradCAMCVExplainer requires layer to be specified.")
+            raise ValueError("GradCAMCVExplainer" + LAYER_ARGUMENT_MISSING)
 
         guided_cam = self.create_explainer(model=model, layer=layer)
 
