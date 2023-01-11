@@ -61,7 +61,7 @@ class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
     def create_explainer(
         self,
         model: torch.nn.Module,
-    ) -> Union[Deconvolution, NeuronDeconvolution]:
+    ) -> Deconvolution:
         """Create explainer object.
 
         Returns:
