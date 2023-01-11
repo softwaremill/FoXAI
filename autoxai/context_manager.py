@@ -153,6 +153,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
             raise ValueError("At leas one explainer should be defined.")
 
         self.model: torch.nn.Module = model
+        self.prev_model_training_state: bool = self.model.training
 
         self.explainer_map: Dict[str, ExplainerClassWithParams] = {
             explainer_with_params.explainer_name.name: ExplainerClassWithParams(
@@ -200,8 +201,12 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
 
         If the torch was recording gradient before entering in the context
         manager modes, nothings changes.
+
+        Setup model to previous state: `eval` or `training` to match initial
+        state.
         """
         torch.set_grad_enabled(self.prev_torch_grad)
+        self.model.train(self.prev_model_training_state)
 
     def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, torch.Tensor]]:
         """Run model prediction and explain the model with given explainers.

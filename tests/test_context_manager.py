@@ -224,3 +224,23 @@ class TestAutoXaiExplainer:
             autoxai_attributes_dict[Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER.name],
             explainer_attributes,
         )
+
+    def test_model_with_in_training_mode_after_context_manager(
+        self, classifier: torch.nn.Module
+    ):
+        """Test whether model changes state to `eval` in context manager and restores
+        `training` state after exit.
+        """
+
+        classifier.train()
+
+        assert classifier.training
+
+        with torch.no_grad():
+            with AutoXaiExplainer(
+                model=classifier,
+                explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+            ) as _:
+                assert not classifier.training
+
+        assert classifier.training
