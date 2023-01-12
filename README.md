@@ -27,7 +27,7 @@ add support for text, tabular and multimodal data problems in the future.
 # Installation
 
 Installation requirements:
-* `Python` >= 3.8 & < 3.11
+* `Python` >= 3.8 & < 4.0
 
 ## GPU acceleration
 
@@ -200,37 +200,11 @@ poetry run pre-commit install
 ## Note
 ---
 At the moment only explainable algorithms for image classification are
-implemented to test design of the architecture. In future more algorithms
-and more computer vision tasks will be introduces. In the end module should
-work with all types of tasks (NLP, etc.).
-
-### Artifacts directory structure
-
-Module is designed to operate in two modes: offline and online. In offline
-mode user can explain already trained model against test data. In online
-mode user can attach callback to training framework to perform explanations
-of predictions during training at the end of each validation epochs.
-
-Module is using cache directory to store artifacts and configuration similar
-to `Tensorboard`. There are many levels of directory structure:
-```bash
-cache_directory/
-└── <date>
-    ├── <uuid>
-    │   ├── data
-    │   │   ├── <data>.pkl
-    |   |   └─── ...
-    │   ├── labels
-    │   │   └── idx_to_label.json.pkl
-    |   └── training
-    |       ├── <epoch>
-    |       |   └── model.pt
-    ...     ...
-```
+implemented.. In future more algorithms and more computer vision tasks will
+be introduces. In the end module should work with all types of tasks (NLP, etc.).
 
 ### Examples
 
-In `example/streamlit_app/` directory You can find sample application with
-simple GUI to present interactive explanations of given models.
-Scripts in `example/` directory contain samples of training models using
+In `example/notebooks/` directory You can find notebooks with example usage of this
+framework. Scripts in `example/` directory contain samples of training models using
 different callbacks.
