@@ -1,10 +1,10 @@
 """File with Deconvolution algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Optional, Union
+from typing import Union
 
 import torch
-from captum.attr import Deconvolution, NeuronDeconvolution
+from captum.attr import Deconvolution
 
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import modify_modules
@@ -14,11 +14,11 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
     """Base Deconvolution algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[Deconvolution, NeuronDeconvolution]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+    ) -> Deconvolution:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
@@ -41,9 +41,8 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
         Returns:
             Features matrix.
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
-        deconv = self.create_explainer(model=model, layer=layer)
+        deconv = self.create_explainer(model=model)
         attributions = deconv.attribute(
             input_data,
             target=pred_label_idx,
@@ -59,19 +58,15 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
 class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
     """Base Deconvolution algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[Deconvolution, NeuronDeconvolution]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+    ) -> Deconvolution:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
-
         model = modify_modules(model=model)
         deconv = Deconvolution(model=model)
 

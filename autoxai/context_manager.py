@@ -89,6 +89,8 @@ class Explainers(Enum):
 
 @dataclass
 class ExplainerWithParams:
+    """Holder for explainer name (class name) and it's params"""
+
     explainer_name: Explainers
     kwargs: Dict[str, Any] = field(default_factory=dict)
 
@@ -153,6 +155,7 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
             raise ValueError("At leas one explainer should be defined.")
 
         self.model: torch.nn.Module = model
+        self.prev_model_training_state: bool = self.model.training
 
         self.explainer_map: Dict[str, ExplainerClassWithParams] = {
             explainer_with_params.explainer_name.name: ExplainerClassWithParams(
@@ -200,8 +203,12 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
 
         If the torch was recording gradient before entering in the context
         manager modes, nothings changes.
+
+        Setup model to previous state: `eval` or `training` to match initial
+        state.
         """
         torch.set_grad_enabled(self.prev_torch_grad)
+        self.model.train(self.prev_model_training_state)
 
     def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, torch.Tensor]]:
         """Run model prediction and explain the model with given explainers.
@@ -236,9 +243,12 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
             self.model.zero_grad()
             # run explainer
             explainer_kwargs: Dict[str, Any] = self.explainer_map[explainer_name].kwargs
+            explainer_class: CVExplainerT = self.explainer_map[
+                explainer_name
+            ].explainer_class
+
             explanations[explainer_name] = (
-                self.explainer_map[explainer_name]
-                .explainer_class.calculate_features(
+                explainer_class.calculate_features(
                     model=self.model,
                     input_data=input_tensor,
                     pred_label_idx=self.target,

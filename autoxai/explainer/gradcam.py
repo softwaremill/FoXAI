@@ -6,6 +6,7 @@ from typing import Optional, Union
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
 
+from autoxai.explainer.errors import LAYER_ARGUMENT_MISSING
 from autoxai.explainer.model_utils import modify_modules
 from autoxai.explainer.occulusion import CVExplainer
 
@@ -14,11 +15,10 @@ class BaseGradCAMCVExplainer(CVExplainer):
     """Base GradCAM algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[GuidedGradCam, LayerGradCam]:
+    def create_explainer(
+        self, model: torch.nn.Module, layer: torch.nn.Module, **kwargs
+    ) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
@@ -40,8 +40,14 @@ class BaseGradCAMCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            ValueError: if layer is None
+            RuntimeError: if attributions has shape (0)
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        if layer is None:
+            raise ValueError("GradCAMCVExplainer" + LAYER_ARGUMENT_MISSING)
 
         guided_cam = self.create_explainer(model=model, layer=layer)
 
@@ -60,22 +66,17 @@ class BaseGradCAMCVExplainer(CVExplainer):
 class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
     """GuidedGradCAM algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GuidedGradCam, LayerGradCam]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: torch.nn.Module,
+        **kwargs,
+    ) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
-
         model = modify_modules(model)
 
         return GuidedGradCam(model=model, layer=layer)
@@ -84,22 +85,17 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
 class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
     """Layer GradCAM algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GuidedGradCam, LayerGradCam]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: torch.nn.Module,
+        **kwargs,
+    ) -> Union[GuidedGradCam, LayerGradCam]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
-
         model = modify_modules(model)
 
         return LayerGradCam(forward_func=model, layer=layer)
