@@ -2,7 +2,7 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, TypeVar
+from typing import Optional, Tuple, TypeVar
 
 import cv2
 import matplotlib
@@ -32,63 +32,6 @@ class ExplanationMethods:
     method: viz.ImageVisualizationMethod
     sign: viz.VisualizeSign
     title: str
-
-
-def determine_visualization_methods(
-    attributions_np: np.ndarray,
-) -> List[ExplanationMethods]:
-    """Determine which visualization methods to use,
-    based on presents of positive and negative values
-    in the explained image.
-
-    Args:
-        attributions_np: Attributes of the explained image.
-
-    Returns:
-        List of visualization methods to be used,
-        for the given image attributes.
-    """
-    explanation_methods: List[ExplanationMethods] = [
-        ExplanationMethods(
-            method=viz.ImageVisualizationMethod.original_image,
-            sign=viz.VisualizeSign.all,
-            title="Original image",
-        )
-    ]
-
-    # check whether we can explain model with positive and negative attributes
-    if np.any(attributions_np > 0):
-        explanation_methods.append(
-            ExplanationMethods(
-                method=viz.ImageVisualizationMethod.masked_image,
-                sign=viz.VisualizeSign.positive,
-                title="Positive attributes",
-            )
-        )
-    else:
-        log().info(msg="No positive attributes in the explained model.")
-
-    if np.any(attributions_np < 0):
-        explanation_methods.append(
-            ExplanationMethods(
-                method=viz.ImageVisualizationMethod.masked_image,
-                sign=viz.VisualizeSign.negative,
-                title="Negative attributes",
-            )
-        )
-    else:
-        log().info(msg="No negative attributes in the explained model.")
-
-    if np.any(attributions_np != 0):
-        explanation_methods.append(
-            ExplanationMethods(
-                method=viz.ImageVisualizationMethod.masked_image,
-                sign=viz.VisualizeSign.positive,
-                title="All attributes",
-            )
-        )
-
-    return explanation_methods
 
 
 class CVExplainer(ABC):
@@ -144,16 +87,30 @@ class CVExplainer(ABC):
         Returns:
             Image with paired figures: original image and features heatmap.
         """
+        if len(attributions.shape) == 4:
+            # if we have attributes with shape (B x C x W x H)
+            # where B is batch size, C is color, W is width and H is height dimension
+            attributes_matrix = attributions[0][0].numpy()
+        elif len(attributions.shape) == 3:
+            # if we have attributes with shape (B x W x H)
+            # where B is batch size, W is width and H is height dimension
+            attributes_matrix = attributions[0].numpy()
+        else:
+            raise ValueError(f"Incorrect shape of attributions: {attributions.shape}")
+
         transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
-        (w, h) = (transformed_img.shape[2], transformed_img.shape[1])
-        value = attributions[0][0].numpy()
-        value = cv2.resize(value, (w, h))
-        value = torch.tensor(value.reshape(1, value.shape[0], value.shape[1]))
+        (width, height) = (transformed_img.shape[2], transformed_img.shape[1])
+
+        resized_attributes = cv2.resize(attributes_matrix, (width, height))
+        single_channel_attributes = resized_attributes.reshape(
+            1,
+            resized_attributes.shape[0],
+            resized_attributes.shape[1],
+        )
 
         grayscale_attributes = np.transpose(
-            convert_float_to_uint8(value.detach().cpu().numpy()), (1, 2, 0)
+            convert_float_to_uint8(single_channel_attributes), (1, 2, 0)
         ).astype(np.uint8)
-        # create figure from attributes and original image
         normalized_transformed_img = np.transpose(
             convert_float_to_uint8(transformed_img_np), (1, 2, 0)
         )
