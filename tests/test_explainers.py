@@ -65,6 +65,31 @@ class TestExplainers:
 
         return get_function_kwargs
 
+    @pytest.fixture
+    def check_currect_cuda_installed(self) -> bool:
+        """Test whether CUDA accelerated torch is installed.
+
+        Code copied from `torch/cuda/__init__.py` file, function `_check_cubins()`.
+        """
+        if torch.version.cuda is None:  # on ROCm we don't want this check
+            return False
+
+        arch_list = torch.cuda.get_arch_list()
+        if len(arch_list) == 0:
+            return False
+
+        correct_cuda_installed: bool = False
+        supported_sm = [int(arch.split("_")[1]) for arch in arch_list if "sm_" in arch]
+        for idx in range(torch.cuda.device_count()):
+            cap_major, _ = torch.cuda.get_device_capability(idx)
+            # NVIDIA GPU compute architectures are backward compatible within major version
+            supported = any(sm // 10 == cap_major for sm in supported_sm)
+            if supported:
+                correct_cuda_installed = True
+                break
+
+        return correct_cuda_installed
+
     def test_explainers_cpu(
         self, classifier: SampleModel, explainer_function_kwargs: GetExplainerKwargsT
     ):
@@ -97,10 +122,16 @@ class TestExplainers:
                 _, _ = xai_model(img_tensor)
 
     def test_explainers_gpu(
-        self, classifier: SampleModel, explainer_function_kwargs: GetExplainerKwargsT
+        self,
+        classifier: SampleModel,
+        explainer_function_kwargs: GetExplainerKwargsT,
+        check_currect_cuda_installed: bool,
     ):
         """Test all available explainers on a simple classifier model using gpu."""
 
+        if not check_currect_cuda_installed:
+            log().warning("CUDA accelerated torch is not installed. Skipping GPU test.")
+            return
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if device != torch.device("cuda"):
             log().warning("GPU not detected. Skiping GPU test.")
