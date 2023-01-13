@@ -2,8 +2,9 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, TypeVar
+from typing import List, Optional, Tuple, TypeVar
 
+import cv2
 import matplotlib
 import numpy as np
 import torch
@@ -59,7 +60,7 @@ def determine_visualization_methods(
     if np.any(attributions_np > 0):
         explanation_methods.append(
             ExplanationMethods(
-                method=viz.ImageVisualizationMethod.heat_map,
+                method=viz.ImageVisualizationMethod.masked_image,
                 sign=viz.VisualizeSign.positive,
                 title="Positive attributes",
             )
@@ -70,7 +71,7 @@ def determine_visualization_methods(
     if np.any(attributions_np < 0):
         explanation_methods.append(
             ExplanationMethods(
-                method=viz.ImageVisualizationMethod.heat_map,
+                method=viz.ImageVisualizationMethod.masked_image,
                 sign=viz.VisualizeSign.negative,
                 title="Negative attributes",
             )
@@ -81,8 +82,8 @@ def determine_visualization_methods(
     if np.any(attributions_np != 0):
         explanation_methods.append(
             ExplanationMethods(
-                method=viz.ImageVisualizationMethod.heat_map,
-                sign=viz.VisualizeSign.all,
+                method=viz.ImageVisualizationMethod.masked_image,
+                sign=viz.VisualizeSign.positive,
                 title="All attributes",
             )
         )
@@ -124,59 +125,51 @@ class CVExplainer(ABC):
 
     @classmethod
     def visualize(
-        cls, attributions: torch.Tensor, transformed_img: torch.Tensor
+        cls,
+        attributions: torch.Tensor,
+        transformed_img: torch.Tensor,
+        title: str = "",
+        figsize: Tuple[int, int] = (8, 8),
+        alpha: float = 0.5,
     ) -> matplotlib.pyplot.Figure:
         """Create image with calculated features.
 
         Args:
             attributions: Features.
             transformed_img: Image.
+            title: Title of the figure.
+            figsize: Tuple with size of figure.
+            alpha: Opacity level.
 
         Returns:
             Image with paired figures: original image and features heatmap.
         """
-        # for single color, e.g. MNIST data copy one colour channel 3 times to simulate RGB
-        if len(attributions.shape) == 4 and attributions.shape[1] == 1:
-            attributions = attributions.expand(
-                1, 3, attributions.shape[2], attributions.shape[3]
-            )
-        elif len(attributions.shape) == 3 and attributions.shape[0] == 1:
-            attributions = attributions.expand(
-                3, attributions.shape[1], attributions.shape[2]
-            )
-        if len(transformed_img.shape) == 4 and transformed_img.shape[1] == 1:
-            transformed_img = transformed_img.expand(
-                1, 3, transformed_img.shape[2], transformed_img.shape[3]
-            )
-        elif len(transformed_img.shape) == 3 and transformed_img.shape[0] == 1:
-            transformed_img = transformed_img.expand(
-                3, transformed_img.shape[1], transformed_img.shape[2]
-            )
+        transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
+        (w, h) = (transformed_img.shape[2], transformed_img.shape[1])
+        value = attributions[0][0].numpy()
+        value = cv2.resize(value, (w, h))
+        value = torch.tensor(value.reshape(1, value.shape[0], value.shape[1]))
 
-        # change dimension from (C x H x W) to (H x W x C)
-        # where C is colour dimension, H and W are height and width dimensions
-        attributions_np: np.ndarray = attributions.squeeze().detach().cpu().numpy()
-        transformed_img_np: np.ndarray = (
-            transformed_img.squeeze().detach().cpu().numpy()
-        )
-        if len(attributions.shape) >= 3:
-            attributions_np = np.transpose(attributions_np, (1, 2, 0))
-        if len(transformed_img.shape) >= 3:
-            transformed_img_np = np.transpose(transformed_img_np, (1, 2, 0))
-
-        explanation_methods: List[ExplanationMethods] = determine_visualization_methods(
-            attributions_np=attributions_np
+        grayscale_attributes = np.transpose(
+            convert_float_to_uint8(value.detach().cpu().numpy()), (1, 2, 0)
+        ).astype(np.uint8)
+        # create figure from attributes and original image
+        normalized_transformed_img = np.transpose(
+            convert_float_to_uint8(transformed_img_np), (1, 2, 0)
         )
 
-        figure, _ = viz.visualize_image_attr_multiple(
-            attr=attributions_np,
-            original_image=convert_float_to_uint8(array=transformed_img_np),
-            methods=[explanation.method.name for explanation in explanation_methods],
-            signs=[explanation.sign.name for explanation in explanation_methods],
-            titles=[explanation.title for explanation in explanation_methods],
-            show_colorbar=True,
-            use_pyplot=False,
+        figure = matplotlib.figure.Figure(figsize=figsize)
+        axis = figure.subplots()
+        axis.imshow(np.mean(normalized_transformed_img, axis=2), cmap="gray")
+        heatmap_plot = axis.imshow(
+            grayscale_attributes, cmap=matplotlib.cm.jet, vmin=0, vmax=255, alpha=alpha
         )
+
+        figure.colorbar(heatmap_plot, label="Pixel relevance")
+        axis.get_xaxis().set_visible(False)
+        axis.get_yaxis().set_visible(False)
+        axis.set_title(title)
+
         return figure
 
 
