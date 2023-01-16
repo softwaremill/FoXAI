@@ -244,3 +244,53 @@ def test_layer_deeplift_raises_error_if_attributes_are_empty(
             input_data=torch.zeros((1, 1, 28, 28)),
             pred_label_idx=0,
         )
+
+
+@patch("autoxai.explainer.gradcam.GuidedGradCam.attribute")
+def test_gradcam_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.GuidedGradCAMCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+            layer=model.conv1,
+        )
+
+
+@patch("autoxai.explainer.gradcam.LayerGradCam.attribute")
+def test_layer_gradcam_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerGradCAMCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+            layer=model.conv1,
+        )
+
+
+@patch("autoxai.explainer.gradcam.LayerGradCam.attribute")
+def test_layer_gradcam_raises_error_if_no_layer_passed(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises ValueError when missing argument."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor(0)
+    explainer_alg = explainer.LayerGradCAMCVExplainer()
+    with pytest.raises(ValueError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
