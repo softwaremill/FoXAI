@@ -1,14 +1,12 @@
 """Abstract Explainer class."""
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Optional, Tuple, TypeVar
 
 import cv2
 import matplotlib
 import numpy as np
 import torch
-from captum.attr import visualization as viz
 
 from autoxai.array_utils import convert_float_to_uint8
 from autoxai.logger import create_logger
@@ -23,15 +21,6 @@ def log() -> logging.Logger:
     if _LOGGER is None:
         _LOGGER = create_logger(__name__)
     return _LOGGER
-
-
-@dataclass
-class ExplanationMethods:
-    """Holder for the explainer attributes visualization method."""
-
-    method: viz.ImageVisualizationMethod
-    sign: viz.VisualizeSign
-    title: str
 
 
 class CVExplainer(ABC):
