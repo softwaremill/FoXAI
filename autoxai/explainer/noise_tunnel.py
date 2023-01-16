@@ -78,6 +78,10 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
     ) -> NoiseTunnel:
         """Create explainer object.
 
+        Uses parameter `layer` from `kwargs`. If not provided function will call
+        `get_last_conv_model_layer` function to obtain last `torch.nn.Conv2d` layer
+        from provided model.
+
         Returns:
             Explainer object.
 
