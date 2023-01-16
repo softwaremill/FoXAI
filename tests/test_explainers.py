@@ -422,3 +422,35 @@ def test_layer_integrated_gradients_raises_error_if_attributes_are_empty(
             input_data=torch.zeros((1, 1, 28, 28)),
             pred_label_idx=0,
         )
+
+
+@patch("autoxai.explainer.noise_tunnel.NoiseTunnel.attribute")
+def test_noise_tunnel_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.NoiseTunnelCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.noise_tunnel.NoiseTunnel.attribute")
+def test_layer_noise_tunnel_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerNoiseTunnelCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
