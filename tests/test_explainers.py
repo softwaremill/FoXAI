@@ -180,3 +180,35 @@ def test_deconvolution_raises_error_if_attributes_are_empty(
             input_data=torch.zeros((1, 1, 28, 28)),
             pred_label_idx=0,
         )
+
+
+@patch("autoxai.explainer.deeplift_shap.DeepLiftShap.attribute")
+def test_deepliftshap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.DeepLIFTSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.deeplift_shap.LayerDeepLiftShap.attribute")
+def test_layer_deepliftshap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerDeepLIFTSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
