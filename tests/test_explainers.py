@@ -294,3 +294,35 @@ def test_layer_gradcam_raises_error_if_no_layer_passed(
             input_data=torch.zeros((1, 1, 28, 28)),
             pred_label_idx=0,
         )
+
+
+@patch("autoxai.explainer.gradient_shap.GradientShap.attribute")
+def test_gradient_shap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.GradientSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.gradient_shap.LayerGradientShap.attribute")
+def test_layer_gradient_shap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerGradientSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
