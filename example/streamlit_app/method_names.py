@@ -28,14 +28,14 @@ from autoxai.explainer.noise_tunnel import (
     LayerNoiseTunnelCVExplainer,
     NoiseTunnelCVExplainer,
 )
-from autoxai.explainer.occulusion import OcculusionCVExplainer
+from autoxai.explainer.occlusion import OcclusionCVExplainer
 from autoxai.explainer.saliency import SaliencyCVExplainer
 
 
 class MethodName(Enum):
     """XAI algorithms names."""
 
-    OCCULUSION = OcculusionCVExplainer().algorithm_name
+    OCCULUSION = OcclusionCVExplainer().algorithm_name
     NOISE_TUNNEL = NoiseTunnelCVExplainer().algorithm_name
     LAYER_NOISE_TUNNEL = LayerNoiseTunnelCVExplainer().algorithm_name
     GRADIENT_SHAP = GradientSHAPCVExplainer().algorithm_name

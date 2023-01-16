@@ -6,8 +6,8 @@ from captum.attr import Occlusion
 from autoxai.explainer.base_explainer import CVExplainer
 
 
-class OcculusionCVExplainer(CVExplainer):
-    """Occulusion algorithm explainer."""
+class OcclusionCVExplainer(CVExplainer):
+    """Occlusion algorithm explainer."""
 
     def calculate_features(
         self,
@@ -16,7 +16,7 @@ class OcculusionCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Occulusion algorithm explainer.
+        """Generate features image with Occlusion algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -40,4 +40,9 @@ class OcculusionCVExplainer(CVExplainer):
             sliding_window_shapes=sliding_window_shapes,
             baselines=0,
         )
+        if attributions.shape[0] == 0:
+            raise RuntimeError(
+                "Error occured during attribution calculation. "
+                + "Make sure You are applying this method to CNN network.",
+            )
         return attributions

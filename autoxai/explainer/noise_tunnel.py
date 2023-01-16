@@ -6,8 +6,8 @@ from typing import Optional
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
+from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer
-from autoxai.explainer.occulusion import CVExplainer
 
 
 class BaseNoiseTunnelCVExplainer(CVExplainer):
