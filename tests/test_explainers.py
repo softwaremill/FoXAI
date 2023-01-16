@@ -2,6 +2,7 @@
 import inspect
 import logging
 from typing import Any, Callable, Dict, List, Optional  # , TypeAlias
+from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
@@ -10,6 +11,7 @@ from torchvision import transforms
 from autoxai import explainer
 from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
 from autoxai.explainer.base_explainer import CVExplainerT
+from autoxai.explainer.conductance import LayerConductanceCVExplainer
 from autoxai.logger import create_logger
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
@@ -134,3 +136,32 @@ class TestExplainers:
                 ],
             ) as xai_model:
                 _, _ = xai_model(img_tensor)
+
+
+def test_conductance_raises_error_if_no_layer_passed() -> None:
+    """Test if function raises ValueError when missing argument."""
+    model = SampleModel()
+    explainer_alg = LayerConductanceCVExplainer()
+    with pytest.raises(ValueError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.Tensor(0),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.conductance.LayerConductance.attribute")
+def test_conductance_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = LayerConductanceCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+            layer=model.conv1,
+        )
