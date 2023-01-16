@@ -1,69 +1,18 @@
 """File contains CLI application for updating W&B experiment artifacts."""
 
-import argparse
-import importlib
-import json
 import os
 from typing import Any, Dict, List
 
+import hydra
 import pandas as pd
 import pytorch_lightning as pl
 import torch
+from omegaconf import DictConfig
 from torchvision.io import ImageReadMode, read_image
 
 import wandb
 from autoxai.cli.config_model import ConfigDataModel, MethodDataModel
 from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
-
-
-def parse_args() -> argparse.Namespace:
-    """Parse CLI arguments and return namespace.
-
-    Returns:
-        Namespace with parsed arguments.
-    """
-    parser = argparse.ArgumentParser(
-        description="Update autoxai artifacts in W&B experiment."
-    )
-    parser.add_argument(
-        "--username",
-        dest="username",
-        type=str,
-        required=True,
-        help="Name of user name.",
-    )
-    parser.add_argument(
-        "--experiment",
-        dest="experiment",
-        type=str,
-        required=True,
-        help="Name of experiment to update.",
-    )
-    parser.add_argument(
-        "--run_id", dest="run_id", type=str, required=True, help="Run ID."
-    )
-    parser.add_argument(
-        "--config_path",
-        dest="config_path",
-        type=str,
-        required=True,
-        help="Path to config containing list of explainers to use and their parameters.",
-    )
-    parser.add_argument(
-        "--import_path",
-        dest="import_path",
-        type=str,
-        required=True,
-        help="Python import path to module containing explaioned model class.",
-    )
-    parser.add_argument(
-        "--class_name",
-        dest="class_name",
-        type=str,
-        required=True,
-        help="Name of a explaioned model class.",
-    )
-    return parser.parse_args()
 
 
 def download_upload_metadata(api_run: wandb.apis.public.Run) -> Dict[str, Any]:
@@ -155,39 +104,18 @@ def load_images_to_tensors(
     return image_list
 
 
-def get_model_class(import_path: str, class_name: str) -> pl.LightningModule:
-    """Get explained model class from dynamic import.
-
-    Args:
-        import_path: Python import path to module containing explaioned model class.
-        class_name: Name of a explaioned model class.
-
-    Returns:
-        Explained model class.
-    """
-    # import explained model class
-    module = importlib.import_module(import_path)
-    model: pl.LightningModule = getattr(module, class_name)
-    return model
-
-
-def load_config(path: str) -> ConfigDataModel:
+def load_config(config: DictConfig) -> ConfigDataModel:
     """Load and validate config with explainers to apply.
 
     Args:
-        path: Path to config JSON file.
+        config: DictConfig object loaded from yaml config file.
 
     Returns:
         ConfigDataModel object.
-
-    Raises:
-        jsonschema.exceptions.SchemaError if config is invalid.
     """
-    with open(path, "r", encoding="utf-8") as file:
-        config = json.load(file)
 
     method_config_list: List[MethodDataModel] = []
-    for entry in config:
+    for entry in config["explainers"]:
         explainer_config: Dict[str, Any] = entry["explainer_with_params"]
         explainer: ExplainerWithParams = ExplainerWithParams(
             explainer_name=Explainers[explainer_config["explainer_name"]],
@@ -204,22 +132,19 @@ def load_config(path: str) -> ConfigDataModel:
     return config_data
 
 
-def main() -> None:  # pylint: disable = (too-many-locals)
+@hydra.main()
+def main(cfg: DictConfig) -> None:  # pylint: disable = (too-many-locals)
     """Entry point for CLI application."""
-    args = parse_args()
 
-    model_class: pl.LightningModule = get_model_class(
-        import_path=args.import_path,
-        class_name=args.class_name,
-    )
+    model_class: pl.LightningModule = hydra.utils.instantiate(cfg.classifier)
     wandb.login()
 
-    config: ConfigDataModel = load_config(path=args.config_path)
+    config: ConfigDataModel = load_config(cfg)
 
     # resume experiment run that has to be updated
     run = wandb.init(
-        project=args.experiment,
-        id=args.run_id,
+        project=cfg.experiment,
+        id=cfg.run_id,
         resume="allow",
     )
     if run is None:
@@ -232,7 +157,7 @@ def main() -> None:  # pylint: disable = (too-many-locals)
 
     api = wandb.Api()
     run_api: wandb.apis.public.Run = api.run(
-        f"{args.username}/{args.experiment}/{args.run_id}"
+        f"{cfg.username}/{cfg.experiment}/{cfg.run_id}"
     )
 
     upload_data_metadata = download_upload_metadata(api_run=run_api)
@@ -248,7 +173,7 @@ def main() -> None:  # pylint: disable = (too-many-locals)
     model_paths: List[str] = fetch_model_checkpoints(
         api=api,
         model_artifact_root=model_artifact_root,
-        project=args.experiment,
+        project=cfg.experiment,
     )
 
     image_list: List[torch.Tensor] = load_images_to_tensors(
@@ -264,7 +189,7 @@ def main() -> None:  # pylint: disable = (too-many-locals)
     )
     # filter out artifacts from different runs
     sorted_paths = [
-        val for val in sorted_paths if args.run_id in val.split("/")[-2].split(":")[0]
+        val for val in sorted_paths if cfg.run_id in val.split("/")[-2].split(":")[0]
     ]
 
     for explainer_config in config.method_config_list:
@@ -296,7 +221,3 @@ def main() -> None:  # pylint: disable = (too-many-locals)
 
             if explanations:
                 wandb.log({artifact_name: explanations})
-
-
-if __name__ == "__main__":
-    main()
