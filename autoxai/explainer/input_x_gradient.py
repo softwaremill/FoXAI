@@ -7,6 +7,7 @@ import torch
 from captum.attr import InputXGradient, LayerGradientXActivation
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import get_last_conv_model_layer
 
 
 class BaseInputXGradientSHAPCVExplainer(CVExplainer):
@@ -14,12 +15,11 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
 
     @abstractmethod
     def create_explainer(
-        self, **kwargs
+        self,
+        model: torch.nn.Module,
+        **kwargs,
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
@@ -57,19 +57,15 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
     """Input X Gradient algorithm explainer."""
 
     def create_explainer(
-        self, **kwargs
+        self,
+        model: torch.nn.Module,
+        **kwargs,
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
         return InputXGradient(forward_func=model)
 
@@ -78,21 +74,21 @@ class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
     """Layer Input X Gradient algorithm explainer."""
 
     def create_explainer(
-        self, **kwargs
+        self,
+        model: torch.nn.Module,
+        layer: Optional[torch.nn.Module] = None,
+        **kwargs,
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
 
-        Raises:
-            RuntimeError: When passed arguments are invalid.
-
         Returns:
             Explainer object.
+
+        Raises:
+            ValueError: if model does not contain conv layers
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
+
+        if layer is None:
+            layer = get_last_conv_model_layer(model=model)
 
         return LayerGradientXActivation(forward_func=model, layer=layer)

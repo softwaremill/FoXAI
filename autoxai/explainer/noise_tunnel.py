@@ -6,6 +6,7 @@ from typing import Optional
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
+from autoxai.explainer.model_utils import get_last_conv_model_layer
 from autoxai.explainer.occulusion import CVExplainer
 
 
@@ -13,11 +14,8 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
     """Base Noise Tunnel algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, model: torch.nn.Module, **kwargs) -> NoiseTunnel:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
@@ -55,19 +53,16 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
 class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
     """Noise Tunnel algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> NoiseTunnel:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
-
         integrated_gradients = IntegratedGradients(forward_func=model)
         return NoiseTunnel(integrated_gradients)
 
@@ -75,21 +70,22 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
 class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
     """Layer Noise Tunnel algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> NoiseTunnel:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: Optional[torch.nn.Module] = None,
+        **kwargs,
+    ) -> NoiseTunnel:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
+
+        Raises:
+            ValueError: if model does not contain conv layers
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
+        if layer is None:
+            layer = get_last_conv_model_layer(model=model)
 
         integrated_gradients = LayerIntegratedGradients(forward_func=model, layer=layer)
         return NoiseTunnel(integrated_gradients)

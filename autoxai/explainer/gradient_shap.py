@@ -7,17 +7,19 @@ import torch
 from captum.attr import GradientShap, LayerGradientShap
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import get_last_conv_model_layer
 
 
 class BaseGradientSHAPCVExplainer(CVExplainer):
     """Base Gradient SHAP algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
@@ -64,18 +66,16 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
 class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
     """Gradient SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        **kwargs,
+    ) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        if model is None:
-            raise RuntimeError(f"Missing or `None` argument `model` passed: {kwargs}")
 
         return GradientShap(forward_func=model)
 
@@ -83,20 +83,22 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
 class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
     """Layer Gradient SHAP algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> Union[GradientShap, LayerGradientShap]:
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: Optional[torch.nn.Module] = None,
+        **kwargs,
+    ) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
+
+        Raises:
+            ValueError: if model does not contain conv layers
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
+
+        if layer is None:
+            layer = get_last_conv_model_layer(model=model)
 
         return LayerGradientShap(forward_func=model, layer=layer)

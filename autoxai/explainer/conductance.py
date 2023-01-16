@@ -6,27 +6,23 @@ import torch
 from captum.attr import LayerConductance
 
 from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.errors import LAYER_ARGUMENT_MISSING
 
 
 class LayerConductanceCVExplainer(CVExplainer):
     """Layer Conductance algorithm explainer."""
 
-    def create_explainer(self, **kwargs) -> LayerConductance:
+    # pylint: disable = unused-argument
+    def create_explainer(
+        self,
+        model: torch.nn.Module,
+        layer: torch.nn.Module,
+    ) -> LayerConductance:
         """Create explainer object.
-
-        Raises:
-            RuntimeError: When passed arguments are invalid.
 
         Returns:
             Explainer object.
         """
-        model: Optional[torch.nn.Module] = kwargs.get("model", None)
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        if model is None or layer is None:
-            raise RuntimeError(
-                f"Missing or `None` arguments `model` or `layer` passed: {kwargs}"
-            )
-
         conductance = LayerConductance(forward_func=model, layer=layer)
 
         return conductance
@@ -47,8 +43,15 @@ class LayerConductanceCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            ValueError: if layer is None
+            RuntimeError: if attribution has shape (0)
         """
+
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        if layer is None:
+            raise ValueError("LayerConductanceCVExplainer" + LAYER_ARGUMENT_MISSING)
 
         conductance = self.create_explainer(model=model, layer=layer)
         attributions = conductance.attribute(
@@ -58,7 +61,8 @@ class LayerConductanceCVExplainer(CVExplainer):
                 input_data.shape[1],
                 input_data.shape[2],
                 input_data.shape[3],
-            ),
+                requires_grad=True,
+            ).to(device=input_data.device),
             target=pred_label_idx,
         )
         if attributions.shape[0] == 0:

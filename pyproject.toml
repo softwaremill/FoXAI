@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "autoxai"
-version = "0.4.1"
+version = "0.4.2"
 description = ""
 authors = ["Adam Wawrzyński <adam.wawrzynski@reasonfieldlab.com>"]
 readme = "README.md"
 packages = [{include = "autoxai"}]
 
 [tool.poetry.dependencies]
-python = "^3.8,<3.11,!=3.9.7"
+python = ">=3.8,<4.0"
 numpy = "1.23.4"
 captum = "0.5.0"
 torch = "^1.12.1"
@@ -25,10 +25,6 @@ pylint = "2.15.4"
 mypy = "0.982"
 pytest = "7.2.0"
 pre-commit = "2.21.0"
-
-[tool.poetry.group.example.dependencies]
-Pillow = "9.3.0"
-streamlit = "1.16.0"
 
 [tool.poetry.scripts]
 autoxai-wandb-updater = "autoxai.cli.experiment_update:main"
