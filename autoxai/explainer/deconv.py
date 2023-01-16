@@ -1,7 +1,6 @@
 """File with Deconvolution algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Union
 
 import torch
 from captum.attr import Deconvolution
