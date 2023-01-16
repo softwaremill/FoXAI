@@ -48,6 +48,11 @@ class BaseLRPCVExplainer(CVExplainer):
         lrp = self.create_explainer(model=model, layer=layer)
 
         attributions = lrp.attribute(input_data, target=pred_label_idx)
+        if attributions.shape[0] == 0:
+            raise RuntimeError(
+                "Error occured during attribution calculation. "
+                + "Make sure You are applying this method to CNN network.",
+            )
         return attributions
 
     def add_rules(self, model: torch.nn.Module) -> torch.nn.Module:
