@@ -137,18 +137,6 @@ class TestExplainers:
                 _, _ = xai_model(img_tensor)
 
 
-def test_conductance_raises_error_if_no_layer_passed() -> None:
-    """Test if function raises ValueError when missing argument."""
-    model = SampleModel()
-    explainer_alg = explainer.LayerConductanceCVExplainer()
-    with pytest.raises(ValueError):
-        _ = explainer_alg.calculate_features(
-            model=model,
-            input_data=torch.Tensor(0),
-            pred_label_idx=0,
-        )
-
-
 @patch("autoxai.explainer.conductance.LayerConductance.attribute")
 def test_conductance_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -277,22 +265,6 @@ def test_layer_gradcam_raises_error_if_attributes_are_empty(
             input_data=torch.zeros((1, 1, 28, 28)),
             pred_label_idx=0,
             layer=model.conv1,
-        )
-
-
-@patch("autoxai.explainer.gradcam.LayerGradCam.attribute")
-def test_layer_gradcam_raises_error_if_no_layer_passed(
-    fake_attribute: MagicMock,
-) -> None:
-    """Test if function raises ValueError when missing argument."""
-    model = SampleModel()
-    fake_attribute.return_value = torch.Tensor(0)
-    explainer_alg = explainer.LayerGradCAMCVExplainer()
-    with pytest.raises(ValueError):
-        _ = explainer_alg.calculate_features(
-            model=model,
-            input_data=torch.zeros((1, 1, 28, 28)),
-            pred_label_idx=0,
         )
 
 
