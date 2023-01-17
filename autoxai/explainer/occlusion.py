@@ -26,6 +26,9 @@ class OcclusionCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         stride_value = kwargs.get("stride_value", 3)
         window_value = kwargs.get("window_value", 3)

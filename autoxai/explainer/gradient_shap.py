@@ -42,6 +42,9 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         stdevs: float = kwargs.get("stdevs", 0.0001)
         n_samples: int = kwargs.get("n_samples", 50)

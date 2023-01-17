@@ -38,6 +38,9 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         nt_samples: int = kwargs.get("nt_samples", 10)
         nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")

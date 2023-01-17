@@ -26,6 +26,9 @@ class SaliencyCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         saliency = Saliency(forward_func=model)
 

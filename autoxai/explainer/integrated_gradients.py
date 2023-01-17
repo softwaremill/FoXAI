@@ -43,6 +43,9 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         n_steps = kwargs.get("n_steps", 100)
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)

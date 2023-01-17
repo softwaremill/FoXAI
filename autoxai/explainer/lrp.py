@@ -43,6 +43,9 @@ class BaseLRPCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 

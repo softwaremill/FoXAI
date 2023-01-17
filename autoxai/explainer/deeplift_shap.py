@@ -42,6 +42,9 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         number_of_samples: int = kwargs.get("number_of_samples", 100)
