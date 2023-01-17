@@ -63,23 +63,33 @@ class CVExplainer(ABC):
         title: str = "",
         figsize: Tuple[int, int] = (8, 8),
         alpha: float = 0.5,
+        only_positive_attr: bool = True,
     ) -> matplotlib.pyplot.Figure:
         """Create image with calculated features.
 
         Args:
             attributions: Features.
             transformed_img: Image.
-            title: Title of the figure.
-            figsize: Tuple with size of figure.
-            alpha: Opacity level.
+            title: Title of the figure. Defaults to "".
+            figsize: Tuple with size of figure. Defaults to (8, 8).
+            alpha: Opacity level. Defaults to 0.5,
+            only_positive_attr: Whether to display only positive or all attributes.
+                Defaults to True.
 
         Returns:
             Image with paired figures: original image and features heatmap.
         """
+        attributions = attributions.detach().cpu()
+
+        # discard negative attributes
+        if only_positive_attr:
+            attributions[attributions < 0] = 0
+
+        attributes_matrix: np.ndarray
         if len(attributions.shape) == 4:
             # if we have attributes with shape (B x C x W x H)
             # where B is batch size, C is color, W is width and H is height dimension
-            attributes_matrix = attributions[0][0].numpy()
+            attributes_matrix = np.mean(attributions[0].numpy(), axis=0)
         elif len(attributions.shape) == 3:
             # if we have attributes with shape (B x W x H)
             # where B is batch size, W is width and H is height dimension
@@ -106,7 +116,7 @@ class CVExplainer(ABC):
 
         figure = matplotlib.figure.Figure(figsize=figsize)
         axis = figure.subplots()
-        axis.imshow(np.mean(normalized_transformed_img, axis=2), cmap="gray")
+        axis.imshow(normalized_transformed_img, cmap="gray")
         heatmap_plot = axis.imshow(
             grayscale_attributes, cmap=matplotlib.cm.jet, vmin=0, vmax=255, alpha=alpha
         )
