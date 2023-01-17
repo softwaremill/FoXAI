@@ -42,7 +42,7 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
             Features matrix.
 
         Raises:
-            RuntimeError: if attribution has shape (0)
+            RuntimeError: if attribution has shape (0).
         """
 
         deconv = self.create_explainer(model=model)

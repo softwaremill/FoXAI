@@ -91,7 +91,7 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
             Explainer object.
 
         Raises:
-            ValueError: if model does not contain conv layers
+            ValueError: if model does not contain conv layers.
         """
         if layer is None:
             layer = get_last_conv_model_layer(model=model)

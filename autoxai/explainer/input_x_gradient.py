@@ -94,7 +94,7 @@ class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
             Explainer object.
 
         Raises:
-            ValueError: if model does not contain conv layers
+            ValueError: if model does not contain conv layers.
         """
 
         if layer is None:
