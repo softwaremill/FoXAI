@@ -123,6 +123,22 @@ class CVExplainer(ABC):
         return type(self).__name__
 
     @classmethod
+    def validate_result(cls, attributions: torch.Tensor) -> None:
+        """Validate calculated attributes.
+
+        Args:
+            attributions: Tensor with calculated attributions.
+
+        Raises:
+            RuntimeError if tensor is empty.
+        """
+        if attributions.shape[0] == 0:
+            raise RuntimeError(
+                "Error occured during attribution calculation. "
+                + "Make sure You are applying this method to CNN network.",
+            )
+
+    @classmethod
     def visualize(
         cls, attributions: torch.Tensor, transformed_img: torch.Tensor
     ) -> matplotlib.pyplot.Figure:

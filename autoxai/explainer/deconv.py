@@ -46,11 +46,7 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        if attributions.shape[0] == 0:
-            raise RuntimeError(
-                "Error occured during attribution calculation. "
-                + "Make sure You are applying this method to CNN network.",
-            )
+        super().validate_result(attributions=attributions)
         return attributions
 
 

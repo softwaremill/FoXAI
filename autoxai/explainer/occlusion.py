@@ -40,9 +40,5 @@ class OcclusionCVExplainer(CVExplainer):
             sliding_window_shapes=sliding_window_shapes,
             baselines=0,
         )
-        if attributions.shape[0] == 0:
-            raise RuntimeError(
-                "Error occured during attribution calculation. "
-                + "Make sure You are applying this method to CNN network.",
-            )
+        super().validate_result(attributions=attributions)
         return attributions
