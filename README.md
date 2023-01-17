@@ -71,8 +71,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 import wandb
 from autoxai.callbacks.wandb_callback import WandBCallback
-from autoxai.explainer.gradient_shap import GradientSHAPCVExplainer
-from autoxai.explainer.integrated_gradients import IntegratedGradientsCVExplainer
+from autoxai.context_manager import Explainers, ExplainerWithParams
 
     ...
     wandb.login()
@@ -80,8 +79,12 @@ from autoxai.explainer.integrated_gradients import IntegratedGradientsCVExplaine
     callback = WandBCallback(
         wandb_logger=wandb_logger,
         explainers=[
-            IntegratedGradientsCVExplainer(),
-            GradientSHAPCVExplainer(),
+            ExplainerWithParams(
+                explainer_name=Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER
+            ),
+            ExplainerWithParams(
+                explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER
+            ),
         ],
         idx_to_label={index: index for index in range(0, 10)},
     )
