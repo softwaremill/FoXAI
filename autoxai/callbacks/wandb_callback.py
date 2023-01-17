@@ -3,16 +3,18 @@ from collections import defaultdict
 from typing import Dict, Generator, List, Optional, Tuple
 
 import matplotlib
+import numpy as np
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
 import wandb
+from autoxai.array_utils import convert_float_to_uint8
 from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
 from autoxai.explainer.base_explainer import CVExplainer
 
-AttributeMapType = Dict[str, List[torch.Tensor]]
+AttributeMapType = Dict[str, List[np.ndarray]]
 CaptionMapType = Dict[str, List[str]]
 FigureMapType = Dict[str, List[matplotlib.pyplot.Figure]]
 
@@ -83,8 +85,8 @@ class WandBCallback(pl.callbacks.Callback):
         target_label: torch.Tensor,
         attributes_dict: AttributeMapType,
         caption_dict: CaptionMapType,
-        figures_dict: AttributeMapType,
-    ) -> Tuple[AttributeMapType, CaptionMapType, AttributeMapType,]:
+        figures_dict: FigureMapType,
+    ) -> Tuple[AttributeMapType, CaptionMapType, FigureMapType,]:
         """Calculate explainer attributes, creates captions and figures.
 
         Args:
@@ -109,13 +111,15 @@ class WandBCallback(pl.callbacks.Callback):
         for explainer in self.explainers:
             explainer_name: str = explainer.explainer_name.name
             explainer_attributes: torch.Tensor = attributes[explainer_name]
-            attributes_dict[explainer_name].append(explainer_attributes)
             caption_dict[explainer_name].append(f"label: {target_label}")
             figure = CVExplainer.visualize(
                 attributions=explainer_attributes,
                 transformed_img=item,
             )
             figures_dict[explainer_name].append(figure)
+            attributes_dict[explainer_name].append(
+                convert_float_to_uint8(explainer_attributes.detach().cpu().numpy())
+            )
 
         return attributes_dict, caption_dict, figures_dict
 
@@ -177,7 +181,7 @@ class WandBCallback(pl.callbacks.Callback):
 
         attributes_dict: AttributeMapType = defaultdict(list)
         caption_dict: CaptionMapType = defaultdict(list)
-        figures_dict: AttributeMapType = defaultdict(list)
+        figures_dict: FigureMapType = defaultdict(list)
 
         for item, target_label in self.iterate_dataloader(
             dataloader_list=trainer.val_dataloaders,
@@ -202,12 +206,12 @@ class WandBCallback(pl.callbacks.Callback):
         self,
         attributes_dict: AttributeMapType,
         caption_dict: CaptionMapType,
-        figures_dict: AttributeMapType,
+        figures_dict: FigureMapType,
     ) -> None:
         """Log explanation artifacts to W&B experiment.
 
         Args:
-            attributes_dict: Tensor attributes for every sample and every explainer.
+            attributes_dict: Numpy array attributes for every sample and every explainer.
             caption_dict: Caption for every sample and every explainer.
             figures_dict: Figure with attributes for every sample and every explainer.
         """
@@ -216,7 +220,7 @@ class WandBCallback(pl.callbacks.Callback):
             explainer_name: str = explainer.explainer_name.name
             self.wandb_logger.log_image(
                 key=f"{explainer_name}",
-                images=[val.numpy() for val in attributes_dict[explainer_name]],
+                images=attributes_dict[explainer_name],
                 caption=caption_dict[explainer_name],
             )
 

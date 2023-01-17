@@ -69,7 +69,7 @@ class CVExplainer(ABC):
 
         Args:
             attributions: Features.
-            transformed_img: Image.
+            transformed_img: Image in shape (C x H x W) or (H x W).
             title: Title of the figure. Defaults to "".
             figsize: Tuple with size of figure. Defaults to (8, 8).
             alpha: Opacity level. Defaults to 0.5,
@@ -82,29 +82,31 @@ class CVExplainer(ABC):
         attributes_matrix: np.ndarray = attributions.detach().cpu().numpy()
         transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
 
-        # discard negative attributes
-        if only_positive_attr:
-            attributes_matrix[attributes_matrix < 0] = 0
-
-        if len(attributes_matrix.shape) == 4:
-            # if we have attributes with shape (B x C x H x W)
-            # where B is batch size, C is color, W is width and H is height dimension
-            attributes_matrix = np.mean(attributes_matrix[0], axis=0)
-        elif len(attributes_matrix.shape) == 3:
-            # if we have attributes with shape (B x H x W)
-            # where B is batch size, W is width and H is height dimension
-            attributes_matrix = attributes_matrix[0].numpy()
+        if len(attributes_matrix.shape) == 3:
+            # if we have attributes with shape (C x H x W)
+            # where C is color, W is width and H is height dimension
+            # calculate mean over attributes for all colors
+            attributes_matrix = np.mean(attributes_matrix, axis=0)
         else:
             raise ValueError(
                 f"Incorrect shape of attributions: {attributes_matrix.shape}"
             )
 
-        (width, height) = (transformed_img.shape[2], transformed_img.shape[1])
+        # discard negative attributes
+        if only_positive_attr:
+            attributes_matrix[attributes_matrix < 0] = 0
 
-        single_channel_attributes = cv2.resize(attributes_matrix, (width, height))
-        grayscale_attributes = convert_float_to_uint8(single_channel_attributes).astype(
-            np.uint8
+        # resize attributes matrix to match input image
+        single_channel_attributes: np.ndarray = np.array(
+            cv2.resize(
+                attributes_matrix,
+                (transformed_img.shape[2], transformed_img.shape[1]),
+            )
         )
+        # standardize attributes to uint8 type
+        grayscale_attributes = convert_float_to_uint8(single_channel_attributes)
+
+        # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
         normalized_transformed_img = np.transpose(
             convert_float_to_uint8(transformed_img_np), (1, 2, 0)
         )
