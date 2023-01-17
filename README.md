@@ -118,8 +118,8 @@ autoxai-wandb-updater --config-dir config/ --config-name config
 Content of `config.yaml`:
 ```bash
 username: <WANDB_USERANEM>
-experiment: <WAND_EXPERIMENT>
-run_id: <WAND_RUN_ID>
+experiment: <WANDB_EXPERIMENT>
+run_id: <WANDB_RUN_ID>
 classifier: # model class to explain
   _target_: example.streamlit_app.mnist_model.LitMNIST
   batch_size: 1
