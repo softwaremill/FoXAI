@@ -50,3 +50,19 @@ def reshape_and_convert_matrix(tensor: torch.Tensor) -> np.ndarray:
         matrix_np = np.transpose(matrix_np, (1, 2, 0))
 
     return matrix_np
+
+
+def validate_result(attributions: torch.Tensor) -> None:
+    """Validate calculated attributes.
+
+    Args:
+        attributions: Tensor with calculated attributions.
+
+    Raises:
+        RuntimeError if tensor is empty.
+    """
+    if attributions.shape[0] == 0:
+        raise RuntimeError(
+            "Error occured during attribution calculation. "
+            + "Make sure You are applying this method to CNN network.",
+        )

@@ -5,6 +5,7 @@ from abc import abstractmethod
 import torch
 from captum.attr import Deconvolution
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import modify_modules
 
@@ -46,7 +47,7 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        super().validate_result(attributions=attributions)
+        validate_result(attributions=attributions)
         return attributions
 
 

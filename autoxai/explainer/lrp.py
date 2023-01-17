@@ -7,6 +7,7 @@ import torch
 from captum.attr import LRP, LayerLRP
 from captum.attr._utils.lrp_rules import EpsilonRule, GammaRule
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
@@ -48,7 +49,7 @@ class BaseLRPCVExplainer(CVExplainer):
         lrp = self.create_explainer(model=model, layer=layer)
 
         attributions = lrp.attribute(input_data, target=pred_label_idx)
-        super().validate_result(attributions=attributions)
+        validate_result(attributions=attributions)
         return attributions
 
     def add_rules(self, model: torch.nn.Module) -> torch.nn.Module:

@@ -3,6 +3,7 @@
 import torch
 from captum.attr import Saliency
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 
 
@@ -32,5 +33,5 @@ class SaliencyCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        super().validate_result(attributions=attributions)
+        validate_result(attributions=attributions)
         return attributions

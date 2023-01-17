@@ -3,6 +3,7 @@
 import torch
 from captum.attr import Occlusion
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 
 
@@ -40,5 +41,5 @@ class OcclusionCVExplainer(CVExplainer):
             sliding_window_shapes=sliding_window_shapes,
             baselines=0,
         )
-        super().validate_result(attributions=attributions)
+        validate_result(attributions=attributions)
         return attributions

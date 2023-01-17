@@ -6,6 +6,7 @@ from typing import Optional, Union
 import torch
 from captum.attr import DeepLift, LayerDeepLift
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
@@ -50,7 +51,7 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        super().validate_result(attributions=attributions)
+        validate_result(attributions=attributions)
         return attributions
 
 

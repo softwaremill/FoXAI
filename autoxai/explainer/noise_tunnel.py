@@ -6,6 +6,7 @@ from typing import Optional
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer
 
@@ -47,7 +48,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         attributions = noise_tunnel.attribute(
             input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
         )
-        super().validate_result(attributions=attributions)
+        validate_result(attributions=attributions)
         return attributions
 
 

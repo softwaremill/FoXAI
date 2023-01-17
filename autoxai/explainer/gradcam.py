@@ -6,6 +6,7 @@ from typing import Optional, Union
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.errors import LAYER_ARGUMENT_MISSING
 from autoxai.explainer.model_utils import modify_modules
@@ -55,7 +56,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        super().validate_result(attributions=attributions)
+        validate_result(attributions=attributions)
         return attributions
 
 
