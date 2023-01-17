@@ -24,5 +24,5 @@ from autoxai.explainer.noise_tunnel import (
     LayerNoiseTunnelCVExplainer,
     NoiseTunnelCVExplainer,
 )
-from autoxai.explainer.occulusion import OcculusionCVExplainer
+from autoxai.explainer.occlusion import OcclusionCVExplainer
 from autoxai.explainer.saliency import SaliencyCVExplainer

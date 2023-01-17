@@ -42,7 +42,7 @@ from autoxai.explainer import (
     LayerNoiseTunnelCVExplainer,
     LRPCVExplainer,
     NoiseTunnelCVExplainer,
-    OcculusionCVExplainer,
+    OcclusionCVExplainer,
     SaliencyCVExplainer,
 )
 from autoxai.explainer.base_explainer import CVExplainerT
@@ -63,7 +63,7 @@ def log() -> logging.Logger:
 class Explainers(Enum):
     """Enum of supported explainers types."""
 
-    CV_OCCLUSION_EXPLAINER: str = OcculusionCVExplainer.__name__
+    CV_OCCLUSION_EXPLAINER: str = OcclusionCVExplainer.__name__
     CV_INTEGRATED_GRADIENTS_EXPLAINER: str = IntegratedGradientsCVExplainer.__name__
     CV_NOISE_TUNNEL_EXPLAINER: str = NoiseTunnelCVExplainer.__name__
     CV_GRADIENT_SHAP_EXPLAINER: str = GradientSHAPCVExplainer.__name__

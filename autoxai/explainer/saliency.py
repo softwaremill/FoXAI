@@ -3,6 +3,7 @@
 import torch
 from captum.attr import Saliency
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 
 
@@ -25,6 +26,9 @@ class SaliencyCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         saliency = Saliency(forward_func=model)
 
@@ -32,4 +36,5 @@ class SaliencyCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
+        validate_result(attributions=attributions)
         return attributions

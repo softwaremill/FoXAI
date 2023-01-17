@@ -79,44 +79,39 @@ class CVExplainer(ABC):
         Returns:
             Image with paired figures: original image and features heatmap.
         """
-        attributions = attributions.detach().cpu()
+        attributes_matrix: np.ndarray = attributions.detach().cpu().numpy()
+        transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
 
         # discard negative attributes
         if only_positive_attr:
-            attributions[attributions < 0] = 0
+            attributes_matrix[attributes_matrix < 0] = 0
 
-        attributes_matrix: np.ndarray
-        if len(attributions.shape) == 4:
-            # if we have attributes with shape (B x C x W x H)
+        if len(attributes_matrix.shape) == 4:
+            # if we have attributes with shape (B x C x H x W)
             # where B is batch size, C is color, W is width and H is height dimension
-            attributes_matrix = np.mean(attributions[0].numpy(), axis=0)
-        elif len(attributions.shape) == 3:
-            # if we have attributes with shape (B x W x H)
+            attributes_matrix = np.mean(attributes_matrix[0], axis=0)
+        elif len(attributes_matrix.shape) == 3:
+            # if we have attributes with shape (B x H x W)
             # where B is batch size, W is width and H is height dimension
-            attributes_matrix = attributions[0].numpy()
+            attributes_matrix = attributes_matrix[0].numpy()
         else:
-            raise ValueError(f"Incorrect shape of attributions: {attributions.shape}")
+            raise ValueError(
+                f"Incorrect shape of attributions: {attributes_matrix.shape}"
+            )
 
-        transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
         (width, height) = (transformed_img.shape[2], transformed_img.shape[1])
 
-        resized_attributes = cv2.resize(attributes_matrix, (width, height))
-        single_channel_attributes = resized_attributes.reshape(
-            1,
-            resized_attributes.shape[0],
-            resized_attributes.shape[1],
+        single_channel_attributes = cv2.resize(attributes_matrix, (width, height))
+        grayscale_attributes = convert_float_to_uint8(single_channel_attributes).astype(
+            np.uint8
         )
-
-        grayscale_attributes = np.transpose(
-            convert_float_to_uint8(single_channel_attributes), (1, 2, 0)
-        ).astype(np.uint8)
         normalized_transformed_img = np.transpose(
             convert_float_to_uint8(transformed_img_np), (1, 2, 0)
         )
 
         figure = matplotlib.figure.Figure(figsize=figsize)
         axis = figure.subplots()
-        axis.imshow(normalized_transformed_img, cmap="gray")
+        axis.imshow(normalized_transformed_img)
         heatmap_plot = axis.imshow(
             grayscale_attributes, cmap=matplotlib.cm.jet, vmin=0, vmax=255, alpha=alpha
         )

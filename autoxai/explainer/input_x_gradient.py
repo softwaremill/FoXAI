@@ -6,6 +6,7 @@ from typing import Optional, Union
 import torch
 from captum.attr import InputXGradient, LayerGradientXActivation
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer
 
@@ -41,6 +42,9 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
@@ -50,6 +54,7 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
+        validate_result(attributions=attributions)
         return attributions
 
 
@@ -81,11 +86,15 @@ class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
 
+        Uses parameter `layer` from `kwargs`. If not provided function will call
+        `get_last_conv_model_layer` function to obtain last `torch.nn.Conv2d` layer
+        from provided model.
+
         Returns:
             Explainer object.
 
         Raises:
-            ValueError: if model does not contain conv layers
+            ValueError: if model does not contain conv layers.
         """
 
         if layer is None:

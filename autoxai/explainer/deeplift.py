@@ -6,6 +6,7 @@ from typing import Optional, Union
 import torch
 from captum.attr import DeepLift, LayerDeepLift
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
@@ -41,6 +42,9 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
@@ -50,11 +54,7 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        if attributions.shape[0] == 0:
-            raise RuntimeError(
-                "Error occured during attribution calculation. "
-                + "Make sure You are applying this method to CNN network.",
-            )
+        validate_result(attributions=attributions)
         return attributions
 
 
@@ -87,11 +87,15 @@ class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
     ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
+        Uses parameter `layer` from `kwargs`. If not provided function will call
+        `get_last_conv_model_layer` function to obtain last `torch.nn.Conv2d` layer
+        from provided model.
+
         Returns:
             Explainer object.
 
         Raises:
-            ValueError: if model does not contain conv layers
+            ValueError: if model does not contain conv layers.
         """
         if layer is None:
             layer = get_last_conv_model_layer(model=model)

@@ -40,6 +40,7 @@ def get_last_conv_model_layer(model: torch.nn.Module) -> torch.nn.Module:
     for module in model.modules():
         if isinstance(module, torch.nn.Conv2d):
             conv_layers.append(module)
+
     if not conv_layers:
         raise ValueError("The model does not contain convolution layers.")
 
