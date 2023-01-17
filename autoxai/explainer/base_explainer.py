@@ -3,12 +3,17 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple, TypeVar
 
-import cv2
 import matplotlib
 import numpy as np
 import torch
 
-from autoxai.array_utils import convert_float_to_uint8
+from autoxai.array_utils import (
+    convert_float_to_uint8,
+    normalize_attributes,
+    resize_attributes,
+    retain_only_positive,
+    transpose_array,
+)
 from autoxai.logger import create_logger
 
 _LOGGER: Optional[logging.Logger] = None
@@ -82,33 +87,27 @@ class CVExplainer(ABC):
         attributes_matrix: np.ndarray = attributions.detach().cpu().numpy()
         transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
 
-        if len(attributes_matrix.shape) == 3:
-            # if we have attributes with shape (C x H x W)
-            # where C is color, W is width and H is height dimension
-            # calculate mean over attributes for all colors
-            attributes_matrix = np.mean(attributes_matrix, axis=0)
-        else:
-            raise ValueError(
-                f"Incorrect shape of attributions: {attributes_matrix.shape}"
-            )
-
-        # discard negative attributes
-        if only_positive_attr:
-            attributes_matrix[attributes_matrix < 0] = 0
-
-        # resize attributes matrix to match input image
-        single_channel_attributes: np.ndarray = np.array(
-            cv2.resize(
-                attributes_matrix,
-                (transformed_img.shape[2], transformed_img.shape[1]),
-            )
+        single_channel_attributes: np.ndarray = normalize_attributes(
+            attributes=attributes_matrix,
         )
+
+        if only_positive_attr:
+            single_channel_attributes = retain_only_positive(
+                array=single_channel_attributes
+            )
+
+        resized_attributes: np.ndarray = resize_attributes(
+            attributes=single_channel_attributes,
+            dest_height=transformed_img_np.shape[1],
+            dest_width=transformed_img_np.shape[2],
+        )
+
         # standardize attributes to uint8 type
-        grayscale_attributes = convert_float_to_uint8(single_channel_attributes)
+        grayscale_attributes = convert_float_to_uint8(resized_attributes)
 
         # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
-        normalized_transformed_img = np.transpose(
-            convert_float_to_uint8(transformed_img_np), (1, 2, 0)
+        normalized_transformed_img = transpose_array(
+            convert_float_to_uint8(transformed_img_np)
         )
 
         figure = matplotlib.figure.Figure(figsize=figsize)

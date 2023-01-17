@@ -1,6 +1,7 @@
 """File contains functions to handle numpy arrays."""
 import sys
 
+import cv2
 import numpy as np
 import torch
 
@@ -23,33 +24,87 @@ def convert_float_to_uint8(array: np.ndarray) -> np.ndarray:
     ).astype(np.uint8)
 
 
-def reshape_and_convert_matrix(tensor: torch.Tensor) -> np.ndarray:
-    """Reshape single tensor and convert it to numpy array.
-
-    Input tensor is exptected to follow (B x C x H x W) shape with optional
-    batch size as the first dimension. B stands for batch size, C stands for color
-    dimension, H and W stand for height and width. As a result matrix will be
-    reshaped into (H x W x C).
+def retain_only_positive(array: np.ndarray) -> np.ndarray:
+    """Retain only positive values from array.
 
     Args:
-        tensor: Tensor to convert.
+        array: Array.
 
     Returns:
-        Reshaped numpy array.
+        Array with negative values replaced by zero.
     """
-    # for single color, e.g. MNIST data copy one colour channel 3 times to simulate RGB
-    if len(tensor.shape) == 4 and tensor.shape[1] == 1:
-        tensor = tensor.expand(1, 3, tensor.shape[2], tensor.shape[3])
-    elif len(tensor.shape) == 3 and tensor.shape[0] == 1:
-        tensor = tensor.expand(3, tensor.shape[1], tensor.shape[2])
+    array[array < 0] = 0
+    return array
 
-    # change dimension from (C x H x W) to (H x W x C)
-    # where C is colour dimension, H and W are height and width dimensions
-    matrix_np: np.ndarray = tensor.squeeze().detach().cpu().numpy()
-    if len(tensor.shape) >= 3:
-        matrix_np = np.transpose(matrix_np, (1, 2, 0))
 
-    return matrix_np
+def normalize_attributes(
+    attributes: np.ndarray,
+) -> np.ndarray:
+    """Normalize attributes.
+
+    For attributes with color dimension calculate mean over all colors.
+
+    Args:
+        attributes: Array of attributes.
+
+    Returns:
+        Single channel array of attributes.
+
+    Raises:
+        ValueError: if shape of attribute array is incorrect.
+    """
+    ret_array: np.ndarray
+    if len(attributes.shape) == 3:
+        # if we have attributes with shape (C x H x W)
+        # where C is color, W is width and H is height dimension
+        # calculate mean over attributes for all colors
+        ret_array = np.mean(attributes, axis=0)
+    elif len(attributes.shape) == 2:
+        ret_array = attributes
+    else:
+        raise ValueError(f"Incorrect shape of attributions: {attributes.shape}")
+
+    return ret_array
+
+
+def resize_attributes(
+    attributes: np.ndarray,
+    dest_width: int,
+    dest_height: int,
+) -> np.ndarray:
+    """Resize attributes to match desired shape.
+
+    Args:
+        attributes: Array of attributes.
+        dest_width: Desired width of attributes array.
+        dest_height: Desired height of attributes array.
+
+    Returns:
+        Resized attributes array.
+    """
+    # resize attributes matrix to match input image
+    single_channel_attributes: np.ndarray = np.array(
+        cv2.resize(
+            attributes,
+            (dest_height, dest_width),
+        )
+    )
+
+    return single_channel_attributes
+
+
+def transpose_array(array: np.ndarray) -> np.ndarray:
+    """Transpoze array from (C x H x W) to (H x W x C) shape.
+
+    C stands for color, H stands for height and W stands for width.
+
+    Args:
+        array: Array of shape (C x H x W).
+
+    Returns:
+        Array of shape (H x W x C).
+    """
+    return np.transpose(array, (1, 2, 0))
 
 
 def validate_result(attributions: torch.Tensor) -> None:
