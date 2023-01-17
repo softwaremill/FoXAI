@@ -5,8 +5,9 @@ from typing import Optional
 import torch
 from captum.attr import LayerConductance
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer.errors import LAYER_ARGUMENT_MISSING
+from autoxai.explainer.model_utils import get_last_conv_model_layer
 
 
 class LayerConductanceCVExplainer(CVExplainer):
@@ -45,13 +46,13 @@ class LayerConductanceCVExplainer(CVExplainer):
             Features matrix.
 
         Raises:
-            ValueError: if layer is None
+            ValueError: if model does not contain conv layers.
             RuntimeError: if attribution has shape (0)
         """
 
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:
-            raise ValueError("LayerConductanceCVExplainer" + LAYER_ARGUMENT_MISSING)
+            layer = get_last_conv_model_layer(model=model)
 
         conductance = self.create_explainer(model=model, layer=layer)
         attributions = conductance.attribute(
@@ -65,9 +66,5 @@ class LayerConductanceCVExplainer(CVExplainer):
             ).to(device=input_data.device),
             target=pred_label_idx,
         )
-        if attributions.shape[0] == 0:
-            raise RuntimeError(
-                "Error occured during attribution calculation. "
-                + "Make sure You are applying this method to CNN network.",
-            )
+        validate_result(attributions=attributions)
         return attributions

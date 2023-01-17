@@ -7,6 +7,7 @@ import torch
 from captum.attr import LRP, LayerLRP
 from captum.attr._utils.lrp_rules import EpsilonRule, GammaRule
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
@@ -42,12 +43,16 @@ class BaseLRPCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
         lrp = self.create_explainer(model=model, layer=layer)
 
         attributions = lrp.attribute(input_data, target=pred_label_idx)
+        validate_result(attributions=attributions)
         return attributions
 
     def add_rules(self, model: torch.nn.Module) -> torch.nn.Module:
@@ -101,11 +106,15 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
     ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
+        Uses parameter `layer` from `kwargs`. If not provided function will call
+        `get_last_conv_model_layer` function to obtain last `torch.nn.Conv2d` layer
+        from provided model.
+
         Returns:
             Explainer object.
 
         Raises:
-            ValueError: if model does not contain conv layers
+            ValueError: if model does not contain conv layers.
         """
         if layer is None:
             layer = get_last_conv_model_layer(model=model)

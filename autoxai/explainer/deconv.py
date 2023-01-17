@@ -1,11 +1,11 @@
 """File with Deconvolution algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Union
 
 import torch
 from captum.attr import Deconvolution
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import modify_modules
 
@@ -40,6 +40,9 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
 
         deconv = self.create_explainer(model=model)
@@ -47,11 +50,7 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        if attributions.shape[0] == 0:
-            raise RuntimeError(
-                "Error occured during attribution calculation. "
-                + "Make sure You are applying this method to CNN network.",
-            )
+        validate_result(attributions=attributions)
         return attributions
 
 

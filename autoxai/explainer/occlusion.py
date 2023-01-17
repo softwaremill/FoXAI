@@ -3,11 +3,12 @@
 import torch
 from captum.attr import Occlusion
 
+from autoxai.array_utils import validate_result
 from autoxai.explainer.base_explainer import CVExplainer
 
 
-class OcculusionCVExplainer(CVExplainer):
-    """Occulusion algorithm explainer."""
+class OcclusionCVExplainer(CVExplainer):
+    """Occlusion algorithm explainer."""
 
     def calculate_features(
         self,
@@ -16,7 +17,7 @@ class OcculusionCVExplainer(CVExplainer):
         pred_label_idx: int,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Occulusion algorithm explainer.
+        """Generate features image with Occlusion algorithm explainer.
 
         Args:
             model: Any DNN model You want to use.
@@ -25,6 +26,9 @@ class OcculusionCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         stride_value = kwargs.get("stride_value", 3)
         window_value = kwargs.get("window_value", 3)
@@ -40,4 +44,5 @@ class OcculusionCVExplainer(CVExplainer):
             sliding_window_shapes=sliding_window_shapes,
             baselines=0,
         )
+        validate_result(attributions=attributions)
         return attributions

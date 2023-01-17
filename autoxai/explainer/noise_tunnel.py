@@ -6,8 +6,9 @@ from typing import Optional
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
+from autoxai.array_utils import validate_result
+from autoxai.explainer.base_explainer import CVExplainer
 from autoxai.explainer.model_utils import get_last_conv_model_layer
-from autoxai.explainer.occulusion import CVExplainer
 
 
 class BaseNoiseTunnelCVExplainer(CVExplainer):
@@ -37,6 +38,9 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
 
         Returns:
             Features matrix.
+
+        Raises:
+            RuntimeError: if attribution has shape (0).
         """
         nt_samples: int = kwargs.get("nt_samples", 10)
         nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
@@ -47,6 +51,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         attributions = noise_tunnel.attribute(
             input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
         )
+        validate_result(attributions=attributions)
         return attributions
 
 
@@ -78,11 +83,15 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
     ) -> NoiseTunnel:
         """Create explainer object.
 
+        Uses parameter `layer` from `kwargs`. If not provided function will call
+        `get_last_conv_model_layer` function to obtain last `torch.nn.Conv2d` layer
+        from provided model.
+
         Returns:
             Explainer object.
 
         Raises:
-            ValueError: if model does not contain conv layers
+            ValueError: if model does not contain conv layers.
         """
         if layer is None:
             layer = get_last_conv_model_layer(model=model)

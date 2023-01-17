@@ -6,9 +6,9 @@ from typing import Optional, Union
 import torch
 from captum.attr import GuidedGradCam, LayerGradCam
 
-from autoxai.explainer.errors import LAYER_ARGUMENT_MISSING
-from autoxai.explainer.model_utils import modify_modules
-from autoxai.explainer.occulusion import CVExplainer
+from autoxai.array_utils import validate_result
+from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
 
 class BaseGradCAMCVExplainer(CVExplainer):
@@ -42,12 +42,12 @@ class BaseGradCAMCVExplainer(CVExplainer):
             Features matrix.
 
         Raises:
-            ValueError: if layer is None
+            ValueError: if model does not contain conv layers.
             RuntimeError: if attributions has shape (0)
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:
-            raise ValueError("GradCAMCVExplainer" + LAYER_ARGUMENT_MISSING)
+            layer = get_last_conv_model_layer(model=model)
 
         guided_cam = self.create_explainer(model=model, layer=layer)
 
@@ -55,11 +55,7 @@ class BaseGradCAMCVExplainer(CVExplainer):
             input_data,
             target=pred_label_idx,
         )
-        if attributions.shape[0] == 0:
-            raise RuntimeError(
-                "Error occured during attribution calculation. "
-                + "Make sure You are applying this method to CNN network.",
-            )
+        validate_result(attributions=attributions)
         return attributions
 
 

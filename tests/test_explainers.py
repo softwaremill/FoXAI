@@ -2,6 +2,7 @@
 import inspect
 import logging
 from typing import Any, Callable, Dict, List, Optional  # , TypeAlias
+from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
@@ -134,3 +135,326 @@ class TestExplainers:
                 ],
             ) as xai_model:
                 _, _ = xai_model(img_tensor)
+
+
+@patch("autoxai.explainer.conductance.LayerConductance.attribute")
+def test_conductance_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerConductanceCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+            layer=model.conv1,
+        )
+
+
+@patch("autoxai.explainer.deconv.Deconvolution.attribute")
+def test_deconvolution_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.DeconvolutionCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.deeplift_shap.DeepLiftShap.attribute")
+def test_deepliftshap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.DeepLIFTSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.deeplift_shap.LayerDeepLiftShap.attribute")
+def test_layer_deepliftshap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerDeepLIFTSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.deeplift.DeepLift.attribute")
+def test_deeplift_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.DeepLIFTCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.deeplift.LayerDeepLift.attribute")
+def test_layer_deeplift_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerDeepLIFTCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.gradcam.GuidedGradCam.attribute")
+def test_gradcam_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.GuidedGradCAMCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+            layer=model.conv1,
+        )
+
+
+@patch("autoxai.explainer.gradcam.LayerGradCam.attribute")
+def test_layer_gradcam_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerGradCAMCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+            layer=model.conv1,
+        )
+
+
+@patch("autoxai.explainer.gradient_shap.GradientShap.attribute")
+def test_gradient_shap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.GradientSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.gradient_shap.LayerGradientShap.attribute")
+def test_layer_gradient_shap_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerGradientSHAPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.input_x_gradient.InputXGradient.attribute")
+def test_input_x_gradient_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.InputXGradientCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.input_x_gradient.LayerGradientXActivation.attribute")
+def test_layer_input_x_gradient_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerInputXGradientCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.lrp.LRP.attribute")
+def test_lrp_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LRPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.lrp.LayerLRP.attribute")
+def test_layer_lrp_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerLRPCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.integrated_gradients.IntegratedGradients.attribute")
+def test_integrated_gradients_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.IntegratedGradientsCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.integrated_gradients.LayerIntegratedGradients.attribute")
+def test_layer_integrated_gradients_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerIntegratedGradientsCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.noise_tunnel.NoiseTunnel.attribute")
+def test_noise_tunnel_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.NoiseTunnelCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.noise_tunnel.NoiseTunnel.attribute")
+def test_layer_noise_tunnel_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.LayerNoiseTunnelCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.occlusion.Occlusion.attribute")
+def test_occulusion_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.OcclusionCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )
+
+
+@patch("autoxai.explainer.saliency.Saliency.attribute")
+def test_saliency_raises_error_if_attributes_are_empty(
+    fake_attribute: MagicMock,
+) -> None:
+    """Test if function raises RuntimeError when empty tensor returned from attribute method."""
+    model = SampleModel()
+    fake_attribute.return_value = torch.Tensor()
+    explainer_alg = explainer.SaliencyCVExplainer()
+    with pytest.raises(RuntimeError):
+        _ = explainer_alg.calculate_features(
+            model=model,
+            input_data=torch.zeros((1, 1, 28, 28)),
+            pred_label_idx=0,
+        )

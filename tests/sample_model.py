@@ -35,3 +35,37 @@ class SampleModel(torch.nn.Module):
         x_tensor = self.cls(x_tensor)
         x_tensor = self.sigmoid(x_tensor)
         return x_tensor
+
+
+class AutoEncoder(torch.nn.Module):
+    """Sample pytorch auto-encoder model for experiment."""
+
+    def __init__(self):
+        super().__init__()
+        self.encoder = torch.nn.Sequential(
+            torch.nn.Linear(28 * 28, 64), torch.nn.ReLU(), torch.nn.Linear(64, 3)
+        )
+        self.decoder = torch.nn.Sequential(
+            torch.nn.Linear(3, 64), torch.nn.ReLU(), torch.nn.Linear(64, 28 * 28)
+        )
+
+    def forward(self, x_tensor: torch.Tensor) -> torch.Tensor:
+        # training_step defines the train loop.
+        # it is independent of forward
+        x_tensor = x_tensor.view(x_tensor.size(0), -1)
+        z = self.encoder(x_tensor)
+        x_hat = self.decoder(z)
+        return x_hat
+
+
+class CNN(torch.nn.Module):
+    """Sample pytorch CNN model for experiment."""
+
+    def __init__(self):
+        super().__init__()
+        self.conv1 = torch.nn.Conv2d(1, 20, 5)
+        self.conv2 = torch.nn.Conv2d(20, 20, 5)
+
+    def forward(self, x_tensor: torch.Tensor) -> torch.Tensor:
+        x_tensor = F.relu(self.conv1(x_tensor))
+        return F.relu(self.conv2(x_tensor))
