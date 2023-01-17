@@ -1,7 +1,7 @@
 """File with Noise Tunnel algorithm explainer classes."""
 
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Union, Tuple
 
 import torch
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
@@ -42,14 +42,24 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        nt_samples: int = kwargs.get("nt_samples", 10)
         nt_type: str = kwargs.get("nt_type", "smoothgrad_sq")
+        nt_samples: int = kwargs.get("nt_samples", 10)
+        nt_samples_batch_size: Optional[int] = kwargs.get("nt_samples_batch_size", None)
+        stdevs: Union[float, Tuple[float, ...]] = kwargs.get("stdevs", 1.0)
+        draw_baseline_from_distrib: bool = kwargs.get("draw_baseline_from_distrib", False)
+        
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
 
         noise_tunnel = self.create_explainer(model=model, layer=layer)
 
         attributions = noise_tunnel.attribute(
-            input_data, nt_samples=nt_samples, nt_type=nt_type, target=pred_label_idx
+            inputs=input_data, 
+            nt_type=nt_type, 
+            nt_samples=nt_samples,
+            nt_samples_batch_size=nt_samples_batch_size,
+            stdevs=stdevs,
+            draw_baseline_from_distrib=draw_baseline_from_distrib,
+            target=pred_label_idx,
         )
         validate_result(attributions=attributions)
         return attributions
