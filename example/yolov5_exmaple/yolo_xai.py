@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Final, List, Tuple
 
 import cv2
 import numpy as np
@@ -19,9 +19,13 @@ from example.yolov5_exmaple.yolo_utils import (  # scale_boxes,
     xywh2xyxy,
 )
 
-CONF = 0.25
-IOU = 0.45
-TARGET = 0
+TARGET: Final[int] = 0
+""" The target class to be explained with XAI.
+
+For yolo it takes all preditctions belonging to the given class.
+It means that if 2 persons were detected, the XAI will be computed
+for both of them. Instance specific XAI requires code modification.
+"""
 
 
 class XaiYoloWrapper(torch.nn.Module):
@@ -44,25 +48,40 @@ class XaiYoloWrapper(torch.nn.Module):
     we need to run the regular inference separately.
     """
 
-    def __init__(self, model) -> None:
+    def __init__(self, model, conf: float = 0.25, iou: float = 0.45) -> None:
+        """
+        Args:
+            mode: the yolo model to be used.
+            conf: confidence threshold for predicted objects
+            iou: iou threshold for preddicted bboxes for nms algorithm
+        """
         super().__init__()
         self.model = model
         self.training = model.training
 
         params = dict(get_variables(model=model, include=("names")))
         self.number_of_classes: int = len(params["names"])
+        self.conf: float = conf
+        self.iou: float = iou
 
     def xai_non_max_suppression(
         self,
-        prediction,
+        prediction: torch.Tensor,
         conf_thres: float = 0.25,
         iou_thres: float = 0.45,
-        agnostic=False,
-        multi_label=False,
-        max_det=300,
-        nm=0,  # number of masks
-    ):
+        agnostic: bool = False,
+        max_det: int = 300,
+        nm: int = 0,  # number of masks
+    ) -> torch.Tensor:
         """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections
+
+        Args:
+            prediction: the model prediction
+            conf_thres: confidence threshold, for counting the detection as valid
+            iou_thres: intersection over union threshold for non max suppresion algorithm
+            agnostic:
+            max_det: maximum number of detections
+            nm: number of tensor elements not related to class prediction (xywh -> 4)
 
         Returns:
             list of detections, on (n,6) tensor per image [xyxy, conf, cls]
@@ -92,7 +111,6 @@ class XaiYoloWrapper(torch.nn.Module):
         # min_wh = 2  # (pixels) minimum box width and height
         max_wh = 7680  # (pixels) maximum box width and height
         max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
-        multi_label &= nc > 1  # multiple labels per box (adds 0.5ms/img)
 
         mi = 5 + nc  # mask start index
         m_out = torch.zeros((bs, self.number_of_classes), device=prediction.device)
@@ -151,14 +169,13 @@ class XaiYoloWrapper(torch.nn.Module):
 
         return m_out
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.model(x)
         x = self.xai_non_max_suppression(
             x,
-            conf_thres=CONF,
-            iou_thres=IOU,
+            conf_thres=self.conf,
+            iou_thres=self.iou,
             agnostic=False,
-            multi_label=False,
             max_det=1000,
         )  # NMS
 
@@ -168,6 +185,17 @@ class XaiYoloWrapper(torch.nn.Module):
 def pre_process(
     image: np.ndarray, sample_model_parameter: torch.Tensor, stride: int
 ) -> Tuple[torch.Tensor, List[int], List[int]]:
+    """Transform the input image to the yolo network.
+
+    Args:
+        image: the input image to the network
+        sample_model_parameter: the model parameter is used to read
+        the model type (fp32/fp16) and target device
+        stride: the yolo network stride
+
+    Retuns:
+        tensor image ready to be feed into the network
+    """
     size: Tuple[int, int] = (640, 640)
     if image.shape[0] < 5:  # image in CHW
         image = image.transpose((1, 2, 0))  # reverse dataloader .transpose(2, 0, 1)
@@ -194,6 +222,8 @@ def pre_process(
 
 
 def main():
+    """Run YOLO_v5 XAI and save results."""
+
     model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
     image = Image.open("example/images/zidane.jpg")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -206,7 +236,9 @@ def main():
         stride=params["stride"],
     )
 
-    yolo_model = XaiYoloWrapper(model=model.model).to(device=device)
+    yolo_model = XaiYoloWrapper(model=model.model, conf=model.conf, iou=model.iou).to(
+        device=device
+    )
     input_image = input_image.to(device)
 
     # Inference
@@ -236,13 +268,15 @@ def main():
     y = model.model(input_image)
     y = non_max_suppression(
         y,
-        conf_thres=CONF,
-        iou_thres=IOU,
+        conf_thres=model.conf,
+        iou_thres=model.iou,
         classes=None,
         agnostic=False,
         multi_label=False,
         max_det=1000,
     )  # NMS
+
+    # uncomment to scale boxes to the original image size
     # scale_boxes(shape1, y[0][:, :4], shape0)
     y = y[0].detach().cpu()
     bboxes = y[:, :4]
@@ -262,7 +296,7 @@ def main():
         labels=labels,
     )
     figure = CVExplainer.visualize(
-        attributions=attributions, transformed_img=pred_image
+        attributions=attributions.squeeze(), transformed_img=pred_image
     )
     canvas = FigureCanvas(figure)
     canvas.draw()

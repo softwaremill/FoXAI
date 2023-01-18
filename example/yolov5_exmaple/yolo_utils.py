@@ -1,6 +1,6 @@
 import math
 import time
-from typing import Tuple, Union
+from typing import Any, Iterator, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -23,9 +23,9 @@ def bbox_iou(
         box1: bounding-box 1
         box2: bounding-box 2
         x1y1x2y2: True if top_left-bottom-right mode, False if xy_center-width_height mode
-        GIoU:bool=False,
-        DIoU:bool=False,
-        CIoU:bool=False,
+        GIoU: whether to use Generalized Intersection over Union:
+        DIoU: whether to use Distance-IoU https://arxiv.org/abs/1911.08287v1
+        CIoU: https://arxiv.org/abs/1911.08287v1
         eps: epsilon to be used to avoid dividing by 0.
 
     Returns:
@@ -105,17 +105,28 @@ def xywh2xyxy(x: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tensor, np.ndar
 
 
 def non_max_suppression(
-    prediction,
-    conf_thres=0.25,
-    iou_thres=0.45,
+    prediction: torch.Tensor,
+    conf_thres: float = 0.25,
+    iou_thres: float = 0.45,
     classes=None,
-    agnostic=False,
-    multi_label=False,
+    agnostic: bool = False,
+    multi_label: bool = False,
     labels=(),
-    max_det=300,
-    nm=0,  # number of masks
+    max_det: int = 300,
+    nm: int = 0,
 ):
     """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections
+
+    Args:
+        prediction: the model prediction
+        conf_thres: confidence threshold, for counting the detection as valid
+        iou_thres: intersection over union threshold for non max suppresion algorithm
+        classes:
+        agnostic:
+        multi_label:
+        labels:
+        max_det: maximum number of detections
+        nm: number of tensor elements not related to class prediction (xywh -> 4)
 
     Returns:
          list of detections, on (n,6) tensor per image [xyxy, conf, cls]
@@ -233,7 +244,16 @@ def non_max_suppression(
 
 
 def make_divisible(x: int, divisor: Union[int, torch.Tensor]) -> int:
-    """Returns nearest x divisible by divisor"""
+    """Returns nearest x divisible by divisor.
+
+    Args:
+        x: the number to be divided
+        divisor: denominator
+
+    Returns:
+        the nearest x divisible by divisor
+    """
+
     if isinstance(divisor, torch.Tensor):
         divisor = int(divisor.max())  # to int
     return math.ceil(x / divisor) * divisor
@@ -248,7 +268,20 @@ def letterbox(
     scaleup: bool = True,
     stride: int = 32,
 ) -> Tuple[np.ndarray, Tuple[float, float], Tuple[float, float]]:
-    # Resize and pad image while meeting stride-multiple constraints
+    """Resize and pad image while meeting stride-multiple constraints
+
+    Args:
+        im: the image to be resized and pad
+        new_shape: the destination shape
+        color: padding color
+        auto:
+        scale_fill:
+        scaleup:
+        stride:
+
+    Returns:
+        resized and padded image
+    """
     shape = im.shape[:2]  # current shape [height, width]
     if isinstance(new_shape, int):
         new_shape = (new_shape, new_shape)
@@ -282,8 +315,23 @@ def letterbox(
     return im, ratio, (dw, dh)
 
 
-def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
-    # Rescale boxes (xyxy) from img1_shape to img0_shape
+def scale_boxes(
+    img1_shape: Tuple[int, ...],
+    boxes: torch.Tensor,
+    img0_shape: Tuple[int, ...],
+    ratio_pad: Optional[Tuple[Tuple[float, float], Tuple[int, int]]] = None,
+) -> torch.Tensor:
+    """Rescale boxes (xyxy) from img1_shape to img0_shape.
+
+    Args:
+        img1_shape: shape of resized image
+        boxes: the bbox size
+        img0_shape: shape of original image
+        ratio_pad:
+
+    Returns:
+        scaled bbox to the img0_shape
+    """
     if ratio_pad is None:  # calculate from img0_shape
         gain = min(
             img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]
@@ -302,8 +350,16 @@ def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
     return boxes
 
 
-def clip_boxes(boxes, shape):
-    # Clip boxes (xyxy) to image shape (height, width)
+def clip_boxes(boxes: Union[torch.Tensor, np.ndarray], shape: Tuple[int, int]) -> None:
+    """Clip boxes (xyxy) to image shape (height, width)
+
+    Args:
+        boxes: bboxes to be clipped
+        shape: maximum x and y size
+
+    Return:
+        inplace clipped bbox
+    """
     if isinstance(boxes, torch.Tensor):  # faster individually
         boxes[..., 0].clamp_(0, shape[1])  # x1
         boxes[..., 1].clamp_(0, shape[0])  # y1
@@ -323,8 +379,21 @@ def copy_attr(a, b, include=(), exclude=()):
             setattr(a, k, v)
 
 
-def get_variables(model: torch.nn.Module, include=(), exclude=()):
-    # Copy attributes from b to a, options to only include [...] and to exclude [...]
+def get_variables(
+    model: torch.nn.Module,
+    include: Tuple[str, ...] = (),
+    exclude: Tuple[str, ...] = (),
+) -> Iterator[Tuple[str, Any]]:
+    """Copy attributes from b to a, options to only include [...] and to exclude [...]
+
+    Args:
+        model: to get model attributes from
+        include: attributes to get
+        exclude: attributes to exclude
+
+    Returns:
+        attribute names and values
+    """
     for k, v in model.__dict__.items():
         if (include and k not in include) or k.startswith("_") or k in exclude:
             continue
