@@ -1,11 +1,37 @@
+"""Example of running XAI on YOLOv5.
+
+Below two, same options. One directly using captum, and second using AutoXAI
+
+# XAI inference:
+# Option 1
+integrated_gradients = IntegratedGradients(forward_func=yolo_model)
+noise_tunnel = NoiseTunnel(integrated_gradients)
+attributions = noise_tunnel.attribute(
+    input_image, nt_samples=1, nt_type="smoothgrad_sq",stdevs=0.1, target=0
+)
+
+# Option 2
+with AutoXaiExplainer(
+    model=yolo_model,
+    explainers=[
+        ExplainerWithParams(
+            explainer_name=Explainers.CV_NOISE_TUNNEL_EXPLAINER,
+            nt_samples=1,
+            nt_type="smoothgrad_sq",
+            stdevs=0.1,
+            target=0,
+        )
+    ],
+) as xai_model:
+    _, attributions = xai_model(input_image)
+"""
+
 from typing import Final, List, Tuple
 
 import cv2
 import numpy as np
 import torch
 import torchvision
-
-# from captum.attr import IntegratedGradients, NoiseTunnel
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from PIL import Image
 
@@ -240,13 +266,6 @@ def main():
         device=device
     )
     input_image = input_image.to(device)
-
-    # Inference
-    # integrated_gradients = IntegratedGradients(forward_func=yolo_model)
-    # noise_tunnel = NoiseTunnel(integrated_gradients)
-    # attributions = noise_tunnel.attribute(
-    #    input_image, nt_samples=1, nt_type="smoothgrad_sq",stdevs=0.1, target=0
-    # )
 
     with AutoXaiExplainer(
         model=yolo_model,
