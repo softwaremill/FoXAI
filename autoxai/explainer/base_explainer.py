@@ -1,15 +1,19 @@
 """Abstract Explainer class."""
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import List, Optional, TypeVar
+from typing import Optional, Tuple, TypeVar
 
 import matplotlib
 import numpy as np
 import torch
-from captum.attr import visualization as viz
 
-from autoxai.array_utils import convert_float_to_uint8, reshape_and_convert_matrix
+from autoxai.array_utils import (
+    convert_float_to_uint8,
+    normalize_attributes,
+    resize_attributes,
+    retain_only_positive,
+    transpose_array,
+)
 from autoxai.logger import create_logger
 
 _LOGGER: Optional[logging.Logger] = None
@@ -22,72 +26,6 @@ def log() -> logging.Logger:
     if _LOGGER is None:
         _LOGGER = create_logger(__name__)
     return _LOGGER
-
-
-@dataclass
-class ExplanationMethods:
-    """Holder for the explainer attributes visualization method."""
-
-    method: viz.ImageVisualizationMethod
-    sign: viz.VisualizeSign
-    title: str
-
-
-def determine_visualization_methods(
-    attributions_np: np.ndarray,
-) -> List[ExplanationMethods]:
-    """Determine which visualization methods to use,
-    based on presents of positive and negative values
-    in the explained image.
-
-    Args:
-        attributions_np: Attributes of the explained image.
-
-    Returns:
-        List of visualization methods to be used,
-        for the given image attributes.
-    """
-    explanation_methods: List[ExplanationMethods] = [
-        ExplanationMethods(
-            method=viz.ImageVisualizationMethod.original_image,
-            sign=viz.VisualizeSign.all,
-            title="Original image",
-        )
-    ]
-
-    # check whether we can explain model with positive and negative attributes
-    if np.any(attributions_np > 0):
-        explanation_methods.append(
-            ExplanationMethods(
-                method=viz.ImageVisualizationMethod.heat_map,
-                sign=viz.VisualizeSign.positive,
-                title="Positive attributes",
-            )
-        )
-    else:
-        log().info(msg="No positive attributes in the explained model.")
-
-    if np.any(attributions_np < 0):
-        explanation_methods.append(
-            ExplanationMethods(
-                method=viz.ImageVisualizationMethod.heat_map,
-                sign=viz.VisualizeSign.negative,
-                title="Negative attributes",
-            )
-        )
-    else:
-        log().info(msg="No negative attributes in the explained model.")
-
-    if np.any(attributions_np != 0):
-        explanation_methods.append(
-            ExplanationMethods(
-                method=viz.ImageVisualizationMethod.heat_map,
-                sign=viz.VisualizeSign.all,
-                title="All attributes",
-            )
-        )
-
-    return explanation_methods
 
 
 class CVExplainer(ABC):
@@ -124,33 +62,66 @@ class CVExplainer(ABC):
 
     @classmethod
     def visualize(
-        cls, attributions: torch.Tensor, transformed_img: torch.Tensor
+        cls,
+        attributions: torch.Tensor,
+        transformed_img: torch.Tensor,
+        title: str = "",
+        figsize: Tuple[int, int] = (8, 8),
+        alpha: float = 0.5,
+        only_positive_attr: bool = True,
     ) -> matplotlib.pyplot.Figure:
         """Create image with calculated features.
 
         Args:
             attributions: Features.
-            transformed_img: Image.
+            transformed_img: Image in shape (C x H x W) or (H x W).
+            title: Title of the figure. Defaults to "".
+            figsize: Tuple with size of figure. Defaults to (8, 8).
+            alpha: Opacity level. Defaults to 0.5,
+            only_positive_attr: Whether to display only positive or all attributes.
+                Defaults to True.
 
         Returns:
             Image with paired figures: original image and features heatmap.
         """
-        attributions_np = reshape_and_convert_matrix(tensor=attributions)
-        transformed_img_np = reshape_and_convert_matrix(tensor=transformed_img)
+        attributes_matrix: np.ndarray = attributions.detach().cpu().numpy()
+        transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
 
-        explanation_methods: List[ExplanationMethods] = determine_visualization_methods(
-            attributions_np=attributions_np
+        single_channel_attributes: np.ndarray = normalize_attributes(
+            attributes=attributes_matrix,
         )
 
-        figure, _ = viz.visualize_image_attr_multiple(
-            attr=attributions_np,
-            original_image=convert_float_to_uint8(array=transformed_img_np),
-            methods=[explanation.method.name for explanation in explanation_methods],
-            signs=[explanation.sign.name for explanation in explanation_methods],
-            titles=[explanation.title for explanation in explanation_methods],
-            show_colorbar=True,
-            use_pyplot=False,
+        if only_positive_attr:
+            single_channel_attributes = retain_only_positive(
+                array=single_channel_attributes
+            )
+
+        resized_attributes: np.ndarray = resize_attributes(
+            attributes=single_channel_attributes,
+            dest_height=transformed_img_np.shape[1],
+            dest_width=transformed_img_np.shape[2],
         )
+
+        # standardize attributes to uint8 type and back-scale them to range 0-1
+        grayscale_attributes = convert_float_to_uint8(resized_attributes) / 255
+
+        # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
+        normalized_transformed_img = transpose_array(
+            convert_float_to_uint8(transformed_img_np)
+        )
+
+        figure = matplotlib.figure.Figure(figsize=figsize)
+        axis = figure.subplots()
+        axis.imshow(normalized_transformed_img)
+        heatmap_plot = axis.imshow(
+            grayscale_attributes, cmap=matplotlib.cm.jet, vmin=0, vmax=1, alpha=alpha
+        )
+
+        figure.colorbar(heatmap_plot, label="Pixel relevance")
+        axis.get_xaxis().set_visible(False)
+        axis.get_yaxis().set_visible(False)
+        axis.set_title(title)
+
         return figure
 
 
