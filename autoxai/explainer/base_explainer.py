@@ -102,8 +102,8 @@ class CVExplainer(ABC):
             dest_width=transformed_img_np.shape[2],
         )
 
-        # standardize attributes to uint8 type
-        grayscale_attributes = convert_float_to_uint8(resized_attributes)
+        # standardize attributes to uint8 type and back-scale them to range 0-1
+        grayscale_attributes = convert_float_to_uint8(resized_attributes) / 255
 
         # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
         normalized_transformed_img = transpose_array(
@@ -114,7 +114,7 @@ class CVExplainer(ABC):
         axis = figure.subplots()
         axis.imshow(normalized_transformed_img)
         heatmap_plot = axis.imshow(
-            grayscale_attributes, cmap=matplotlib.cm.jet, vmin=0, vmax=255, alpha=alpha
+            grayscale_attributes, cmap=matplotlib.cm.jet, vmin=0, vmax=1, alpha=alpha
         )
 
         figure.colorbar(heatmap_plot, label="Pixel relevance")
