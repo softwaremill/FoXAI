@@ -1,8 +1,14 @@
 """File contains unit tests for array_utils.py file."""
 import numpy as np
-import torch
+import pytest
 
-from autoxai.array_utils import convert_float_to_uint8, reshape_and_convert_matrix
+from autoxai.array_utils import (
+    convert_float_to_uint8,
+    normalize_attributes,
+    resize_attributes,
+    retain_only_positive,
+    transpose_array,
+)
 
 
 def test_convert_float_to_uint8() -> None:
@@ -28,7 +34,7 @@ def test_convert_float_to_uint8() -> None:
 
 
 def test_reshape_and_convert_matrix_should_add_additional_dimensions() -> None:
-    tensor = torch.tensor(
+    array = np.array(
         [
             [
                 [1, 2, 3, 4, 5, 6],
@@ -39,74 +45,72 @@ def test_reshape_and_convert_matrix_should_add_additional_dimensions() -> None:
                 [31, 32, 33, 34, 35, 36],
             ],
         ],
-        dtype=torch.uint8,
     )
 
     expected_array = np.array(
         [
             [
-                [1, 1, 1],
-                [2, 2, 2],
-                [3, 3, 3],
-                [4, 4, 4],
-                [5, 5, 5],
-                [6, 6, 6],
+                [1],
+                [2],
+                [3],
+                [4],
+                [5],
+                [6],
             ],
             [
-                [7, 7, 7],
-                [8, 8, 8],
-                [9, 9, 9],
-                [10, 10, 10],
-                [11, 11, 11],
-                [12, 12, 12],
+                [7],
+                [8],
+                [9],
+                [10],
+                [11],
+                [12],
             ],
             [
-                [13, 13, 13],
-                [14, 14, 14],
-                [15, 15, 15],
-                [16, 16, 16],
-                [17, 17, 17],
-                [18, 18, 18],
+                [13],
+                [14],
+                [15],
+                [16],
+                [17],
+                [18],
             ],
             [
-                [19, 19, 19],
-                [20, 20, 20],
-                [21, 21, 21],
-                [22, 22, 22],
-                [23, 23, 23],
-                [24, 24, 24],
+                [19],
+                [20],
+                [21],
+                [22],
+                [23],
+                [24],
             ],
             [
-                [25, 25, 25],
-                [26, 26, 26],
-                [27, 27, 27],
-                [28, 28, 28],
-                [29, 29, 29],
-                [30, 30, 30],
+                [25],
+                [26],
+                [27],
+                [28],
+                [29],
+                [30],
             ],
             [
-                [31, 31, 31],
-                [32, 32, 32],
-                [33, 33, 33],
-                [34, 34, 34],
-                [35, 35, 35],
-                [36, 36, 36],
+                [31],
+                [32],
+                [33],
+                [34],
+                [35],
+                [36],
             ],
         ]
     )
 
-    assert tensor.shape == (1, 6, 6)
-    assert expected_array.shape == (6, 6, 3)
+    assert array.shape == (1, 6, 6)
+    assert expected_array.shape == (6, 6, 1)
 
-    array = reshape_and_convert_matrix(tensor=tensor)
+    array = transpose_array(array=array)
 
-    assert isinstance(array, np.ndarray)
     assert array.shape == expected_array.shape
     np.testing.assert_array_equal(array, expected_array)
 
 
 def test_reshape_and_convert_matrix_should_not_additional_dimensions() -> None:
-    tensor = torch.tensor(
+    array = np.array(
         [
             [
                 [1, 2, 3, 4, 5, 6],
@@ -133,7 +137,6 @@ def test_reshape_and_convert_matrix_should_not_additional_dimensions() -> None:
                 [103, 104, 105, 106, 107, 108],
             ],
         ],
-        dtype=torch.uint8,
     )
 
     expected_array = np.array(
@@ -189,10 +192,117 @@ def test_reshape_and_convert_matrix_should_not_additional_dimensions() -> None:
         ]
     )
 
-    assert tensor.shape == (3, 6, 6)
+    assert array.shape == (3, 6, 6)
     assert expected_array.shape == (6, 6, 3)
 
-    array = reshape_and_convert_matrix(tensor=tensor)
-    assert isinstance(array, np.ndarray)
+    array = transpose_array(array=array)
+
     assert array.shape == expected_array.shape
     np.testing.assert_array_equal(array, expected_array)
+
+
+def test_resize_attributes() -> None:
+    """Test if function resizes array to desired shape."""
+    array = np.array(
+        [
+            [1.0, 2.0],
+            [3.0, 4.0],
+        ]
+    )
+
+    result = resize_attributes(
+        attributes=array,
+        dest_height=4,
+        dest_width=4,
+    )
+
+    assert result.shape == (4, 4)
+
+
+def test_normalize_attributes_should_return_the_same_array_if_has_2_dimensions() -> None:
+    """Test if function returns unmodified array if it has only 2 dimensions."""
+    array = np.array(
+        [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+        ]
+    )
+
+    result = normalize_attributes(
+        attributes=array,
+    )
+
+    np.testing.assert_array_equal(result, array)
+
+
+def test_normalize_attributes_should_return_mean_on_the_array_if_has_3_dimensions() -> None:
+    """Test if function returns mean array over first dimension if it has 3 dimensions."""
+    array = np.array(
+        [
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+            ],
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+            ],
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+            ],
+        ]
+    )
+
+    expected_array = np.array(
+        [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+        ]
+    )
+
+    assert len(array.shape) == 3
+    result = normalize_attributes(
+        attributes=array,
+    )
+
+    assert len(result.shape) == 2
+    np.testing.assert_array_equal(result, expected_array)
+
+
+def test_normalize_attributes_should_raise_error_if_has_more_than_3_dimensions() -> None:
+    """Test if function raises ValueError if array has more than 3 dimensions."""
+    array = np.array(
+        [
+            [
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ]
+            ]
+        ]
+    )
+
+    with pytest.raises(ValueError):
+        _ = normalize_attributes(
+            attributes=array,
+        )
+
+
+def test_retain_only_positive() -> None:
+    """Test if function replaces all negative numbers with zero."""
+    array = np.array(
+        [0, -1, 1, -2, 2],
+    )
+    excpected_array = np.array(
+        [0, 0, 1, 0, 2],
+    )
+    result = retain_only_positive(array=array)
+
+    np.testing.assert_array_equal(result, excpected_array)
