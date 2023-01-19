@@ -17,9 +17,9 @@ jobs:
       - uses: Jimver/cuda-toolkit@v0.2.8
         id: install-cuda-toolkit
         with:
-          cuda: {{ matrix.CUDA_VERSION }}
+          cuda: ${{ matrix.CUDA_VERSION }}
       - uses: "./.github/actions/build-module"
         env:
-          PYTHON_VERSION: {{ matrix.PYTHON_VERSION }}
+          PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
         with:
           moduleName: "src"
