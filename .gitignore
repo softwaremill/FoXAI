@@ -161,3 +161,8 @@ cython_debug/
 
 # VS Code
 .vscode/
+
+# Swap files
+*.swp
+*.swo
+
