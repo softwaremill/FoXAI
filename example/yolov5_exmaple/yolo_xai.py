@@ -97,7 +97,6 @@ class XaiYoloWrapper(torch.nn.Module):
         iou_thres: float = 0.45,
         agnostic: bool = False,
         max_det: int = 300,
-        nm: int = 0,  # number of masks
     ) -> torch.Tensor:
         """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections
 
@@ -107,10 +106,9 @@ class XaiYoloWrapper(torch.nn.Module):
             iou_thres: intersection over union threshold for non max suppresion algorithm
             agnostic:
             max_det: maximum number of detections
-            nm: number of tensor elements not related to class prediction (xywh -> 4)
 
         Returns:
-            list of detections, on (n,6) tensor per image [xyxy, conf, cls]
+            batch of detections of shape (B,80), where 80 are classes confidence
         """
 
         # Checks
@@ -130,11 +128,11 @@ class XaiYoloWrapper(torch.nn.Module):
         if mps:  # MPS not fully supported yet, convert tensors to CPU before NMS
             prediction = prediction.cpu()
         bs = prediction.shape[0]  # batch size
-        nc = prediction.shape[2] - nm - 5  # number of classes
+        nc = prediction.shape[2] - 5  # number of classes
+        # filter classes with high confidence
         xc = prediction[..., 4] > conf_thres  # candidates
 
         # Settings
-        # min_wh = 2  # (pixels) minimum box width and height
         max_wh = 7680  # (pixels) maximum box width and height
         max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
 
@@ -144,11 +142,16 @@ class XaiYoloWrapper(torch.nn.Module):
         for xi, _ in enumerate([jj for jj in prediction]):
             x = prediction[xi]
 
-            # Compute conf
-            x_high_conf = x.detach()[xc[xi]]  # confidence
+            # Get predictions with high confidence
+            x_high_conf = x.detach()[xc[xi]]
+            # if there are no predictions with high confidence -> continue
             if not x_high_conf.shape[0]:
+                # get class outputs
                 x = x[:, 5:]
+                # set all class outputs to zero (no gradient)
+                # does outputs does not contribute to the final prediction
                 x *= 0
+                # sum same classes together to get the shape [number_of_objectes,num_of_classes] -> [num_of_classes]
                 m_out[xi] = x.sum(dim=0)
                 continue
             # Compute conf
@@ -161,10 +164,16 @@ class XaiYoloWrapper(torch.nn.Module):
             ]
             n = x_high_conf.shape[0]  # number of boxes
             if not n:  # no boxes
+                # get class outputs
                 x = x[:, 5:]
+                # set all class outputs to zero (no gradient)
+                # does outputs does not contribute to the final prediction
                 x *= 0
+                # sum same classes together to get the shape [number_of_objectes,num_of_classes] -> [num_of_classes]
                 m_out[xi] = x.sum(dim=0)
                 continue
+            # sort predicted objects from highest confidence to lowest and cut objects with
+            # lowest confidence, if exceed max supported number of predictions
             x_indexs = x_high_conf[:, 4].argsort(descending=True)[:max_nms]
             x_high_conf = x_high_conf[x_indexs]
             c = x_high_conf[:, 5:6] * (0 if agnostic else max_wh)  # classes
@@ -174,23 +183,31 @@ class XaiYoloWrapper(torch.nn.Module):
             )  # boxes (offset by class), scores
             i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
             i = i[:max_det]  # limit detections
+            # get indexes of x_high_conf tensor, with high confidence and non-overlaping bboxes
             x_indexs = x_indexs[i]
 
+            # grab indexes x  tensor, with high confidence and non-overlaping bboxes
             pick_indices = xc[xi].nonzero()[x_indexs]
-            mask = torch.zeros(size=(xc[xi].shape[0],), device=device)
-            mask[pick_indices] = 1
 
+            # in place opeartions not supported for gradient computation
+            # we need to clone the tensor and keep track of gradient
             class_confidence = x[:, 5:].clone()
             if class_confidence.requires_grad:
                 class_confidence.retain_grad()
             object_confidence = x[:, 4:5].clone()
             if object_confidence.requires_grad:
                 object_confidence.retain_grad()
+            # compute the cls * obj confidence for final output
             x[:, 5:] = class_confidence * object_confidence
+            # get only classes confidence
             x = x[:, 5:]
+            # create a mask from those indexes. We want to keep shape of the original
+            # x tensor and just zero outputs, that does not contribute to the final
+            # model output
             mask = torch.zeros_like(x)
             mask[pick_indices] = 1
             x = x * mask
+            # sum same class instances together
             m_out[xi] = x.sum(dim=0)
 
         return m_out
@@ -329,7 +346,9 @@ def main():
         fontScale=image.shape[0] / 500,
         color=(0, 0, 0),
     )
-    cv2.imwrite("./example/yolov5_exmaple/xai.png", image)
+    cv2.imwrite(
+        "./example/yolov5_exmaple/xai.png", cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    )
 
 
 if __name__ == "__main__":
