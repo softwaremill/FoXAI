@@ -127,24 +127,36 @@ class XaiYoloWrapper(torch.nn.Module):
         mps = "mps" in device.type  # Apple MPS
         if mps:  # MPS not fully supported yet, convert tensors to CPU before NMS
             prediction = prediction.cpu()
-        bs = prediction.shape[0]  # batch size
-        nc = prediction.shape[2] - 5  # number of classes
-        # filter classes with high confidence
+
+        # calculate batch size
+        batch_size = prediction.shape[0]  # batch size
+
+        # calculate True/False list for all predictions that meet confidence threshold
+        # criteria for all samples in batch
         xc = prediction[..., 4] > conf_thres  # candidates
 
         # Settings
         max_wh = 7680  # (pixels) maximum box width and height
         max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
 
-        mi = 5 + nc  # mask start index
-        m_out = torch.zeros((bs, self.number_of_classes), device=prediction.device)
+        # set start mask index as first element after the last class index
+        mi = 5 + self.number_of_classes  # mask start index
+
+        # create empty tensor representing result - probability of each class
+        out_predictions = torch.zeros(
+            (batch_size, self.number_of_classes), device=prediction.device
+        )
+
         # pylint: disable = unnecessary-comprehension
         for xi, _ in enumerate([jj for jj in prediction]):
+
+            # get sample prediction
             x = prediction[xi]
 
-            # Get predictions with high confidence
+            # get all anchors that meet confidence threshold criteria from signle sample from batch
             x_high_conf = x.detach()[xc[xi]]
-            # if there are no predictions with high confidence -> continue
+
+            # if none of the anchors meet threshold criteria
             if not x_high_conf.shape[0]:
                 # get class outputs
                 x = x[:, 5:]
@@ -152,65 +164,93 @@ class XaiYoloWrapper(torch.nn.Module):
                 # does outputs does not contribute to the final prediction
                 x *= 0
                 # sum same classes together to get the shape [number_of_objectes,num_of_classes] -> [num_of_classes]
-                m_out[xi] = x.sum(dim=0)
+                out_predictions[xi] = x.sum(dim=0)
                 continue
-            # Compute conf
+
+            # multiply class probability by confidence score
             x_high_conf[:, 5:] *= x_high_conf[:, 4:5]  # conf = obj_conf * cls_conf
+
+            # get bounding box dimensions
             box = xywh2xyxy(x_high_conf[:, :4])
-            mask = x_high_conf[:, mi:]
+
+            # get confidence and argmax of classes for all anchors
             conf, j = x_high_conf[:, 5:mi].max(1, keepdim=True)
-            x_high_conf = torch.cat((box, conf, j.float(), mask), 1)[
+
+            # overwrite anchors that meet confidence criteria with
+            # bounding box dimensions, confidence, probability and
+            x_high_conf = torch.cat((box, conf, j.float()), dim=1)[
                 conf.view(-1) > conf_thres
             ]
-            n = x_high_conf.shape[0]  # number of boxes
-            if not n:  # no boxes
-                # get class outputs
+
+            # get number of anchors
+            number_of_anchors = x_high_conf.shape[0]  # number of boxes
+
+            # if no anchors are present
+            if not number_of_anchors:  # no boxes
+                # get only class confidence
                 x = x[:, 5:]
                 # set all class outputs to zero (no gradient)
                 # does outputs does not contribute to the final prediction
                 x *= 0
                 # sum same classes together to get the shape [number_of_objectes,num_of_classes] -> [num_of_classes]
-                m_out[xi] = x.sum(dim=0)
+                out_predictions[xi] = x.sum(dim=0)
                 continue
-            # sort predicted objects from highest confidence to lowest and cut objects with
-            # lowest confidence, if exceed max supported number of predictions
+
+            # get indices of predictions by confidence score in descending order
             x_indexs = x_high_conf[:, 4].argsort(descending=True)[:max_nms]
+
+            # get predictions by confidence in descending order
             x_high_conf = x_high_conf[x_indexs]
+
+            # get class
             c = x_high_conf[:, 5:6] * (0 if agnostic else max_wh)  # classes
+            # get boxes (with offset by class) and scores
             boxes, scores = (
                 x_high_conf[:, :4] + c,
                 x_high_conf[:, 4],
-            )  # boxes (offset by class), scores
-            i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
-            i = i[:max_det]  # limit detections
+            )
+
+            # get bounding boxes indices to keep from NMS
+            selected_indices = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
+
+            # limit detections to specified number
+            selected_indices = selected_indices[:max_det]  # limit detections
+
             # get indexes of x_high_conf tensor, with high confidence and non-overlaping bboxes
-            x_indexs = x_indexs[i]
+            x_indexs = x_indexs[selected_indices]
 
             # grab indexes x  tensor, with high confidence and non-overlaping bboxes
             pick_indices = xc[xi].nonzero()[x_indexs]
 
+            # get classes confidence
             # in place opeartions not supported for gradient computation
             # we need to clone the tensor and keep track of gradient
             class_confidence = x[:, 5:].clone()
             if class_confidence.requires_grad:
                 class_confidence.retain_grad()
+            # get object confidence
             object_confidence = x[:, 4:5].clone()
             if object_confidence.requires_grad:
                 object_confidence.retain_grad()
-            # compute the cls * obj confidence for final output
+
+            # multiply class confidence by object confidence
             x[:, 5:] = class_confidence * object_confidence
-            # get only classes confidence
+
+            # retain only classes predictions
             x = x[:, 5:]
-            # create a mask from those indexes. We want to keep shape of the original
-            # x tensor and just zero outputs, that does not contribute to the final
-            # model output
+
+            # create mask of anchors and mark selected
             mask = torch.zeros_like(x)
             mask[pick_indices] = 1
-            x = x * mask
-            # sum same class instances together
-            m_out[xi] = x.sum(dim=0)
 
-        return m_out
+            # erase non-selected anchors
+            x = x * mask
+
+            # sum probabilities of classes over all anchors
+            # instance confidence to semantic confidence
+            out_predictions[xi] = x.sum(dim=0)
+
+        return out_predictions
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.model(x)
