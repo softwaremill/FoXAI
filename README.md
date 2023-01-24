@@ -31,6 +31,8 @@ Installation requirements:
 
 **Important**: For any problems regarding installation we advise to refer first to our [FAQ](FAQ.md).
 
+Usage of image ``pytorch/pytorch:1.12.1-cuda11.3-cudnn8-runtime`` is not advised as it uses Python 3.7 and Ubuntu 18.04, which does not support easily python3.8. 
+
 ## GPU acceleration
 
 In order to use the torch library with GPU acceleration, you need to install
@@ -189,8 +191,9 @@ version:
 ```bash
 curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
 ```
-Add poetry to runtime:
+Add poetry to PATH:
 ```bash
+export PATH="/home/ubuntu/.local/bin:$PATH"
 echo 'export PATH="/home/ubuntu/.local/bin:$PATH"' >> ~/.bashrc
 ```
 
