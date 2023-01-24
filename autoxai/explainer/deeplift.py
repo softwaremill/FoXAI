@@ -173,12 +173,7 @@ class BaseDeepLIFTCVExplainer(CVExplainer):
 
         if baselines is None:
             baselines = torch.randn(
-                (
-                    input_data.shape[0],
-                    input_data.shape[1],
-                    input_data.shape[2],
-                    input_data.shape[3],
-                ),
+                input_data.shape,
                 requires_grad=True,
                 device=input_data.device,
             )

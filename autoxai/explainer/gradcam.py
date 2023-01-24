@@ -299,7 +299,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
         relu_attributions: bool = False,
-        # attr_dim_summation: bool = True,
         **kwargs,
     ) -> torch.Tensor:
         """Generate features image with GradCAM algorithm explainer.
@@ -370,10 +369,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
                 otherwise, by default, both positive and negative
                 attributions are returned.
                 Default: False
-            attr_dim_summation: Indicates whether to
-                sum attributions along dimension 1 (usually channel).
-                The default (True) means to sum along dimension 1.
-                Default: True
 
         Returns:
             Element-wise product of (upsampled) GradCAM
@@ -404,7 +399,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
                 additional_forward_args=additional_forward_args,
                 attribute_to_layer_input=attribute_to_layer_input,
                 relu_attributions=relu_attributions,
-                # attr_dim_summation=attr_dim_summation,
             )
         validate_result(attributions=attributions)
         return attributions

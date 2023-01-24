@@ -179,9 +179,7 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
             baselines = torch.randn(
                 (
                     2 * input_data.shape[0],
-                    input_data.shape[1],
-                    input_data.shape[2],
-                    input_data.shape[3],
+                    *input_data.shape[1:],
                 ),
                 requires_grad=True,
                 device=input_data.device,
