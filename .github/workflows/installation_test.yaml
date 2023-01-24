@@ -7,13 +7,12 @@ env:
   PYTHON_VERSION: "3.8"
 jobs:
   autoxai:
-    name: Launch test on GKE Pod with GPU
+    name: Launch GKE Pod with GPU
     runs-on: gpu # need to add `gpu` labels to self-hosted runners
-    container: nvidia/cuda:10.2-base-ubi8
     # strategy:
-    # matrix:
-    #   CUDA_VERSION: ["10.2"]  #  "11.0" , "11.4", "11.6"
-    #   PYTHON_VERSION: ["3.8"] # "3.9", "3.10", "3.11"
+    #   matrix:
+    #     CUDA_VERSION: ["10.2"] #  "11.0" , "11.4", "11.6"
+    #     PYTHON_VERSION: ["3.8"] # "3.9", "3.10", "3.11"
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -21,9 +20,7 @@ jobs:
       #   id: install-cuda-toolkit
       #   with:
       #     cuda: {{ matrix.CUDA_VERSION }}
-      - name: Configure Python module
-        uses: "./.github/actions/build-module"
-        env:
-          PYTHON_VERSION: "3.8" #{ { matrix.PYTHON_VERSION } }
-        with:
-          moduleName: "src"
+      # - name: Configure Python module
+      #   uses: "./.github/actions/build-module"
+      #   with:
+      #     moduleName: "src"
