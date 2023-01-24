@@ -3,23 +3,27 @@ name: Installation test
 on:
   workflow_dispatch:
 env:
-  POETRY_VERSION: '1.2.1'
-  PYTHON_VERSION: '3.8'
+  POETRY_VERSION: "1.2.1"
+  PYTHON_VERSION: "3.8"
 jobs:
   autoxai:
-    strategy:
-      matrix:
-        CUDA_VERSION: ["10.2"]  #  "11.0" , "11.4", "11.6"
-        PYTHON_VERSION: ["3.8"]  # "3.9", "3.10", "3.11"
-    runs-on: gpu  # need to add `gpu` labels to self-hosted runners
+    name: Launch test on GKE Pod with GPU
+    runs-on: gpu # need to add `gpu` labels to self-hosted runners
+    container: nvidia/cuda:10.2-base-ubi8
+    # strategy:
+    # matrix:
+    #   CUDA_VERSION: ["10.2"]  #  "11.0" , "11.4", "11.6"
+    #   PYTHON_VERSION: ["3.8"] # "3.9", "3.10", "3.11"
     steps:
-      - uses: actions/checkout@v3
-      - uses: Jimver/cuda-toolkit@v0.2.8
-        id: install-cuda-toolkit
-        with:
-          cuda: {{ matrix.CUDA_VERSION }}
-      - uses: "./.github/actions/build-module"
+      - name: Check out repository
+        uses: actions/checkout@v3
+      # - uses: Jimver/cuda-toolkit@v0.2.8
+      #   id: install-cuda-toolkit
+      #   with:
+      #     cuda: {{ matrix.CUDA_VERSION }}
+      - name: Configure Python module
+        uses: "./.github/actions/build-module"
         env:
-          PYTHON_VERSION: {{ matrix.PYTHON_VERSION }}
+          PYTHON_VERSION: "3.8" #{ { matrix.PYTHON_VERSION } }
         with:
           moduleName: "src"
