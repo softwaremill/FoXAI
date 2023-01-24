@@ -7,7 +7,7 @@ import torch
 from torchvision import transforms
 
 from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
-from autoxai.explainer import IntegratedGradientsCVExplainer
+from autoxai.explainer import InputXGradientCVExplainer
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
 
@@ -207,21 +207,19 @@ class TestAutoXaiExplainer:
         )
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
-        explainer_attributes = IntegratedGradientsCVExplainer().calculate_features(
+        explainer_attributes = InputXGradientCVExplainer().calculate_features(
             model=classifier,
             input_data=img_tensor,
             pred_label_idx=0,
         )
         with AutoXaiExplainer(
             model=classifier,
-            explainers=[
-                ExplainerWithParams(Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER)
-            ],
+            explainers=[ExplainerWithParams(Explainers.CV_INPUT_X_GRADIENT_EXPLAINER)],
         ) as xai_model:
             _, autoxai_attributes_dict = xai_model(img_tensor)
 
         assert torch.equal(
-            autoxai_attributes_dict[Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER.name],
+            autoxai_attributes_dict[Explainers.CV_INPUT_X_GRADIENT_EXPLAINER.name],
             explainer_attributes,
         )
 
