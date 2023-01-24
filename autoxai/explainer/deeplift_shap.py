@@ -186,7 +186,6 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
                 requires_grad=True,
                 device=input_data.device,
             )
-            print(baselines.shape)
 
         if isinstance(deeplift, LayerDeepLiftShap):
             attributions = deeplift.attribute(
