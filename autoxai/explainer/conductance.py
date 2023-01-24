@@ -86,7 +86,7 @@ class LayerConductanceCVExplainer(CVExplainer):
                     #output_dims - 1 elements. Each tuple is applied as the
                     target for the corresponding example.
                 Default: None
-            baselines (scalar, Tensor, tuple of scalar, or Tensor, optional):
+            baselines:
                 Baselines define the starting point from which integral
                 is computed and can be provided as:
 
