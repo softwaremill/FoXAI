@@ -15,9 +15,46 @@
     </summary>
 
 You should download the following libraries (often already installed in basic distribution of Unix):
-```
+```bash
 apt-get install ffmpeg libsm6 libxext6  -y
 ```
 
 Source: [StackOverflow](https://stackoverflow.com/questions/55313610/importerror-libgl-so-1-cannot-open-shared-object-file-no-such-file-or-directo)
+</details>
+<details>
+    <summary>
+        <b>While trying to install poetry you get an error: ``ModuleNotFoundError: No module named 'distutils.cmd'``</b>
+    </summary>
+
+It helps to install the following: 
+```bash
+apt-get install python3-distutils
+```
+
+Source: [StackOverflow](https://askubuntu.com/questions/1239829/modulenotfounderror-no-module-named-distutils-util)
+</details>
+
+<details>
+    <summary>
+    <b>Error while running ``poetry install``: ``Hash for torch (1.12.1) from archive``</b>
+    </summary>
+
+This error might occur when you are installing and abort the process before it finishes. What you need to do is actually remove all the caches which will run the clean install:
+```bash
+rm -rf ~/.cache/pypoetry
+```
+Helful source: [StackOverflow](https://stackoverflow.com/questions/71001968/python-poetry-install-failure-invalid-hashes)
+</details>
+
+<details>
+    <summary>
+    <b>Error while running ``poetry install``</b>
+    </summary>
+
+Sometimes the error while running poetry install persists. Then it might be useful to diable parallel connections in poetry and do everything in single thread. To do so you need to run the following:
+
+```bash
+poetry config installer.parallel false
+```
+Helful source: [StackOverflow](https://stackoverflow.com/questions/71001968/python-poetry-install-failure-invalid-hashes)
 </details>

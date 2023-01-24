@@ -16,9 +16,8 @@ add support for text, tabular and multimodal data problems in the future.
 * [Development](#development)
     * [Requirements](#requirements)
     * [CUDA](#cuda)
-    * [Poetry](#poetry)
     * [pyenv](#pyenv)
-        * [Installation errors](#installation-errors)
+    * [Poetry](#poetry)
     * [pre-commit hooks](#pre-commit-hooks-setup)
     * [Note](#note)
         * [Artifacts directory structure](#artifacts-directory-structure)
@@ -28,6 +27,9 @@ add support for text, tabular and multimodal data problems in the future.
 
 Installation requirements:
 * `Python` >= 3.8 & < 4.0
+* `CUDA` > 10.2
+
+**Important**: For any problems regarding installation we advise to refer first to our [FAQ](FAQ.md).
 
 ## GPU acceleration
 
@@ -144,37 +146,11 @@ Recommended version of CUDA is `10.2` as it is supported since version
 with current version of `torch`:
 https://pytorch.org/get-started/previous-versions/.
 
-## Poetry
+As our starting Docker image we were using the one provided by Nvidia: ``nvidia/cuda:10.2-devel-ubuntu18.04``. 
 
-To separate runtime environments for different services and repositories, it is
-recommended to use a virtual Python environment. You can configure `Poetry` to
-create new virtual environment in project directory of every repository. To
-install `Poetry` follow instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
-`1.2.1`. To install specific version You have to provide desired package
-version:
-```bash
-curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
-```
-
-After installation configure creation of virtual environments in directory
-of project.
-```bash
-poetry config virtualenvs.create true
-poetry config virtualenvs.in-project true
-```
-
-The final step is to install all the dependencies defined in the
-`pyproject.toml` file.
-
-```bash
-poetry install
-```
-
-Once all the steps have been completed, the environment is ready to go.
-Virtual environment by default will be created with name `.venv` inside
-project directory.
-
+If you wish an easy to use docker image we advise to use our ``Dockerfile``. 
 ## pyenv
+Optional step, but probably one of the easiest way to actually get Python version with all the needed aditional tools (e.g. pip). 
 
 `pyenv` is a tool used to manage multiple version of Python. To install
 this package follow instructions on project repository page:
@@ -202,15 +178,39 @@ dependencies:
 poetry install
 ```
 
-### Installation errors
+## Poetry
 
-If You encounter errors during dependencies installation You can disable
-parallel installer, remove current virtual environment and remove `artifacts`
-and `cache` directories from `poetry` root directory (by default is under
-`/home/<user>/.cache/pypoetry/`). To disable parallel installer run:
+To separate runtime environments for different services and repositories, it is
+recommended to use a virtual Python environment. You can configure `Poetry` to
+create new virtual environment in project directory of every repository. To
+install `Poetry` follow instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
+`1.2.1`. To install specific version You have to provide desired package
+version:
 ```bash
-poetry config installer.parallel false
+curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
 ```
+Add poetry to runtime:
+```bash
+echo 'export PATH="/home/ubuntu/.local/bin:$PATH"' >> ~/.bashrc
+```
+
+Then configure creation of virtual environments in directory
+of project.
+```bash
+poetry config virtualenvs.create true
+poetry config virtualenvs.in-project true
+```
+
+The final step is to install all the dependencies defined in the
+`pyproject.toml` file.
+
+```bash
+poetry install
+```
+
+Once all the steps have been completed, the environment is ready to go.
+Virtual environment by default will be created with name `.venv` inside
+project directory.
 
 ## Pre-commit hooks setup
 
