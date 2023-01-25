@@ -2,13 +2,23 @@ name: Installation test
 
 on:
   workflow_dispatch:
+    inputs:
+      cuda_version:
+        description: "Select CUDA version"
+        required: true
+        default: "11.6"
+        type: choice
+        options:
+          - "11.6"
+          - "11.4"
+
 env:
-  POETRY_VERSION: "1.2.1"
   PYTHON_VERSION: "3.8"
+  POETRY_VERSION: "1.3.2"
 jobs:
   autoxai:
     name: Launch GKE Pod with GPU
-    runs-on: gpu # need to add `gpu` labels to self-hosted runners
+    runs-on: gpu-cuda-${{inputs.cuda_version}} # need to add `gpu` labels to self-hosted runners
     # strategy:
     #   matrix:
     #     CUDA_VERSION: ["10.2"] #  "11.0" , "11.4", "11.6"
@@ -16,11 +26,32 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-      # - uses: Jimver/cuda-toolkit@v0.2.8
-      #   id: install-cuda-toolkit
-      #   with:
-      #     cuda: {{ matrix.CUDA_VERSION }}
-      # - name: Configure Python module
-      #   uses: "./.github/actions/build-module"
-      #   with:
-      #     moduleName: "src"
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: "x64"
+
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+
+      - name: Install dependencies
+        working-directory: .
+        run: |
+          poetry env use ${{ env.PYTHON_VERSION }}
+          poetry install
+
+      - name: Launch code formatter
+        working-directory: .
+        run: poetry run black . --check --diff --color
+
+      - name: Launch static type checker
+        working-directory: .
+        run: poetry run mypy -p autoxai --show-error-context --pretty --namespace-packages --explicit-package-bases --ignore-missing-imports
+
+      - name: Launch tests
+        working-directory: .
+        run: poetry run pytest -v
