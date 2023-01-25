@@ -117,14 +117,20 @@ def non_max_suppression(
 ):
     """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections
 
+    Original implementation in torch.hub.ultralytics_yolov5.general.py
+
     Args:
         prediction: the model prediction
         conf_thres: confidence threshold, for counting the detection as valid
         iou_thres: intersection over union threshold for non max suppresion algorithm
-        classes:
-        agnostic:
-        multi_label:
-        labels:
+        classes: classes to keep. Rest of the classes are rejected
+        agnostic: if True, non max suppression algorithm is run on raw bboxes. However it may
+        happen that different classes have bboxes in similar place. NMX would discard one of
+        those bboxes and keep only the one with higher confidence. If we want to keep bboxes
+        that are in similar place, but have different class label, we should set agnostic to False.
+        multi_label: whetehr we want to keep multiple labels with its confidence for each bbox, or
+        only pick the class label with highest confidence.
+        labels: gt labels
         max_det: maximum number of detections
         nm: number of tensor elements not related to class prediction (xywh -> 4)
 
@@ -274,10 +280,10 @@ def letterbox(
         im: the image to be resized and pad
         new_shape: the destination shape
         color: padding color
-        auto:
-        scale_fill:
-        scaleup:
-        stride:
+        auto: whether to automaticlly compute the padding size from other parameters
+        scale_fill: don't pad, just stratch the image
+        scaleup: wheter to allow scaling up the image. If False, only scaling down is allowed (better mAP).
+        stride: the yolo network stride
 
     Returns:
         resized and padded image
@@ -327,7 +333,7 @@ def scale_boxes(
         img1_shape: shape of resized image
         boxes: the bbox size
         img0_shape: shape of original image
-        ratio_pad:
+        ratio_pad: new/old image ratio of letter box algorithm
 
     Returns:
         scaled bbox to the img0_shape
