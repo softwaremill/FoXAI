@@ -171,29 +171,6 @@ def single_channel_visualization(
         only_positive_attr=only_positive_attr,
     )
 
-    single_channel_attributes: np.ndarray = normalize_attributes(
-        attributes=attributes_matrix,
-    )
-
-    if only_positive_attr:
-        single_channel_attributes = retain_only_positive(
-            array=single_channel_attributes
-        )
-
-    resized_attributes: np.ndarray = resize_attributes(
-        attributes=single_channel_attributes,
-        dest_height=transformed_img_np.shape[1],
-        dest_width=transformed_img_np.shape[2],
-    )
-
-    # standardize attributes to uint8 type and back-scale them to range 0-1
-    grayscale_attributes = convert_float_to_uint8(resized_attributes) / 255
-
-    # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
-    normalized_transformed_img = transpose_array(
-        convert_float_to_uint8(transformed_img_np)
-    )
-
     return generate_figure(
         attributions=grayscale_attributes,
         transformed_img=normalized_transformed_img,
