@@ -11,6 +11,7 @@ from autoxai.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
 )
+from autoxai.explainer.guided_backprop import GuidedBackpropCVExplainer
 from autoxai.explainer.input_x_gradient import (
     InputXGradientCVExplainer,
     LayerInputXGradientCVExplainer,
