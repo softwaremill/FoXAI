@@ -52,6 +52,24 @@ def _preprocess_img_and_attributes(
     transformed_img_np: np.ndarray,
     only_positive_attr: bool,
 ) -> Tuple[np.ndarray, np.ndarray]:
+    """Pre-process image and attributes matrices.
+
+    Pre-processing consists of:
+        - squash color dimensions by mean over all colors in attributes matrix
+        - optional retension of only positive attributes
+        - resizing attributes heatmap to match the size of an image
+        - standardization to value range [0-1]
+        - transpoze image matrix from (C x H x W) to (H x W x C)
+
+    Args:
+        attributions: Features.
+        transformed_img: Image in shape (C x H x W) or (H x W).
+        only_positive_attr: Whether to display only positive or all attributes.
+            Defaults to True.
+
+    Returns:
+        Tuple of pre-processed attributes and image matrices.
+    """
     single_channel_attributes: np.ndarray = normalize_attributes(
         attributes=attributes_matrix,
     )
