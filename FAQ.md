@@ -6,7 +6,7 @@
         <b>While trying to use the library installed from source you encounter error: ``RuntimeError: CUDA error: no kernel image is available for execution on the device``</b>
     </summary>
 
-    This error indicates that you actually have pytorch version which does not have CUDA enabled. To solve that you should refer to [https://pytorch.org/get-started/previous-versions/](https://pytorch.org/get-started/previous-versions/). 
+This error indicates that you actually have pytorch version which does not have CUDA enabled. To solve that you should refer to [https://pytorch.org/get-started/previous-versions/](https://pytorch.org/get-started/previous-versions/). 
 
 </details>
 <details>
