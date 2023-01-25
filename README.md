@@ -57,7 +57,7 @@ poetry build
 As a result you will get `wheel` file inside `dist/` directory that you can install
 via `pip`:
 ```bash
-pip install dist/autoxai-0.5.1-py3-none-any.whl
+pip install dist/autoxai-x.y.z-py3-none-any.whl
 ```
 
 # Getting started
