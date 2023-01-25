@@ -38,7 +38,7 @@ class BaseGuidedBackpropCVExplainer(CVExplainer):
         additional_forward_args: Any = None,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate features image with Integrated Gradients algorithm explainer.
+        """Generate model's attributes with Guided Backpropagation algorithm explainer.
 
         Args:
             model: The forward function of the model or any
