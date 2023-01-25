@@ -19,6 +19,8 @@ def bbox_iou(
 ):
     """Compute IoU of two bounding-boxes.
 
+    Implementation based on eriklindernoren/PyTorch-YOLOv3/pytorchyolo/utils/utils.py
+
     Args:
         box1: bounding-box 1
         box2: bounding-box 2
@@ -90,6 +92,8 @@ def xywh2xyxy(x: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tensor, np.ndar
     """Convert nx4 boxes from [x, y, w, h] to
     [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right.
 
+    Original implementation in torch.hub.ultralytics_yolov5.utils.general.py
+
     Args:
         x: [x, y, w, h] tensor
 
@@ -117,7 +121,7 @@ def non_max_suppression(
 ):
     """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections
 
-    Original implementation in torch.hub.ultralytics_yolov5.general.py
+    Original implementation in torch.hub.ultralytics_yolov5.utils.general.py
 
     Args:
         prediction: the model prediction
@@ -252,6 +256,8 @@ def non_max_suppression(
 def make_divisible(x: int, divisor: Union[int, torch.Tensor]) -> int:
     """Returns nearest x divisible by divisor.
 
+    Original implementation in torch.hub.ultralytics_yolov5.utils.general.py
+
     Args:
         x: the number to be divided
         divisor: denominator
@@ -274,7 +280,9 @@ def letterbox(
     scaleup: bool = True,
     stride: int = 32,
 ) -> Tuple[np.ndarray, Tuple[float, float], Tuple[float, float]]:
-    """Resize and pad image while meeting stride-multiple constraints
+    """Resize and pad image while meeting stride-multiple constraints.
+
+    Original implementation in torch.hub.ultralytics_yolov5.utils.general.py
 
     Args:
         im: the image to be resized and pad
@@ -329,6 +337,8 @@ def scale_boxes(
 ) -> torch.Tensor:
     """Rescale boxes (xyxy) from img1_shape to img0_shape.
 
+    Original implementation in torch.hub.ultralytics_yolov5.utils.general.py
+
     Args:
         img1_shape: shape of resized image
         boxes: the bbox size
@@ -359,6 +369,8 @@ def scale_boxes(
 def clip_boxes(boxes: Union[torch.Tensor, np.ndarray], shape: Tuple[int, int]) -> None:
     """Clip boxes (xyxy) to image shape (height, width)
 
+    Original implementation in torch.hub.ultralytics_yolov5.utils.general.py
+
     Args:
         boxes: bboxes to be clipped
         shape: maximum x and y size
@@ -383,6 +395,7 @@ def get_variables(
 ) -> Iterator[Tuple[str, Any]]:
     """Copy attributes from b to a, options to only include [...] and to exclude [...]
 
+    Based on ultralytics/yolov3/utils/torch_utils.py implementation of def copy_attr(a, b, include=(), exclude=())
     Args:
         model: to get model attributes from
         include: attributes to get

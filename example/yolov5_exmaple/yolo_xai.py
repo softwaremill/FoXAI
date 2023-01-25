@@ -291,6 +291,8 @@ def pre_process(
 ) -> Tuple[torch.Tensor, List[int], List[int]]:
     """Transform the input image to the yolo network.
 
+    Implementation based on torch.hub.ultralytics_yolov5.models.common.py
+
     Args:
         image: the input image to the network
         sample_model_parameter: the model parameter is used to read
@@ -330,7 +332,7 @@ def main():
 
     model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
     image = Image.open("example/images/zidane.jpg")
-    device = torch.device("cpu")  # "cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device=device)
     params = dict(get_variables(model=model, include=("names", "stride")))
 
