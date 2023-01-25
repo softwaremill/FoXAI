@@ -28,7 +28,7 @@ with AutoXaiExplainer(
 in both cases yolo_model is a wrapper on the original yolo model, of type XaiYoloWrapper
 """
 
-from typing import Final, List, Tuple
+from typing import Final, List, Tuple, TypeVar
 
 import cv2
 import numpy as np
@@ -55,6 +55,9 @@ It means that if 2 persons were detected, the XAI will be computed
 for both of them. Instance specific XAI requires code modification.
 """
 
+YoloModelT = TypeVar("YoloModelT", bound=torch.nn.Module)
+"""Any subclass of pythorch module."""
+
 
 class XaiYoloWrapper(torch.nn.Module):
     """The Xai wrapper for the yolo model.
@@ -76,10 +79,12 @@ class XaiYoloWrapper(torch.nn.Module):
     we need to run the regular inference separately.
     """
 
-    def __init__(self, model, conf: float = 0.25, iou: float = 0.45) -> None:
+    def __init__(
+        self, model: YoloModelT, conf: float = 0.25, iou: float = 0.45
+    ) -> None:
         """
         Args:
-            mode: the yolo model to be used.
+            model: the yolo model to be used.
             conf: confidence threshold for predicted objects
             iou: iou threshold for preddicted bboxes for nms algorithm
         """
@@ -278,7 +283,7 @@ def pre_process(
     Args:
         image: the input image to the network
         sample_model_parameter: the model parameter is used to read
-        the model type (fp32/fp16) and target device
+            the model type (fp32/fp16) and target device
         stride: the yolo network stride
 
     Retuns:

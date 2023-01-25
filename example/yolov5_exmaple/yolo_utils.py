@@ -376,15 +376,6 @@ def clip_boxes(boxes: Union[torch.Tensor, np.ndarray], shape: Tuple[int, int]) -
         boxes[..., [1, 3]] = boxes[..., [1, 3]].clip(0, shape[0])  # y1, y2
 
 
-def copy_attr(a, b, include=(), exclude=()):
-    # Copy attributes from b to a, options to only include [...] and to exclude [...]
-    for k, v in b.__dict__.items():
-        if (include and k not in include) or k.startswith("_") or k in exclude:
-            continue
-        else:
-            setattr(a, k, v)
-
-
 def get_variables(
     model: torch.nn.Module,
     include: Tuple[str, ...] = (),
