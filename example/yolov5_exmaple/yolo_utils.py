@@ -125,11 +125,11 @@ def non_max_suppression(
         iou_thres: intersection over union threshold for non max suppresion algorithm
         classes: classes to keep. Rest of the classes are rejected
         agnostic: if True, non max suppression algorithm is run on raw bboxes. However it may
-        happen that different classes have bboxes in similar place. NMX would discard one of
-        those bboxes and keep only the one with higher confidence. If we want to keep bboxes
-        that are in similar place, but have different class label, we should set agnostic to False.
+            happen that different classes have bboxes in similar place. NMX would discard one of
+            those bboxes and keep only the one with higher confidence. If we want to keep bboxes
+            that are in similar place, but have different class label, we should set agnostic to False.
         multi_label: whetehr we want to keep multiple labels with its confidence for each bbox, or
-        only pick the class label with highest confidence.
+            only pick the class label with highest confidence.
         labels: gt labels
         max_det: maximum number of detections
         nm: number of tensor elements not related to class prediction (xywh -> 4)
