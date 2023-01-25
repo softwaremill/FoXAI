@@ -66,8 +66,12 @@ class TestExplainers:
 
         return get_function_kwargs
 
+    @pytest.mark.parametrize("explainer_name", list(Explainers))
     def test_explainers_cpu(
-        self, classifier: SampleModel, explainer_function_kwargs: GetExplainerKwargsT
+        self,
+        classifier: SampleModel,
+        explainer_function_kwargs: GetExplainerKwargsT,
+        explainer_name: str,
     ):
         """Test all available explainers on a simple classifier model using cpu."""
         classifier.train()
@@ -81,24 +85,27 @@ class TestExplainers:
         )
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
-        for explainer_name in Explainers:
-            function_kwargs: Dict[str, Any] = explainer_function_kwargs(
-                explainer_name=explainer_name, classifier=classifier
-            )
+        function_kwargs: Dict[str, Any] = explainer_function_kwargs(
+            explainer_name=explainer_name, classifier=classifier
+        )
 
-            with AutoXaiExplainer(
-                model=classifier,
-                explainers=[
-                    ExplainerWithParams(
-                        explainer_name=explainer_name,
-                        **function_kwargs,
-                    ),
-                ],
-            ) as xai_model:
-                _, _ = xai_model(img_tensor)
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=[
+                ExplainerWithParams(
+                    explainer_name=explainer_name,
+                    **function_kwargs,
+                ),
+            ],
+        ) as xai_model:
+            _, _ = xai_model(img_tensor)
 
+    @pytest.mark.parametrize("explainer_name", list(Explainers))
     def test_explainers_gpu(
-        self, classifier: SampleModel, explainer_function_kwargs: GetExplainerKwargsT
+        self,
+        classifier: SampleModel,
+        explainer_function_kwargs: GetExplainerKwargsT,
+        explainer_name: str,
     ):
         """Test all available explainers on a simple classifier model using gpu."""
 
@@ -120,21 +127,20 @@ class TestExplainers:
         )
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0).to(device)
 
-        for explainer_name in Explainers:
-            function_kwargs: Dict[str, Any] = explainer_function_kwargs(
-                explainer_name=explainer_name, classifier=classifier
-            )
+        function_kwargs: Dict[str, Any] = explainer_function_kwargs(
+            explainer_name=explainer_name, classifier=classifier
+        )
 
-            with AutoXaiExplainer(
-                model=classifier,
-                explainers=[
-                    ExplainerWithParams(
-                        explainer_name=explainer_name,
-                        **function_kwargs,
-                    ),
-                ],
-            ) as xai_model:
-                _, _ = xai_model(img_tensor)
+        with AutoXaiExplainer(
+            model=classifier,
+            explainers=[
+                ExplainerWithParams(
+                    explainer_name=explainer_name,
+                    **function_kwargs,
+                ),
+            ],
+        ) as xai_model:
+            _, _ = xai_model(img_tensor)
 
 
 @patch("autoxai.explainer.conductance.LayerConductance.attribute")

@@ -6,6 +6,7 @@ from typing import Optional, Tuple, TypeVar
 import matplotlib
 import numpy as np
 import torch
+from captum._utils.typing import TargetType
 
 from autoxai.array_utils import (
     convert_float_to_uint8,
@@ -37,7 +38,7 @@ class CVExplainer(ABC):
         self,
         model: torch.nn.Module,
         input_data: torch.Tensor,  # TODO: add more generic way of passing model inputs # pylint: disable = (fixme)
-        pred_label_idx: int,
+        pred_label_idx: TargetType = None,
         **kwargs,
     ) -> torch.Tensor:
         """Calculate features of given explainer.
