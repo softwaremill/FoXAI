@@ -119,6 +119,13 @@ class XaiYoloWrapper(torch.nn.Module):
 
         Returns:
             batch of detections of shape (B,80), where 80 are classes confidence
+
+        Example output:
+                cls0_conf   cls1_conf   ....    cls79_conf
+            0  0.005       0.00002     ...     0.87002
+            1  0.535       0.20002     ...     0.08002
+            .  ...         ...         ...     ...
+            B  0.00008     0.10302     ...     0.0289
         """
 
         # Checks
@@ -163,7 +170,7 @@ class XaiYoloWrapper(torch.nn.Module):
             # get sample prediction
             x = prediction[xi]
 
-            # get all anchors that meet confidence threshold criteria from signle sample from batch
+            # get all anchors that meet confidence threshold criteria from a single sample from a batch
             x_high_conf = x.detach()[xc[xi]]
 
             # if none of the anchors meet threshold criteria

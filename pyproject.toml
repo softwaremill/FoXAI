@@ -19,9 +19,7 @@ pandas = "^1.5.2"
 single-source = "0.3.0"
 opencv-python = "^4.7.0.68"
 hydra-core = "^1.3.1"
-ipython = "^8.8.0"
 seaborn = "^0.12.2"
-ipykernel = "^6.20.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.10.0"
@@ -29,6 +27,7 @@ pylint = "2.15.4"
 mypy = "0.982"
 pytest = "7.2.0"
 pre-commit = "2.21.0"
+nbstripout = "0.6.1"
 
 [tool.poetry.scripts]
 autoxai-wandb-updater = "autoxai.cli.experiment_update:main"
