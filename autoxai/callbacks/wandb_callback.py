@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 import wandb
 from autoxai.array_utils import convert_float_to_uint8
 from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
-from autoxai.explainer.base_explainer import CVExplainer
+from autoxai.visualizer import mean_channels_visualization
 
 AttributeMapType = Dict[str, List[np.ndarray]]
 CaptionMapType = Dict[str, List[str]]
@@ -112,7 +112,7 @@ class WandBCallback(pl.callbacks.Callback):
             explainer_name: str = explainer.explainer_name.name
             explainer_attributes: torch.Tensor = attributes[explainer_name]
             caption_dict[explainer_name].append(f"label: {target_label}")
-            figure = CVExplainer.visualize(
+            figure = mean_channels_visualization(
                 attributions=explainer_attributes,
                 transformed_img=item,
             )
