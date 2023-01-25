@@ -163,6 +163,7 @@ class XaiYoloWrapper(torch.nn.Module):
         out_predictions = torch.zeros(
             (batch_size, self.number_of_classes), device=prediction.device
         )
+        class_confidence_range = range(5, mi)
 
         # pylint: disable = unnecessary-comprehension
         for xi, _ in enumerate([jj for jj in prediction]):
@@ -176,7 +177,7 @@ class XaiYoloWrapper(torch.nn.Module):
             # if none of the anchors meet threshold criteria
             if not x_high_conf.shape[0]:
                 # get class outputs
-                x = x[:, 5:]
+                x = x[:, class_confidence_range]
                 # set all class outputs to zero (no gradient)
                 # does outputs does not contribute to the final prediction
                 x *= 0
@@ -191,7 +192,7 @@ class XaiYoloWrapper(torch.nn.Module):
             box = xywh2xyxy(x_high_conf[:, :4])
 
             # get confidence and argmax of classes for all anchors
-            conf, j = x_high_conf[:, 5:mi].max(1, keepdim=True)
+            conf, j = x_high_conf[:, class_confidence_range].max(1, keepdim=True)
 
             # overwrite anchors that meet confidence criteria with
             # bounding box dimensions, confidence, probability and
@@ -242,7 +243,7 @@ class XaiYoloWrapper(torch.nn.Module):
             # get classes confidence
             # in place opeartions not supported for gradient computation
             # we need to clone the tensor and keep track of gradient
-            class_confidence = x[:, 5:].clone()
+            class_confidence = x[:, class_confidence_range].clone()
             if class_confidence.requires_grad:
                 class_confidence.retain_grad()
             # get object confidence
@@ -251,10 +252,10 @@ class XaiYoloWrapper(torch.nn.Module):
                 object_confidence.retain_grad()
 
             # multiply class confidence by object confidence
-            x[:, 5:] = class_confidence * object_confidence
+            x[:, class_confidence_range] = class_confidence * object_confidence
 
             # retain only classes predictions
-            x = x[:, 5:]
+            x = x[:, class_confidence_range]
 
             # create mask of anchors and mark selected
             mask = torch.zeros_like(x)
@@ -283,7 +284,10 @@ class XaiYoloWrapper(torch.nn.Module):
 
 
 def pre_process(
-    image: np.ndarray, sample_model_parameter: torch.Tensor, stride: int
+    image: np.ndarray,
+    sample_model_parameter: torch.Tensor,
+    stride: int,
+    yolo_input_size: Tuple[int, int] = (640, 640),
 ) -> Tuple[torch.Tensor, List[int], List[int]]:
     """Transform the input image to the yolo network.
 
@@ -292,18 +296,18 @@ def pre_process(
         sample_model_parameter: the model parameter is used to read
             the model type (fp32/fp16) and target device
         stride: the yolo network stride
+        yolo_input_size: input size to the yolo model
 
     Retuns:
         tensor image ready to be feed into the network
     """
-    size: Tuple[int, int] = (640, 640)
     if image.shape[0] < 5:  # image in CHW
         image = image.transpose((1, 2, 0))  # reverse dataloader .transpose(2, 0, 1)
     image = (
         image[..., :3] if image.ndim == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     )  # enforce 3ch input
     shape0 = image.shape[:2]  # HWC
-    g = max(size) / max(shape0)  # gain
+    g = max(yolo_input_size) / max(shape0)  # gain
     shape1 = [int(y * g) for y in shape0]
     np_image = image if image.data.contiguous else np.ascontiguousarray(image)  # update
     shape1 = [make_divisible(x, stride) for x in np.array(shape1)]  # inf shape
@@ -326,7 +330,7 @@ def main():
 
     model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
     image = Image.open("example/images/zidane.jpg")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")  # "cuda" if torch.cuda.is_available() else "cpu")
     model.to(device=device)
     params = dict(get_variables(model=model, include=("names", "stride")))
 
