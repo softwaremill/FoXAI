@@ -28,6 +28,7 @@ mypy = "0.982"
 pytest = "7.2.0"
 pre-commit = "2.21.0"
 nbstripout = "0.6.1"
+ipykernel = "^6.20.2"
 
 [tool.poetry.scripts]
 autoxai-wandb-updater = "autoxai.cli.experiment_update:main"
