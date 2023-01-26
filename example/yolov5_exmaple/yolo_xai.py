@@ -112,7 +112,7 @@ class XaiYoloWrapper(torch.nn.Module):
             conf_thres: confidence threshold, for counting the detection as valid
             iou_thres: intersection over union threshold for non max suppresion algorithm
             agnostic: if True, non max suppression algorithm is run on raw bboxes. However it may
-                happen that different classes have bboxes in similar place. NMX would discard one of
+                happen that different classes have bboxes in similar place. NMS would discard one of
                 those bboxes and keep only the one with higher confidence. If we want to keep bboxes
                 that are in similar place, but have different class label, we should set agnostic to False.
             max_det: maximum number of detections
