@@ -1,6 +1,6 @@
 """Callback for Weights and Biases."""
 from collections import defaultdict
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Tuple, cast
 
 import matplotlib
 import numpy as np
@@ -106,7 +106,7 @@ class WandBCallback(pl.callbacks.Callback):
             explainers=self.explainers,
             target=int(target_label.item()),
         ) as xai_model:
-            _, attributes = xai_model(item.to(model.device))
+            _, attributes = xai_model(item.to(cast(torch.device, model.device)))
 
         for explainer in self.explainers:
             explainer_name: str = explainer.explainer_name.name
