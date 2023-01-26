@@ -132,7 +132,7 @@ def non_max_suppression(
             happen that different classes have bboxes in similar place. NMS would discard one of
             those bboxes and keep only the one with higher confidence. If we want to keep bboxes
             that are in similar place, but have different class label, we should set agnostic to False.
-        multi_label: whetehr we want to keep multiple labels with its confidence for each bbox, or
+        multi_label: whether we want to keep multiple labels with its confidence for each bbox, or
             only pick the class label with highest confidence.
         labels: gt labels
         max_det: maximum number of detections
