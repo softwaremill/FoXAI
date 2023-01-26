@@ -26,12 +26,9 @@ add support for text, tabular and multimodal data problems in the future.
 # Installation
 
 Installation requirements:
-* `Python` >= 3.8 & < 4.0
-* `CUDA` > 10.2
+* `Python` >= 3.7 & < 4.0
 
 **Important**: For any problems regarding installation we advise to refer first to our [FAQ](FAQ.md).
-
-Usage of image ``pytorch/pytorch:1.12.1-cuda11.3-cudnn8-runtime`` is not advised as it uses Python 3.7 and Ubuntu 18.04, which does not support easily python3.8. 
 
 ## GPU acceleration
 
