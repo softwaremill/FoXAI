@@ -1,15 +1,15 @@
 """Callback for Weights and Biases."""
 from collections import defaultdict
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Tuple, cast
 
 import matplotlib
 import numpy as np
 import pytorch_lightning as pl
 import torch
+import wandb
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-import wandb
 from autoxai.array_utils import convert_float_to_uint8
 from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
 from autoxai.explainer.base_explainer import CVExplainer
@@ -106,7 +106,7 @@ class WandBCallback(pl.callbacks.Callback):
             explainers=self.explainers,
             target=int(target_label.item()),
         ) as xai_model:
-            _, attributes = xai_model(item.to(model.device))
+            _, attributes = xai_model(item.to(cast(torch.device, model.device)))
 
         for explainer in self.explainers:
             explainer_name: str = explainer.explainer_name.name

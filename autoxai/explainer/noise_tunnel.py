@@ -37,7 +37,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         pred_label_idx: TargetType = None,
         nt_type: str = "smoothgrad",
         nt_samples: int = 5,
-        nt_samples_batch_size: int = None,
+        nt_samples_batch_size: Optional[int] = None,
         stdevs: Union[float, Tuple[float, ...]] = 1.0,
         draw_baseline_from_distrib: bool = False,
         **kwargs,
