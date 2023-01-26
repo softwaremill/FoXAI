@@ -9,11 +9,15 @@ env:
 jobs:
   test:
     name: Run Tests using Docker containers
-    runs-on: ${{ matrix.os }}
+      #runs-on: ${{ matrix.os }}
+    container:
+      image: akaczmarek/autoxai:${{ matrix.os }}
+      options: "--gpus=all"
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: [3.8, 3.9, '3.10', 3.11]
+        os: ["cpu", "cu116"]
+        python-version: [3.8, 3.9, '3.10']
+        pytorch-version: ["none", "1.12.1"]
 
     steps:
       - name: Checkout
@@ -33,18 +37,44 @@ jobs:
           restore-keys: |
             venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
             venv-${{ matrix.os }}-${{ matrix.python-version }}-
-      
+     
+            #- name: Print CUDA version
+            #shell: bash
+            #run: nvidia-smi
+          #if [[ `command -v nvidia-smi &>/dev/null 2>&1` ]]; then
+          #  nvidia-smi
+          #fi
+
+
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.1.5
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
-    
+     
+      - name: Pre-install PyTorch ${{ matrix.pytorch_version }}
+        shell: bash
+        run: |
+         pip install --upgrade pip
+         pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
+         #pip install torch==${{ matrix.pytorch-version }}+${{ matrix.os }} --extra-index-url https://download.pytorch.org/whl/${{ matrix.os }} 
+        if: ${{ matrix.pytorch-version  != 'none' }} 
+
+
       - name: Install dependencies
         shell: bash
         run: |
           poetry install --with dev
         working-directory: ""
-    
+  
+      - name: Print GPU Name
+        shell: bash
+        run: poetry run python3 tests/test_gpu.py
+      
+      - name: Print CUDA version from nvcc
+        shell: bash
+        run: nvcc --version
+
+
       - name: Test with PyTest
         shell: bash
         run: |
