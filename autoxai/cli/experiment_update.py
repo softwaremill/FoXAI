@@ -1,7 +1,7 @@
 """File contains CLI application for updating W&B experiment artifacts."""
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import hydra
 import pandas as pd
@@ -210,8 +210,9 @@ def main(cfg: DictConfig) -> None:  # pylint: disable = (too-many-locals)
                     target=label,
                 ) as xai_model:
                     input_data = input_data.float()
-                    # type: ignore
-                    _, attributes_dict = xai_model(input_data.to(model.device))  # type: ignore # type: ignore
+                    _, attributes_dict = xai_model(
+                        input_data.to(cast(torch.device, xai_model.model.device))
+                    )
                     explainer_name: str = (
                         explainer_config.explainer_with_params.explainer_name.name
                     )

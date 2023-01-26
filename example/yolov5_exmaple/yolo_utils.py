@@ -182,7 +182,10 @@ def non_max_suppression(
     time_limit = 0.5 + 0.05 * bs  # seconds to quit after
     redundant = True  # require redundant detections
     multi_label &= nc > 1  # multiple labels per box (adds 0.5ms/img)
-    merge = False  # use merge-NMS
+
+    # use merge-NMS. If true bboxes are merget with weighted average,
+    # rather, than bboxes with low score ase discarded.
+    merge = False
 
     t = time.time()
     mi = 5 + nc  # mask start index
