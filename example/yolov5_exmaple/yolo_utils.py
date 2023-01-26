@@ -201,7 +201,7 @@ def non_max_suppression(
         # Box/Mask
         box = xywh2xyxy(
             x[:, :4]
-        )  # center_x, center_y, width, height) to (x1, y1, x2, y2)
+        )  # (center_x, center_y, width, height) to (x1, y1, x2, y2)
         mask = x[:, mi:]  # zero columns if no masks
 
         # Detections matrix nx6 (xyxy, conf, cls)
