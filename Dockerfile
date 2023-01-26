@@ -49,7 +49,6 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
     && echo 'export PATH="/root/.local/bin:$PATH"' >> ~/.bashrc \
     && poetry config virtualenvs.create true \
     && poetry config virtualenvs.in-project true \
-    && poetry lock \
     && poetry install --no-root \
     && poetry build
 RUN python3 -m pip install dist/autoxai-0.5.3-py3-none-any.whl
