@@ -40,6 +40,8 @@ from PIL import Image
 from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
 from autoxai.explainer.base_explainer import CVExplainer
 from example.yolov5_exmaple.yolo_utils import (  # scale_boxes,
+    MAXIMUM_BBOX_WIDTH_HEIGHT,
+    MAXIMUM_NUMBER_OF_BOXES_TO_NMS,
     get_variables,
     letterbox,
     make_divisible,
@@ -152,10 +154,6 @@ class XaiYoloWrapper(torch.nn.Module):
         # criteria for all samples in batch
         xc = prediction[..., 4] > conf_thres  # candidates
 
-        # Settings
-        max_wh = 7680  # (pixels) maximum box width and height
-        max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
-
         # set start mask index as first element after the last class index
         mi = 5 + self.number_of_classes  # mask start index
 
@@ -215,13 +213,17 @@ class XaiYoloWrapper(torch.nn.Module):
                 continue
 
             # get indices of predictions by confidence score in descending order
-            x_indexs = x_high_conf[:, 4].argsort(descending=True)[:max_nms]
+            x_indexs = x_high_conf[:, 4].argsort(descending=True)[
+                :MAXIMUM_NUMBER_OF_BOXES_TO_NMS
+            ]
 
             # get predictions by confidence in descending order
             x_high_conf = x_high_conf[x_indexs]
 
             # get class
-            c = x_high_conf[:, 5:6] * (0 if agnostic else max_wh)  # classes
+            c = x_high_conf[:, 5:6] * (
+                0 if agnostic else MAXIMUM_BBOX_WIDTH_HEIGHT
+            )  # classes
             # get boxes (with offset by class) and scores
             boxes, scores = (
                 x_high_conf[:, :4] + c,

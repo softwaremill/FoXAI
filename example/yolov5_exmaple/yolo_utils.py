@@ -1,7 +1,7 @@
 import logging
 import math
 import time
-from typing import Any, Iterator, Optional, Tuple, Union
+from typing import Any, Final, Iterator, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -11,6 +11,16 @@ import torchvision
 from autoxai.logger import create_logger
 
 _LOGGER: Optional[logging.Logger] = None
+
+MAXIMUM_BBOX_WIDTH_HEIGHT: Final[int] = 7680
+"""Maximum width and height in pixels of the single bounding box."""
+
+MAXIMUM_NUMBER_OF_BOXES_TO_NMS: Final[int] = 30000
+"""Maximum number of bounding boxes that we can enter
+into the torchvision non max suppression algorithm. torchvision.ops.nms()"""
+
+MAXIMUM_NUMBER_OF_BOXES_TO_MERGE: Final[int] = 3e3
+"""Maximum number of bounding boxes that can be merged into a single box."""
 
 
 def log() -> logging.Logger:
@@ -177,10 +187,11 @@ def non_max_suppression(
     xc = prediction[..., 4] > conf_thres  # candidates
 
     # Settings
-    max_wh = 7680  # (pixels) maximum box width and height
-    max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
     time_limit = 0.5 + 0.05 * bs  # seconds to quit after
     redundant = True  # require redundant detections
+
+    # bool, whether we want to keep overlapping bounding boxes with different class types
+    # and a number of classes yolo, can detect is greater than 1.
     multi_label &= nc > 1  # multiple labels per box (adds 0.5ms/img)
 
     # use merge-NMS. If true bboxes are merget with weighted average,
@@ -241,15 +252,17 @@ def non_max_suppression(
         if not n:  # no boxes
             continue
         x = x[
-            x[:, 4].argsort(descending=True)[:max_nms]
+            x[:, 4].argsort(descending=True)[:MAXIMUM_NUMBER_OF_BOXES_TO_NMS]
         ]  # sort by confidence and remove excess boxes
 
         # Batched NMS
-        c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
+        c = x[:, 5:6] * (0 if agnostic else MAXIMUM_BBOX_WIDTH_HEIGHT)  # classes
         boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
         i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
         i = i[:max_det]  # limit detections
-        if merge and (1 < n < 3e3):  # Merge NMS (boxes merged using weighted mean)
+        if merge and (
+            1 < n < MAXIMUM_NUMBER_OF_BOXES_TO_MERGE
+        ):  # Merge NMS (boxes merged using weighted mean)
             # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
             iou = bbox_iou(boxes[i], boxes) > iou_thres  # iou matrix
             weights = iou * scores[None]  # box weights
