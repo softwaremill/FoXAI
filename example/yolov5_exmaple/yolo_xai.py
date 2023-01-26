@@ -345,7 +345,6 @@ def main():
     yolo_model = XaiYoloWrapper(model=model.model, conf=model.conf, iou=model.iou).to(
         device=device
     )
-    input_image = input_image.to(device)
 
     with AutoXaiExplainer(
         model=yolo_model,

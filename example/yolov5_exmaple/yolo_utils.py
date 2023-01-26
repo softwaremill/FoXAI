@@ -1,3 +1,4 @@
+import logging
 import math
 import time
 from typing import Any, Iterator, Optional, Tuple, Union
@@ -6,6 +7,19 @@ import cv2
 import numpy as np
 import torch
 import torchvision
+
+from autoxai.logger import create_logger
+
+_LOGGER: Optional[logging.Logger] = None
+
+
+def log() -> logging.Logger:
+    """Get or create logger."""
+    # pylint: disable = global-statement
+    global _LOGGER
+    if _LOGGER is None:
+        _LOGGER = create_logger(__name__)
+    return _LOGGER
 
 
 def bbox_iou(
@@ -134,7 +148,7 @@ def non_max_suppression(
             that are in similar place, but have different class label, we should set agnostic to False.
         multi_label: whether we want to keep multiple labels with its confidence for each bbox, or
             only pick the class label with highest confidence.
-        labels: gt labels
+        labels: ground truth labels
         max_det: maximum number of detections
         nm: number of tensor elements not related to class prediction (xywh -> 4)
 
@@ -163,7 +177,6 @@ def non_max_suppression(
     xc = prediction[..., 4] > conf_thres  # candidates
 
     # Settings
-    # min_wh = 2  # (pixels) minimum box width and height
     max_wh = 7680  # (pixels) maximum box width and height
     max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
     time_limit = 0.5 + 0.05 * bs  # seconds to quit after
@@ -247,7 +260,7 @@ def non_max_suppression(
         if mps:
             output[xi] = output[xi].to(device)
         if (time.time() - t) > time_limit:
-            # LOGGER.warning(f'WARNING ⚠️ NMS time limit {time_limit:.3f}s exceeded')
+            log().warning(f"WARNING ⚠️ NMS time limit {time_limit:.3f}s exceeded")
             break  # time limit exceeded
 
     return output
