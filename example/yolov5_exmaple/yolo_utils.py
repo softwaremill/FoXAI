@@ -230,8 +230,8 @@ def non_max_suppression(
             x = x[(x[:, 5:6] == torch.tensor(classes, device=x.device)).any(1)]
 
         # Apply finite constraint
-        # if not torch.isfinite(x).all():
-        #     x = x[torch.isfinite(x).all(1)]
+        if not torch.isfinite(x).all():
+            x = x[torch.isfinite(x).all(1)]
 
         # Check shape
         n = x.shape[0]  # number of boxes
@@ -298,7 +298,7 @@ def letterbox(
     Original implementation in torch.hub.ultralytics_yolov5.utils.general.py
 
     Args:
-        im: the image to be resized and pad
+        im: the image to be resized and pad of shape (height,width,channels)
         new_shape: the destination shape
         color: padding color
         auto: whether to automaticlly compute the padding size from other parameters
