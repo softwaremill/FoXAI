@@ -28,6 +28,7 @@ from autoxai.explainer import (
     DeepLIFTCVExplainer,
     DeepLIFTSHAPCVExplainer,
     GradientSHAPCVExplainer,
+    GuidedBackpropCVExplainer,
     GuidedGradCAMCVExplainer,
     InputXGradientCVExplainer,
     IntegratedGradientsCVExplainer,
@@ -85,6 +86,7 @@ class Explainers(Enum):
     CV_DECONVOLUTION_EXPLAINER: str = DeconvolutionCVExplainer.__name__
     CV_LAYER_CONDUCTANCE_EXPLAINER: str = LayerConductanceCVExplainer.__name__
     CV_SALIENCY_EXPLAINER: str = SaliencyCVExplainer.__name__
+    CV_GUIDED_BACKPOPAGATION_EXPLAINER: str = GuidedBackpropCVExplainer.__name__
 
 
 @dataclass
