@@ -32,15 +32,15 @@ Installation requirements:
 
 ## GPU acceleration
 
-In order to use the torch library with GPU acceleration, you need to install
+To use the torch library with GPU acceleration, you need to install
 a dedicated version of torch with support for the installed version of CUDA
 drivers in the version supported by the library, at the moment `torch==1.12.1`.
-List of `torch` wheels with CUDA support can be found at
+A list of `torch` wheels with CUDA support can be found at
 [https://download.pytorch.org/whl/torch/](https://download.pytorch.org/whl/torch/).
 
 ## Manual installation
 
-If you would like to install from source you can build `wheel` package using `poetry`.
+If you would like to install from the source you can build a `wheel` package using `poetry`.
 The assumption is that the `poetry` package is installed. You can find how to install
 `poetry` [here](#poetry). To build `wheel` package run:
 
@@ -104,7 +104,7 @@ from autoxai.context_manager import Explainers, ExplainerWithParams
 
 A CLI tool is available to update the artifacts of an experiment tracked in
 Weights and Biases. Allows you to create XAI explanations and send them to
-W&B offline. This tool is using `hydra` to handle configuration `yaml` fiels.
+W&B offline. This tool is using `hydra` to handle the configuration of `yaml` files.
 To check options type:
 
 ```bash
@@ -140,38 +140,39 @@ The project was tested using Python version `3.8`.
 
 ## CUDA
 
-Recommended version of CUDA is `10.2` as it is supported since version
-`1.5.0` of `torch`. You can check compatilibity of Your CUDA version
-with current version of `torch`:
+The recommended version of CUDA is `10.2` as it is supported since version
+`1.5.0` of `torch`. You can check the compatibility of your CUDA version
+with the current version of `torch`:
 https://pytorch.org/get-started/previous-versions/.
 
 As our starting Docker image we were using the one provided by Nvidia: ``nvidia/cuda:10.2-devel-ubuntu18.04``. 
 
 If you wish an easy to use docker image we advise to use our ``Dockerfile``. 
+
 ## pyenv
 Optional step, but probably one of the easiest way to actually get Python version with all the needed aditional tools (e.g. pip). 
 
-`pyenv` is a tool used to manage multiple version of Python. To install
-this package follow instructions on project repository page:
+`pyenv` is a tool used to manage multiple versions of Python. To install
+this package follow the instructions on the project repository page:
 https://github.com/pyenv/pyenv#installation. After installation You can
 install desired Python version, e.g. `3.8.16`:
 ```bash
 pyenv install 3.8.16
 ```
 
-The next step is required to be able to use desired version of Python with
-`poetry`. To activate specific version of Python interpreter execute command:
+The next step is required to be able to use a desired version of Python with
+`poetry`. To activate a specific version of Python interpreter execute the command:
 ```bash
 pyenv local 3.8.16 # or `pyenv global 3.8.16`
 ```
 
-Inside repository with `poetry` You can select specific version of Python
-interpreter with command:
+Inside the repository with `poetry` You can select a specific version of Python
+interpreter with the command:
 ```bash
 poetry env use 3.8.16
 ```
 
-After changing interpreter version You have to once again install all
+After changing the interpreter version You have to once again install all
 dependencies:
 ```bash
 poetry install
@@ -181,9 +182,9 @@ poetry install
 
 To separate runtime environments for different services and repositories, it is
 recommended to use a virtual Python environment. You can configure `Poetry` to
-create new virtual environment in project directory of every repository. To
-install `Poetry` follow instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
-`1.2.1`. To install specific version You have to provide desired package
+create a new virtual environment in the project directory of every repository. To
+install `Poetry` follow the instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
+`1.2.1`. To install a specific version You have to provide desired package
 version:
 ```bash
 curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
@@ -194,8 +195,7 @@ export PATH="/home/ubuntu/.local/bin:$PATH"
 echo 'export PATH="/home/ubuntu/.local/bin:$PATH"' >> ~/.bashrc
 ```
 
-Then configure creation of virtual environments in directory
-of project.
+After installation, configure the creation of virtual environments in the directory of the project.
 ```bash
 poetry config virtualenvs.create true
 poetry config virtualenvs.in-project true
@@ -209,12 +209,12 @@ poetry install
 ```
 
 Once all the steps have been completed, the environment is ready to go.
-Virtual environment by default will be created with name `.venv` inside
-project directory.
+A virtual environment by default will be created with the name `.venv` inside
+the project directory.
 
 ## Pre-commit hooks setup
 
-In order to improve the development experience, please make sure to install
+To improve the development experience, please make sure to install
 our [pre-commit][https://pre-commit.com/] hooks as the very first step after
 cloning the repository:
 
@@ -225,8 +225,8 @@ poetry run pre-commit install
 ## Note
 ---
 At the moment only explainable algorithms for image classification are
-implemented.. In future more algorithms and more computer vision tasks will
-be introduces. In the end module should work with all types of tasks (NLP, etc.).
+implemented. In the future more algorithms and more computer vision tasks will
+be introduced. In the end, the module should work with all types of tasks (NLP, etc.).
 
 ### Examples
 

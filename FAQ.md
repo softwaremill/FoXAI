@@ -11,7 +11,7 @@ This error indicates that you actually have pytorch version which does not have 
 </details>
 <details>
     <summary>
-        <b>While running/installing you encounter error: ``ImportError: libGL.so.1: cannot open shared object file: No such file or directory``</b>
+        <b>While running/installing the library, you encounter error: ``ImportError: libGL.so.1: cannot open shared object file: No such file or directory``</b>
     </summary>
 
 You should download the following libraries (often already installed in basic distribution of Unix):
@@ -39,7 +39,7 @@ Source: [StackOverflow](https://askubuntu.com/questions/1239829/modulenotfounder
     <b>Error while running ``poetry install``: ``Hash for torch (1.12.1) from archive``</b>
     </summary>
 
-This error might occur when you are installing and abort the process before it finishes. What you need to do is actually remove all the caches which will run the clean install:
+This error might occur when you are in the process of installing and abort the process before it finishes. What you need to do is actually remove all the caches which will run the clean install:
 ```bash
 rm -rf ~/.cache/pypoetry
 ```
