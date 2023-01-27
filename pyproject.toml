@@ -24,7 +24,7 @@ readme = "README.md"
 packages = [{include = "autoxai"}]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.7.2,<3.11"
 numpy = ">=1.21.4,<2.0.0"
 captum = ">=0.5.0,<1.0.0"
 torch = ">=1.12.1,<2.0.0"
