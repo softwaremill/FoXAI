@@ -112,8 +112,8 @@ class TestExplainers:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if device != torch.device("cuda"):
             pytest.fail("GPU not detected. Skiping GPU test.")
-            #log().warning("GPU not detected. Skiping GPU test.")
-            #return
+            # log().warning("GPU not detected. Skiping GPU test.")
+            # return
         else:
             log().info("GPU detected. Runing GPU tests...")
 
