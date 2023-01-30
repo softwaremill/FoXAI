@@ -6,10 +6,11 @@ import torch
 from matplotlib.pyplot import Figure
 
 from autoxai.array_utils import (
-    convert_float_to_uint8,
+    convert_standardized_float_to_uint8,
     normalize_attributes,
     resize_attributes,
     retain_only_positive,
+    standardize_array,
     transpose_array,
 )
 
@@ -87,11 +88,14 @@ def _preprocess_img_and_attributes(
     )
 
     # standardize attributes to uint8 type and back-scale them to range 0-1
-    grayscale_attributes = convert_float_to_uint8(resized_attributes) / 255
+    grayscale_attributes = standardize_array(resized_attributes)
+
+    # standardize image
+    standardized_img = standardize_array(transformed_img_np)
 
     # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
     normalized_transformed_img = transpose_array(
-        convert_float_to_uint8(transformed_img_np)
+        convert_standardized_float_to_uint8(standardized_img),
     )
     return grayscale_attributes, normalized_transformed_img
 

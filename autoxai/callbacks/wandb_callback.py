@@ -10,7 +10,7 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
 import wandb
-from autoxai.array_utils import convert_float_to_uint8
+from autoxai.array_utils import convert_standardized_float_to_uint8, standardize_array
 from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
 from autoxai.visualizer import mean_channels_visualization
 
@@ -117,8 +117,12 @@ class WandBCallback(pl.callbacks.Callback):
                 transformed_img=item,
             )
             figures_dict[explainer_name].append(figure)
+            standardized_attr = standardize_array(
+                explainer_attributes.detach().cpu().numpy()
+            )
+
             attributes_dict[explainer_name].append(
-                convert_float_to_uint8(explainer_attributes.detach().cpu().numpy())
+                convert_standardized_float_to_uint8(standardized_attr),
             )
 
         return attributes_dict, caption_dict, figures_dict

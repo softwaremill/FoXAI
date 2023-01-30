@@ -6,22 +6,38 @@ import numpy as np
 import torch
 
 
-def convert_float_to_uint8(array: np.ndarray) -> np.ndarray:
-    """Convert numpy array with float values to uint8 with scaled values.
+def standardize_array(array: np.ndarray) -> np.ndarray:
+    """Standardize array values to range [0-1].
 
     Args:
-        array: Numpy array with float values.
+        array: Numpy array of floats.
 
     Returns:
-        Numpy array with scaled values in uint8.
+        Numpy array with scaled values.
     """
-    return (
-        (
-            (array - np.min(array))
-            / ((np.max(array) - np.min(array)) + sys.float_info.epsilon)
+    return (array - np.min(array)) / (
+        (np.max(array) - np.min(array)) + sys.float_info.epsilon
+    )
+
+
+def convert_standardized_float_to_uint8(array: np.ndarray) -> np.ndarray:
+    """Convert float standardize float array to uint8 with values scaling.
+
+    Args:
+        array: Numpy array of floats.
+
+    Returns:
+        Numpy array with scaled values with type np.uint8.
+
+    Raises:
+        ValueError: if array is not of type np.float.
+    """
+    if not array.dtype == np.dtype(float):
+        raise ValueError(
+            f"Array should be of type: np.float, current type: {array.dtype}"
         )
-        * 255
-    ).astype(np.uint8)
+
+    return (array * 255).astype(np.uint8)
 
 
 def retain_only_positive(array: np.ndarray) -> np.ndarray:
