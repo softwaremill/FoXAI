@@ -3,6 +3,7 @@ from typing import Tuple
 import matplotlib
 import numpy as np
 import torch
+from matplotlib.pyplot import Figure
 
 from autoxai.array_utils import (
     convert_float_to_uint8,
@@ -19,7 +20,7 @@ def generate_figure(
     title: str = "",
     figsize: Tuple[int, int] = (8, 8),
     alpha: float = 0.5,
-) -> matplotlib.pyplot.Figure:
+) -> Figure:
     """Create figure from image and heatmap.
 
     Args:
@@ -32,7 +33,7 @@ def generate_figure(
     Returns:
         Heatmap of single channel applied on original image.
     """
-    figure = matplotlib.figure.Figure(figsize=figsize)
+    figure = Figure(figsize=figsize)
     axis = figure.subplots()
     axis.imshow(transformed_img)
     heatmap_plot = axis.imshow(
@@ -102,7 +103,7 @@ def mean_channels_visualization(
     figsize: Tuple[int, int] = (8, 8),
     alpha: float = 0.5,
     only_positive_attr: bool = True,
-) -> matplotlib.pyplot.Figure:
+) -> Figure:
     """Create image with calculated heatmap.
 
     Args:
@@ -143,7 +144,7 @@ def single_channel_visualization(
     figsize: Tuple[int, int] = (8, 8),
     alpha: float = 0.5,
     only_positive_attr: bool = True,
-) -> matplotlib.pyplot.Figure:
+) -> Figure:
     """Create image with calculated heatmap.
 
     Args:
@@ -158,8 +159,16 @@ def single_channel_visualization(
 
     Returns:
         Heatmap of single channel applied on original image.
+
+    Raises:
+        ValueError: if selected channel is negative number or exceed dimension
+            of color channels of attributes.
     """
-    assert 0 <= selected_channel <= attributions.shape[0]
+    condition: bool = 0 <= selected_channel < attributions.shape[0]
+    if not condition:
+        raise ValueError(
+            f"The selected channel exceeds color dimension. Selected channel: {selected_channel}",
+        )
 
     attributes_matrix: np.ndarray = attributions.detach().cpu().numpy()
     transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
