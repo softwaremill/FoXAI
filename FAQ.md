@@ -43,7 +43,7 @@ This error might occur when you are in the process of installing and abort the p
 ```bash
 rm -rf ~/.cache/pypoetry
 ```
-Helful source: [StackOverflow](https://stackoverflow.com/questions/71001968/python-poetry-install-failure-invalid-hashes)
+Helpful source: [StackOverflow](https://stackoverflow.com/questions/71001968/python-poetry-install-failure-invalid-hashes)
 </details>
 
 <details>
