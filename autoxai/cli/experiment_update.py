@@ -200,9 +200,7 @@ def main(cfg: DictConfig) -> None:  # pylint: disable = (too-many-locals)
             artifact_name = explainer_config.artifact_name
 
         for path in sorted_paths:
-            model: torch.nn.Module = model_class.load_from_checkpoint(
-                path, batch_size=1, data_dir="."
-            )
+            model: torch.nn.Module = model_class.load_from_checkpoint(path)
             device: torch.device = cast(torch.device, model.device)
 
             explanations: List[wandb.Image] = []
