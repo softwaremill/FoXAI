@@ -37,7 +37,7 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         pred_label_idx: TargetType = None,
         nt_type: str = "smoothgrad",
         nt_samples: int = 5,
-        nt_samples_batch_size: int = None,
+        nt_samples_batch_size: Optional[int] = None,
         stdevs: Union[float, Tuple[float, ...]] = 1.0,
         draw_baseline_from_distrib: bool = False,
         **kwargs,
@@ -118,13 +118,13 @@ class BaseNoiseTunnelCVExplainer(CVExplainer):
         noise_tunnel = self.create_explainer(model=model, layer=layer)
 
         attributions = noise_tunnel.attribute(
-            input_data,
-            nt_samples=nt_samples,
+            inputs=input_data,
             nt_type=nt_type,
-            target=pred_label_idx,
+            nt_samples=nt_samples,
             nt_samples_batch_size=nt_samples_batch_size,
             stdevs=stdevs,
             draw_baseline_from_distrib=draw_baseline_from_distrib,
+            target=pred_label_idx,
         )
         validate_result(attributions=attributions)
         return attributions
