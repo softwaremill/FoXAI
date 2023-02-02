@@ -14,7 +14,15 @@ def standardize_array(array: np.ndarray) -> np.ndarray:
 
     Returns:
         Numpy array with scaled values.
+
+    Raises:
+        ValueError: if array is not of type np.float.
     """
+    if not array.dtype == np.dtype(float):
+        raise ValueError(
+            f"Array should be of type: np.float, current type: {array.dtype}"
+        )
+
     return (array - np.min(array)) / (
         (np.max(array) - np.min(array)) + sys.float_info.epsilon
     )
