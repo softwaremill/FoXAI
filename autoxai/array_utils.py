@@ -111,7 +111,8 @@ def resize_attributes(
         cv2.resize(
             attributes,
             (dest_height, dest_width),
-        )
+        ),
+        dtype=np.dtype(float),
     )
 
     return single_channel_attributes

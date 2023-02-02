@@ -91,7 +91,7 @@ def _preprocess_img_and_attributes(
     grayscale_attributes = standardize_array(resized_attributes)
 
     # standardize image
-    standardized_img = standardize_array(transformed_img_np)
+    standardized_img = standardize_array(transformed_img_np.astype(np.dtype(float)))
 
     # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
     normalized_transformed_img = transpose_array(
