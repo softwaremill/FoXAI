@@ -1,7 +1,7 @@
 """File contains CLI application for updating W&B experiment artifacts."""
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import hydra
 import pandas as pd
@@ -200,7 +200,8 @@ def main(cfg: DictConfig) -> None:  # pylint: disable = (too-many-locals)
             artifact_name = explainer_config.artifact_name
 
         for path in sorted_paths:
-            model = model_class.load_from_checkpoint(path, batch_size=1, data_dir=".")
+            model: torch.nn.Module = model_class.load_from_checkpoint(path)
+            device: torch.device = cast(torch.device, model.device)
 
             explanations: List[wandb.Image] = []
             for input_data, label in zip(image_list, labels):
@@ -210,7 +211,7 @@ def main(cfg: DictConfig) -> None:  # pylint: disable = (too-many-locals)
                     target=label,
                 ) as xai_model:
                     input_data = input_data.float()
-                    _, attributes_dict = xai_model(input_data.to(model.device))
+                    _, attributes_dict = xai_model(input_data.to(device))
                     explainer_name: str = (
                         explainer_config.explainer_with_params.explainer_name.name
                     )
