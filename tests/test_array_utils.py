@@ -3,16 +3,17 @@ import numpy as np
 import pytest
 
 from autoxai.array_utils import (
-    convert_float_to_uint8,
+    convert_standardized_float_to_uint8,
     normalize_attributes,
     resize_attributes,
     retain_only_positive,
+    standardize_array,
     transpose_array,
 )
 
 
-def test_convert_float_to_uint8() -> None:
-    """Test if function correctly scales values to uint8."""
+def test_standardize_array() -> None:
+    """Test if function correctly scales values to range [0-1]."""
     array = np.array(
         [
             [0.5, 0.15, 1.0, 25.0],
@@ -22,15 +23,50 @@ def test_convert_float_to_uint8() -> None:
     )
     expected_array = np.array(
         [
+            [0.51, 0.503, 0.52, 1.0],
+            [0, 0.51, 0.503, 0.52],
+        ],
+        dtype=np.float,
+    )
+
+    result = standardize_array(array=array)
+    np.testing.assert_array_equal(expected_array, result)
+
+
+def test_convert_standardized_float_to_uint8() -> None:
+    """Test if function correctly scales values to range [0-255]."""
+    array = np.array(
+        [
+            [0.51, 0.503, 0.52, 1.0],
+            [0, 0.51, 0.503, 0.52],
+        ],
+        dtype=np.float,
+    )
+
+    expected_array = np.array(
+        [
             [130, 128, 132, 255],
             [0, 130, 128, 132],
         ],
         dtype=np.uint8,
     )
 
-    result = convert_float_to_uint8(array=array)
-
+    result = convert_standardized_float_to_uint8(array=array)
     np.testing.assert_array_equal(expected_array, result)
+
+
+def test_convert_standardized_float_to_uint8_should_raise_exception_when_incorrect_data_type() -> None:
+    """Test if function raises ValueError if passed array is not of type np.float."""
+    array = np.array(
+        [
+            [130, 128, 132, 255],
+            [0, 130, 128, 132],
+        ],
+        dtype=np.uint8,
+    )
+
+    with pytest.raises(ValueError):
+        _ = convert_standardized_float_to_uint8(array=array)
 
 
 def test_reshape_and_convert_matrix_should_add_additional_dimensions() -> None:
