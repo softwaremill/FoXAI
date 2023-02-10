@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>autoxai.callbacks.wandb_callback &mdash; AutoXAI  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> AutoXAI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">autoxai</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AutoXAI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">autoxai.callbacks.wandb_callback</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for autoxai.callbacks.wandb_callback</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Callback for Weights and Biases.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.loggers</span> <span class="kn">import</span> <span class="n">WandbLogger</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+
+<span class="kn">import</span> <span class="nn">wandb</span>
+<span class="kn">from</span> <span class="nn">autoxai.array_utils</span> <span class="kn">import</span> <span class="n">convert_float_to_uint8</span>
+<span class="kn">from</span> <span class="nn">autoxai.context_manager</span> <span class="kn">import</span> <span class="n">AutoXaiExplainer</span><span class="p">,</span> <span class="n">ExplainerWithParams</span>
+<span class="kn">from</span> <span class="nn">autoxai.explainer.base_explainer</span> <span class="kn">import</span> <span class="n">CVExplainer</span>
+
+<span class="n">AttributeMapType</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span>
+<span class="n">CaptionMapType</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">FigureMapType</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">Figure</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="WandBCallback"><a class="viewcode-back" href="../../../autoxai.callbacks.html#autoxai.callbacks.wandb_callback.WandBCallback">[docs]</a><span class="k">class</span> <span class="nc">WandBCallback</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">Callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Library callback for Weights and Biases.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># pylint: disable = (too-many-arguments)</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">wandb_logger</span><span class="p">:</span> <span class="n">WandbLogger</span><span class="p">,</span>
+        <span class="n">explainers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ExplainerWithParams</span><span class="p">],</span>
+        <span class="n">idx_to_label</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">max_artifacts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize Callback class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            wandb_logger: Pytorch-lightning wandb logger.</span>
+<span class="sd">            idx_to_label: Index to label mapping.</span>
+<span class="sd">            explainers: List of explainer algorithms of type ExplainerWithParams.</span>
+<span class="sd">            idx_to_label: Dictionary with mapping from model index to label.</span>
+<span class="sd">            max_artifacts: Number of maximum number of artifacts to be logged.</span>
+<span class="sd">                Defaults to 3.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">explainers</span> <span class="o">=</span> <span class="n">explainers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wandb_logger</span> <span class="o">=</span> <span class="n">wandb_logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idx_to_label</span> <span class="o">=</span> <span class="n">idx_to_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_artifacts</span> <span class="o">=</span> <span class="n">max_artifacts</span>
+
+    <span class="k">def</span> <span class="nf">_save_idx_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saving index to label mapping to experiment logs directory.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wandb_logger</span><span class="o">.</span><span class="n">log_table</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="s2">&quot;idx2label&quot;</span><span class="p">,</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">],</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">[[</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_to_label</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="WandBCallback.iterate_dataloader"><a class="viewcode-back" href="../../../autoxai.callbacks.html#autoxai.callbacks.wandb_callback.WandBCallback.iterate_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">iterate_dataloader</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dataloader_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">],</span> <span class="n">max_items</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterate over dataloader list with constraint on max items returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dataloader: Trainer dataloader.</span>
+<span class="sd">            max_items: Max items to return.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Tuple containing training sample and corresponding label.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">dataloader</span><span class="p">:</span> <span class="n">DataLoader</span>
+        <span class="n">item</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+        <span class="n">target_label</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+        <span class="k">for</span> <span class="n">dataloader</span> <span class="ow">in</span> <span class="n">dataloader_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">item</span><span class="p">,</span> <span class="n">target_label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">max_items</span><span class="p">:</span>
+                        <span class="k">break</span>
+
+                    <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">yield</span> <span class="n">item</span><span class="p">,</span> <span class="n">target_label</span></div>
+
+<div class="viewcode-block" id="WandBCallback.explain"><a class="viewcode-back" href="../../../autoxai.callbacks.html#autoxai.callbacks.wandb_callback.WandBCallback.explain">[docs]</a>    <span class="k">def</span> <span class="nf">explain</span><span class="p">(</span>  <span class="c1"># pylint: disable = (too-many-arguments)</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">,</span>
+        <span class="n">item</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">target_label</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">attributes_dict</span><span class="p">:</span> <span class="n">AttributeMapType</span><span class="p">,</span>
+        <span class="n">caption_dict</span><span class="p">:</span> <span class="n">CaptionMapType</span><span class="p">,</span>
+        <span class="n">figures_dict</span><span class="p">:</span> <span class="n">FigureMapType</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AttributeMapType</span><span class="p">,</span> <span class="n">CaptionMapType</span><span class="p">,</span> <span class="n">FigureMapType</span><span class="p">,]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate explainer attributes, creates captions and figures.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model: Model to explain.</span>
+<span class="sd">            item: Input data sample tensor.</span>
+<span class="sd">            target_label: Sample label.</span>
+<span class="sd">            attributes_dict: List of attributes for every explainer and sample.</span>
+<span class="sd">            caption_dict: List of captions for every explainer and sample.</span>
+<span class="sd">            figures_dict: List of figures for every explainer and sample.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of maps containing attributes, captions and figures for</span>
+<span class="sd">            every explainer and sample.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">AutoXaiExplainer</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">explainers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">explainers</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">target_label</span><span class="o">.</span><span class="n">item</span><span class="p">()),</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">xai_model</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">attributes</span> <span class="o">=</span> <span class="n">xai_model</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">explainer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainers</span><span class="p">:</span>
+            <span class="n">explainer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">explainer_name</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">explainer_attributes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">]</span>
+            <span class="n">caption_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;label: </span><span class="si">{</span><span class="n">target_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">figure</span> <span class="o">=</span> <span class="n">CVExplainer</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span>
+                <span class="n">attributions</span><span class="o">=</span><span class="n">explainer_attributes</span><span class="p">,</span>
+                <span class="n">transformed_img</span><span class="o">=</span><span class="n">item</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">figures_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
+            <span class="n">attributes_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">convert_float_to_uint8</span><span class="p">(</span><span class="n">explainer_attributes</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">attributes_dict</span><span class="p">,</span> <span class="n">caption_dict</span><span class="p">,</span> <span class="n">figures_dict</span></div>
+
+<div class="viewcode-block" id="WandBCallback.on_train_start"><a class="viewcode-back" href="../../../autoxai.callbacks.html#autoxai.callbacks.wandb_callback.WandBCallback.on_train_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_start</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">trainer</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">,</span>
+        <span class="n">pl_module</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">,</span>  <span class="c1"># pylint: disable = (unused-argument)</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save index to labels mapping and validation samples to experiment</span>
+<span class="sd">        at `fit`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainer: Trainer object.</span>
+<span class="sd">            pl_module: Model to explain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">trainer</span><span class="o">.</span><span class="n">val_dataloaders</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_idx_mapping</span><span class="p">()</span>
+
+        <span class="n">image_matrix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">item</span><span class="p">,</span> <span class="n">target_label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterate_dataloader</span><span class="p">(</span>
+            <span class="n">dataloader_list</span><span class="o">=</span><span class="n">trainer</span><span class="o">.</span><span class="n">val_dataloaders</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_artifacts</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">image_matrix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">image_matrix</span> <span class="o">=</span> <span class="n">item</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">image_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>  <span class="c1"># pylint: disable = (no-member)</span>
+                    <span class="p">[</span><span class="n">image_matrix</span><span class="p">,</span> <span class="n">item</span><span class="p">]</span>
+                <span class="p">)</span>
+
+            <span class="n">image_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;label: </span><span class="si">{</span><span class="n">target_label</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">image_matrix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">list_of_images</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">image_matrix</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wandb_logger</span><span class="o">.</span><span class="n">log_image</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="s2">&quot;validation_data&quot;</span><span class="p">,</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">list_of_images</span><span class="p">[:</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">list_of_images</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_artifacts</span><span class="p">)],</span>
+            <span class="n">caption</span><span class="o">=</span><span class="n">image_labels</span><span class="p">[:</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">image_labels</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_artifacts</span><span class="p">)],</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="WandBCallback.on_validation_epoch_end"><a class="viewcode-back" href="../../../autoxai.callbacks.html#autoxai.callbacks.wandb_callback.WandBCallback.on_validation_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_validation_epoch_end</span><span class="p">(</span>  <span class="c1"># pylint: disable = (too-many-arguments, too-many-locals)</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">trainer</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">,</span>
+        <span class="n">pl_module</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export model&#39;s state dict in log directory on validation epoch end.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trainer: Trainer object.</span>
+<span class="sd">            pl_module: Model to explain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">trainer</span><span class="o">.</span><span class="n">val_dataloaders</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">attributes_dict</span><span class="p">:</span> <span class="n">AttributeMapType</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="n">caption_dict</span><span class="p">:</span> <span class="n">CaptionMapType</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="n">figures_dict</span><span class="p">:</span> <span class="n">FigureMapType</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">item</span><span class="p">,</span> <span class="n">target_label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterate_dataloader</span><span class="p">(</span>
+            <span class="n">dataloader_list</span><span class="o">=</span><span class="n">trainer</span><span class="o">.</span><span class="n">val_dataloaders</span><span class="p">,</span>
+            <span class="n">max_items</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_artifacts</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="n">attributes_dict</span><span class="p">,</span> <span class="n">caption_dict</span><span class="p">,</span> <span class="n">figures_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">pl_module</span><span class="p">,</span>
+                <span class="n">item</span><span class="o">=</span><span class="n">item</span><span class="p">,</span>
+                <span class="n">target_label</span><span class="o">=</span><span class="n">target_label</span><span class="p">,</span>
+                <span class="n">attributes_dict</span><span class="o">=</span><span class="n">attributes_dict</span><span class="p">,</span>
+                <span class="n">caption_dict</span><span class="o">=</span><span class="n">caption_dict</span><span class="p">,</span>
+                <span class="n">figures_dict</span><span class="o">=</span><span class="n">figures_dict</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_explanations</span><span class="p">(</span>
+            <span class="n">attributes_dict</span><span class="o">=</span><span class="n">attributes_dict</span><span class="p">,</span>
+            <span class="n">caption_dict</span><span class="o">=</span><span class="n">caption_dict</span><span class="p">,</span>
+            <span class="n">figures_dict</span><span class="o">=</span><span class="n">figures_dict</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="WandBCallback.log_explanations"><a class="viewcode-back" href="../../../autoxai.callbacks.html#autoxai.callbacks.wandb_callback.WandBCallback.log_explanations">[docs]</a>    <span class="k">def</span> <span class="nf">log_explanations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">attributes_dict</span><span class="p">:</span> <span class="n">AttributeMapType</span><span class="p">,</span>
+        <span class="n">caption_dict</span><span class="p">:</span> <span class="n">CaptionMapType</span><span class="p">,</span>
+        <span class="n">figures_dict</span><span class="p">:</span> <span class="n">FigureMapType</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log explanation artifacts to W&amp;B experiment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            attributes_dict: Numpy array attributes for every sample and every explainer.</span>
+<span class="sd">            caption_dict: Caption for every sample and every explainer.</span>
+<span class="sd">            figures_dict: Figure with attributes for every sample and every explainer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># upload artifacts to the wandb experiment</span>
+        <span class="k">for</span> <span class="n">explainer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainers</span><span class="p">:</span>
+            <span class="n">explainer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">explainer_name</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wandb_logger</span><span class="o">.</span><span class="n">log_image</span><span class="p">(</span>
+                <span class="n">key</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">explainer_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">images</span><span class="o">=</span><span class="n">attributes_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">],</span>
+                <span class="n">caption</span><span class="o">=</span><span class="n">caption_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">],</span>
+            <span class="p">)</span>
+
+            <span class="c1"># matplotlib Figures can not be directly logged via WandbLogger</span>
+            <span class="c1"># we have to use native Run object from wandb which is more powerfull</span>
+            <span class="n">wandb_image_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">wandb</span><span class="o">.</span><span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">figure</span> <span class="ow">in</span> <span class="n">figures_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">]:</span>
+                <span class="n">wandb_image_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wandb</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">figure</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">wandb_logger</span><span class="o">.</span><span class="n">experiment</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">explainer_name</span><span class="si">}</span><span class="s2">_explanations&quot;</span><span class="p">:</span> <span class="n">wandb_image_list</span><span class="p">}</span>
+            <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ReasonField Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
