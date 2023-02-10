@@ -96,9 +96,11 @@ jobs:
         run: |
           pwd
           ls -lah
-          tar -xvf *.tar.gz  _unzip
+          mkdir _unzip
+          mkdir _unzip/${{ env.BRANCH_NAME }}
+          tar -xvf *.tar.gz -C _unzip
           rm *.tar.gz
-          mv _unzip/* _unzip/${{ env.BRANCH_NAME }}
+          mv _unzip/docs/build/html/* _unzip/${{ env.BRANCH_NAME }}
 
       - name: Rsync html documentation into place
         run: rsync -av --delete _foxai_docs/_unzip/${{ env.BRANCH_NAME }}/ ./${{ env.BRANCH_NAME }}/
