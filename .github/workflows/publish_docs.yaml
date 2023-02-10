@@ -96,7 +96,7 @@ jobs:
         run: |
           pwd
           ls -lah
-          tar -xvf *.tar_gz  _unzip
+          tar -xvf *.tar.gz  _unzip
           rm *.tar.gz
           mv _unzip/* _unzip/${{ env.BRANCH_NAME }}
 
