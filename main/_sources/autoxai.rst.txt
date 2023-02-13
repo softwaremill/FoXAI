@@ -1,0 +1,55 @@
+autoxai package
+===============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   autoxai.callbacks
+   autoxai.cli
+   autoxai.explainer
+
+Submodules
+----------
+
+autoxai.array\_utils module
+---------------------------
+
+.. automodule:: autoxai.array_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+autoxai.context\_manager module
+-------------------------------
+
+.. automodule:: autoxai.context_manager
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+autoxai.logger module
+---------------------
+
+.. automodule:: autoxai.logger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+autoxai.visualizer module
+-------------------------
+
+.. automodule:: autoxai.visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: autoxai
+   :members:
+   :undoc-members:
+   :show-inheritance:

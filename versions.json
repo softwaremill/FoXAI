@@ -1,1 +1,1 @@
-{"folders": ["docs-gh-pages"], "default-branch": null, "labels": {"docs-gh-pages": "docs-gh-pages"}, "versions": ["docs-gh-pages"], "warnings": {"docs-gh-pages": ["unreleased"]}, "latest": null, "downloads": {"docs-gh-pages": []}}
+{"folders": ["docs-gh-pages", "main"], "default-branch": "main", "labels": {"docs-gh-pages": "docs-gh-pages", "main": "main"}, "versions": ["main", "docs-gh-pages"], "warnings": {"docs-gh-pages": ["unreleased"], "main": ["unreleased"]}, "latest": null, "downloads": {"docs-gh-pages": [], "main": []}}

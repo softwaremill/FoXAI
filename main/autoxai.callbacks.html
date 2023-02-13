@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>autoxai.callbacks package &mdash; AutoXAI  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="autoxai.cli package" href="autoxai.cli.html" />
+    <link rel="prev" title="autoxai package" href="autoxai.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> AutoXAI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">autoxai</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="autoxai.html">autoxai package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="autoxai.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">autoxai.callbacks package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoxai.cli.html">autoxai.cli package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoxai.explainer.html">autoxai.explainer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="autoxai.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoxai.html#module-autoxai.array_utils">autoxai.array_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoxai.html#module-autoxai.context_manager">autoxai.context_manager module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoxai.html#module-autoxai.logger">autoxai.logger module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoxai.html#module-autoxai.visualizer">autoxai.visualizer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoxai.html#module-autoxai">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AutoXAI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">autoxai</a></li>
+          <li class="breadcrumb-item"><a href="autoxai.html">autoxai package</a></li>
+      <li class="breadcrumb-item active">autoxai.callbacks package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/autoxai.callbacks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="autoxai-callbacks-package">
+<h1>autoxai.callbacks package<a class="headerlink" href="#autoxai-callbacks-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-autoxai.callbacks.wandb_callback">
+<span id="autoxai-callbacks-wandb-callback-module"></span><h2>autoxai.callbacks.wandb_callback module<a class="headerlink" href="#module-autoxai.callbacks.wandb_callback" title="Permalink to this heading"></a></h2>
+<p>Callback for Weights and Biases.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="autoxai.callbacks.wandb_callback.WandBCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autoxai.callbacks.wandb_callback.</span></span><span class="sig-name descname"><span class="pre">WandBCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wandb_logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">WandbLogger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explainers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="autoxai.html#autoxai.context_manager.ExplainerWithParams" title="autoxai.context_manager.ExplainerWithParams"><span class="pre">ExplainerWithParams</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx_to_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_artifacts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/autoxai/callbacks/wandb_callback.html#WandBCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autoxai.callbacks.wandb_callback.WandBCallback" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<p>Library callback for Weights and Biases.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="autoxai.callbacks.wandb_callback.WandBCallback.explain">
+<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LightningModule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caption_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figures_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Figure</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Figure</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/autoxai/callbacks/wandb_callback.html#WandBCallback.explain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autoxai.callbacks.wandb_callback.WandBCallback.explain" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate explainer attributes, creates captions and figures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – Model to explain.</p></li>
+<li><p><strong>item</strong> – Input data sample tensor.</p></li>
+<li><p><strong>target_label</strong> – Sample label.</p></li>
+<li><p><strong>attributes_dict</strong> – List of attributes for every explainer and sample.</p></li>
+<li><p><strong>caption_dict</strong> – List of captions for every explainer and sample.</p></li>
+<li><p><strong>figures_dict</strong> – List of figures for every explainer and sample.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple of maps containing attributes, captions and figures for
+every explainer and sample.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autoxai.callbacks.wandb_callback.WandBCallback.iterate_dataloader">
+<span class="sig-name descname"><span class="pre">iterate_dataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloader_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">DataLoader</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/autoxai/callbacks/wandb_callback.html#WandBCallback.iterate_dataloader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autoxai.callbacks.wandb_callback.WandBCallback.iterate_dataloader" title="Permalink to this definition"></a></dt>
+<dd><p>Iterate over dataloader list with constraint on max items returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataloader</strong> – Trainer dataloader.</p></li>
+<li><p><strong>max_items</strong> – Max items to return.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p>Tuple containing training sample and corresponding label.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autoxai.callbacks.wandb_callback.WandBCallback.log_explanations">
+<span class="sig-name descname"><span class="pre">log_explanations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributes_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caption_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figures_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Figure</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/autoxai/callbacks/wandb_callback.html#WandBCallback.log_explanations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autoxai.callbacks.wandb_callback.WandBCallback.log_explanations" title="Permalink to this definition"></a></dt>
+<dd><p>Log explanation artifacts to W&amp;B experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attributes_dict</strong> – Numpy array attributes for every sample and every explainer.</p></li>
+<li><p><strong>caption_dict</strong> – Caption for every sample and every explainer.</p></li>
+<li><p><strong>figures_dict</strong> – Figure with attributes for every sample and every explainer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autoxai.callbacks.wandb_callback.WandBCallback.on_train_start">
+<span class="sig-name descname"><span class="pre">on_train_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LightningModule</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/autoxai/callbacks/wandb_callback.html#WandBCallback.on_train_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autoxai.callbacks.wandb_callback.WandBCallback.on_train_start" title="Permalink to this definition"></a></dt>
+<dd><p>Save index to labels mapping and validation samples to experiment
+at <cite>fit</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainer</strong> – Trainer object.</p></li>
+<li><p><strong>pl_module</strong> – Model to explain.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autoxai.callbacks.wandb_callback.WandBCallback.on_validation_epoch_end">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LightningModule</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/autoxai/callbacks/wandb_callback.html#WandBCallback.on_validation_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autoxai.callbacks.wandb_callback.WandBCallback.on_validation_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Export model’s state dict in log directory on validation epoch end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainer</strong> – Trainer object.</p></li>
+<li><p><strong>pl_module</strong> – Model to explain.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-autoxai.callbacks">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-autoxai.callbacks" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="autoxai.html" class="btn btn-neutral float-left" title="autoxai package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="autoxai.cli.html" class="btn btn-neutral float-right" title="autoxai.cli package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ReasonField Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
