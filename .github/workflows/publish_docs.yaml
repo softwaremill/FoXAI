@@ -3,7 +3,7 @@ on: [push, workflow_dispatch]
 
 env:
   POETRY_VERSION: '1.2.1'
-
+  PYTHON_VERSION: '3.8'
 jobs:
   build_docs:
     runs-on: ubuntu-latest
@@ -15,7 +15,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Load cached venv
         id: cached-poetry-dependencies
@@ -64,9 +64,9 @@ jobs:
     steps:
 
       - uses: actions/setup-python@v2
-        name: Install Python 3.8
+        name: Install Python ${{ env.PYTHON_VERSION }}
         with:
-          python-version: 3.8
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install deploy requirements
         run: pip install docs-versions-menu
@@ -109,14 +109,6 @@ jobs:
 
       - name: Run docs-versions-menu
         run: docs-versions-menu
-
-      - name: Get the previous commit message
-        id: get_previous_commit
-        run: |
-          git log --format=%B -n 1 | tee .git/_github_actions_commit_msg
-          echo ::set-output name=log::$(cat .git/_github_actions_commit_msg)
-          echo ::set-output name=lastline::$(cat .git/_github_actions_commit_msg | grep -v '^$' | tail -n1)
-          echo ::set-output name=author::$(git log --format=%an -n 1)
       
       - name: Set git configuration
         shell: bash
@@ -132,18 +124,9 @@ jobs:
           git add -A --verbose
           echo "# GIT STATUS"
           git status
-          echo "# GIT COMMIT"
-          if [[ "${{ steps.get_previous_commit.outputs.author }}" == "github-actions"* && "${{ steps.get_previous_commit.outputs.lastline }}" == *"${{ github.ref }}"* ]];
-          then
-            # we ammend if the previous commit was down by Github Actions and was based on the same branch/tag name
-            echo "Amending previous commit"
-            echo "Deployed from commit ${GITHUB_SHA} (${GITHUB_REF})" >> .git/_github_actions_commit_msg
-            git commit --verbose --amend -F .git/_github_actions_commit_msg
-          else
-            echo "Making new commit"
-            git commit --verbose -m "Auto-update from Github Actions Workflow" -m "Deployed from commit ${GITHUB_SHA} (${GITHUB_REF})"
-          fi
+          echo "# GIT COMMIT"      
+          git commit --verbose -m "Auto-update from Github Actions Workflow" -m "Deployed from commit ${GITHUB_SHA} (${GITHUB_REF})"
           git log -n 1
 
       - name: Push changes
-        run: git push --verbose --force
+        run: git push --verbose
