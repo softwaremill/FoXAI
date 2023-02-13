@@ -1,11 +1,11 @@
 Installation
 ============
 
-First we must make sure we have ``autoxai`` installed:
+First we must make sure we have ``foxai`` installed:
 
 .. code-block:: bash
 
-   $ python -m pip install autoxai
+   $ python -m pip install foxai
 
 
 Installation from source
