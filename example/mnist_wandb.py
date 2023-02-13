@@ -13,8 +13,8 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 
 import wandb
-from autoxai.callbacks.wandb_callback import WandBCallback
-from autoxai.context_manager import Explainers, ExplainerWithParams
+from foxai.callbacks.wandb_callback import WandBCallback
+from foxai.context_manager import Explainers, ExplainerWithParams
 
 
 class LitMNIST(  # pylint: disable = (abstract-method, too-many-ancestors, too-many-instance-attributes)

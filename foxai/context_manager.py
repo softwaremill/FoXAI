@@ -2,7 +2,7 @@
 Run xai alongside with inference.
 
 Example:
-    with AutoXaiExplainer(
+    with FoXaiExplainer(
         model=classifier,
         explainers=[
             ExplainerWithParams(
@@ -22,8 +22,8 @@ from typing import Any, Dict, Generic, List, Optional, Tuple, cast
 
 import torch
 
-from autoxai import explainer
-from autoxai.explainer import (
+from foxai import explainer
+from foxai.explainer import (
     DeconvolutionCVExplainer,
     DeepLIFTCVExplainer,
     DeepLIFTSHAPCVExplainer,
@@ -46,8 +46,8 @@ from autoxai.explainer import (
     OcclusionCVExplainer,
     SaliencyCVExplainer,
 )
-from autoxai.explainer.base_explainer import CVExplainerT
-from autoxai.logger import create_logger
+from foxai.explainer.base_explainer import CVExplainerT
+from foxai.logger import create_logger
 
 _LOGGER: Optional[logging.Logger] = None
 
@@ -119,11 +119,11 @@ class ExplainerClassWithParams(Generic[CVExplainerT]):
             self.kwargs = {}
 
 
-class AutoXaiExplainer(Generic[CVExplainerT]):
-    """Context menager for AutoXAI explanation.
+class FoXaiExplainer(Generic[CVExplainerT]):
+    """Context menager for FoXAI explanation.
 
     Example:
-        with AutoXaiExplainer(
+        with FoXaiExplainer(
             model=classifier,
             explainers=[
                 ExplainerWithParams(
@@ -171,14 +171,14 @@ class AutoXaiExplainer(Generic[CVExplainerT]):
 
         self.target: int = target
 
-    def __enter__(self) -> "AutoXaiExplainer":
+    def __enter__(self) -> "FoXaiExplainer":
         """Verify if model is in eval() mode.
 
         Raises:
             ValueError: if the model is in training mode.
 
         Returns:
-            the autoxai class instance.
+            the foxai class instance.
         """
         self.prev_torch_grad = torch.is_grad_enabled()
         if not self.prev_torch_grad:

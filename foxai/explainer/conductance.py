@@ -9,9 +9,9 @@ import torch
 from captum._utils.typing import TargetType
 from captum.attr import LayerConductance
 
-from autoxai.array_utils import validate_result
-from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer.model_utils import get_last_conv_model_layer
+from foxai.array_utils import validate_result
+from foxai.explainer.base_explainer import CVExplainer
+from foxai.explainer.model_utils import get_last_conv_model_layer
 
 
 class LayerConductanceCVExplainer(CVExplainer):

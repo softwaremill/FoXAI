@@ -1,23 +1,23 @@
-"""File with Gradient SHAP algorithm explainer classes.
+"""File with DeepLIFT SHAP algorithm explainer classes.
 
-Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/gradient_shap.py
-and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_gradient_shap.py.
+Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/deep_lift.py
+and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_deep_lift.py.
 """
 
 from abc import abstractmethod
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
 from captum._utils.typing import TargetType
-from captum.attr import GradientShap, LayerGradientShap
+from captum.attr import DeepLiftShap, LayerDeepLiftShap
 
-from autoxai.array_utils import validate_result
-from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer.model_utils import get_last_conv_model_layer
+from foxai.array_utils import validate_result
+from foxai.explainer.base_explainer import CVExplainer
+from foxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
 
-class BaseGradientSHAPCVExplainer(CVExplainer):
-    """Base Gradient SHAP algorithm explainer."""
+class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
+    """Base DeepLIFT SHAP algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
@@ -25,7 +25,7 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         model: torch.nn.Module,
         multiply_by_inputs: bool = True,
         **kwargs,
-    ) -> Union[GradientShap, LayerGradientShap]:
+    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Args:
@@ -35,15 +35,17 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
                 model inputs' multiplier in the final attribution scores.
                 In the literature this is also known as local vs global
                 attribution. If inputs' multiplier isn't factored in
-                then this type of attribution method is also called local
+                then that type of attribution method is also called local
                 attribution. If it is, then that type of attribution
                 method is called global.
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of gradient shap, if `multiply_by_inputs`
-                is set to True, the sensitivity scores of scaled inputs
+                In case of DeepLift, if `multiply_by_inputs`
+                is set to True, final sensitivity scores
                 are being multiplied by (inputs - baselines).
+                This flag applies only if `custom_attribution_func` is
+                set to None.
 
         Returns:
             Explainer object.
@@ -55,19 +57,24 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         baselines: Union[None, int, float, torch.Tensor] = None,
-        n_samples: int = 5,
-        stdevs: Union[float, Tuple[float, ...]] = 0.0,
         additional_forward_args: Any = None,
+        custom_attribution_func: Union[
+            None, Callable[..., Tuple[torch.Tensor, ...]]
+        ] = None,
         attribute_to_layer_input: bool = False,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate model's attributes with Gradient SHAP algorithm explainer.
+        """Generate model's attributes with DeepLIFT SHAP algorithm explainer.
+
+        Under the hood this method is calling `DeepLiftShap.attribute` function and
+        therefore uses the same arguments. Source of parameters documentation:
+        https://github.com/pytorch/captum/blob/master/captum/attr/_core/deep_lift.py.
 
         Args:
             model: The forward function of the model or any
                 modification of it.
-            input_data: Input for which SHAP attribution
-                values are computed. If `forward_func` takes a single
+            input_data: Input for which
+                attributions are computed. If forward_func takes a single
                 tensor as input, a single input tensor should be provided.
             pred_label_idx: Output indices for
                 which gradients are computed (for classification cases,
@@ -95,58 +102,66 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
 
                 Default: None
             baselines:
-                Baselines define the starting point from which expectation
-                is computed and can be provided as:
+                Baselines define reference samples that are compared with
+                the inputs. In order to assign attribution scores DeepLift
+                computes the differences between the inputs/outputs and
+                corresponding references.
+                Baselines can be provided as:
 
                 - a single tensor, if inputs is a single tensor, with
-                    the first dimension equal to the number of examples
-                    in the baselines' distribution. The remaining dimensions
-                    must match with input tensor's dimension starting from
-                    the second dimension.
+                    exactly the same dimensions as inputs or the first
+                    dimension is one and the remaining dimensions match
+                    with inputs.
 
-                It is recommended that the number of samples in the baselines'
-                tensors is larger than one.
-            n_samples: The number of randomly generated examples
-                per sample in the input batch. Random examples are
-                generated by adding gaussian random noise to each sample.
-                Default: `5` if `n_samples` is not provided.
-            stdevs: The standard deviation
-                of gaussian noise with zero mean that is added to each
-                input in the batch. If `stdevs` is a single float value
-                then that same value is used for all inputs. If it is
-                a tuple, then it must have the same length as the inputs
-                tuple. In this case, each stdev value in the stdevs tuple
-                corresponds to the input with the same index in the inputs
-                tuple.
-                Default: 0.0
+                - a single scalar, if inputs is a single tensor, which will
+                    be broadcasted for each input value in input tensor.
+
+                In the cases when `baselines` is not provided, we internally
+                use zero scalar corresponding to each input tensor.
+                Default: None
             additional_forward_args: If the forward function
                 requires additional arguments other than the inputs for
                 which attributions should not be computed, this argument
-                can be provided. It can contain a tuple of ND tensors or
-                any arbitrary python type of any shape.
-                In case of the ND tensor the first dimension of the
-                tensor must correspond to the batch size. It will be
-                repeated for each `n_steps` for each randomly generated
-                input sample.
-
-                Note that the gradients are not computed with respect
+                can be provided. It must be either a single additional
+                argument of a Tensor or arbitrary (non-tuple) type or a tuple
+                containing multiple additional arguments including tensors
+                or any arbitrary python types. These arguments are provided to
+                forward_func in order, following the arguments in inputs.
+                Note that attributions are not computed with respect
                 to these arguments.
                 Default: None
-            attribute_to_layer_input (bool, optional): Indicates whether to
-                compute the attribution with respect to the layer input
-                or output. If `attribute_to_layer_input` is set to True
-                then the attributions will be computed with respect to
-                layer input, otherwise it will be computed with respect
-                to layer output.
+            custom_attribution_func: A custom function for
+                computing final attribution scores. This function can take
+                at least one and at most three arguments with the
+                following signature:
 
-                Note that currently it is assumed that either the input
-                or the output of internal layer, depending on whether we
-                attribute to the input or output, is a single tensor.
+                - custom_attribution_func(multipliers)
+
+                - custom_attribution_func(multipliers, inputs)
+
+                - custom_attribution_func(multipliers, inputs, baselines)
+
+                In case this function is not provided, we use the default
+                logic defined as: multipliers * (inputs - baselines)
+                It is assumed that all input arguments, `multipliers`,
+                `inputs` and `baselines` are provided in tuples of same
+                length. `custom_attribution_func` returns a tuple of
+                attribution tensors that have the same length as the
+                `inputs`.
+                Default: None
+            attribute_to_layer_input: Argument present only for `LayerDeepLiftShap`.
+                Indicates whether to compute the attributions with respect
+                to the layer input or output. If `attribute_to_layer_input`
+                is set to True then the attributions will be computed with
+                respect to layer inputs, otherwise it will be computed with
+                respect to layer outputs.
+                Note that currently it assumes that both the inputs and
+                outputs of internal layers are single tensors.
                 Support for multiple tensors will be added later.
                 Default: False
 
         Returns:
-            Attribution score computed based on GradientSHAP with respect
+            Attribution score computed based on DeepLift rescale rule with respect
             to each input feature. Attributions will always be
             the same size as the provided inputs, with each value
             providing the attribution of the corresponding input index.
@@ -158,9 +173,8 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
             RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        gradient_shap = self.create_explainer(model=model, layer=layer)
+        deeplift = self.create_explainer(model=model, layer=layer)
 
-        # defining baseline distribution of images
         if baselines is None:
             baselines = torch.randn(
                 (
@@ -171,40 +185,38 @@ class BaseGradientSHAPCVExplainer(CVExplainer):
                 device=input_data.device,
             )
 
-        if isinstance(gradient_shap, LayerGradientShap):
-            attributions = gradient_shap.attribute(
+        if isinstance(deeplift, LayerDeepLiftShap):
+            attributions = deeplift.attribute(
                 input_data,
-                n_samples=n_samples,
-                stdevs=stdevs,
-                baselines=baselines,
                 target=pred_label_idx,
-                return_convergence_delta=False,
+                baselines=baselines,
                 additional_forward_args=additional_forward_args,
+                return_convergence_delta=False,
+                custom_attribution_func=custom_attribution_func,
                 attribute_to_layer_input=attribute_to_layer_input,
             )
         else:
-            attributions = gradient_shap.attribute(
+            attributions = deeplift.attribute(
                 input_data,
-                n_samples=n_samples,
-                stdevs=stdevs,
-                baselines=baselines,
                 target=pred_label_idx,
-                return_convergence_delta=False,
+                baselines=baselines,
                 additional_forward_args=additional_forward_args,
+                return_convergence_delta=False,
+                custom_attribution_func=custom_attribution_func,
             )
         validate_result(attributions=attributions)
         return attributions
 
 
-class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
-    """Gradient SHAP algorithm explainer."""
+class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
+    """DeepLIFTC SHAP algorithm explainer."""
 
     def create_explainer(
         self,
         model: torch.nn.Module,
         multiply_by_inputs: bool = True,
         **kwargs,
-    ) -> Union[GradientShap, LayerGradientShap]:
+    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Args:
@@ -214,28 +226,32 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
                 model inputs' multiplier in the final attribution scores.
                 In the literature this is also known as local vs global
                 attribution. If inputs' multiplier isn't factored in
-                then this type of attribution method is also called local
+                then that type of attribution method is also called local
                 attribution. If it is, then that type of attribution
                 method is called global.
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of gradient shap, if `multiply_by_inputs`
-                is set to True, the sensitivity scores of scaled inputs
-                are being multiplied by (inputs - baselines).
+                In case of LayerDeepLiftShap, if `multiply_by_inputs`
+                is set to True, final sensitivity scores are being
+                multiplied by
+                layer activations for inputs - layer activations for baselines
+                This flag applies only if `custom_attribution_func` is
+                set to None.
 
         Returns:
             Explainer object.
         """
+        model = modify_modules(model)
 
-        return GradientShap(
-            forward_func=model,
+        return DeepLiftShap(
+            model=model,
             multiply_by_inputs=multiply_by_inputs,
         )
 
 
-class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
-    """Layer Gradient SHAP algorithm explainer."""
+class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
+    """Layer DeepLIFT SHAP algorithm explainer."""
 
     def create_explainer(
         self,
@@ -243,7 +259,7 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         multiply_by_inputs: bool = True,
         layer: Optional[torch.nn.Module] = None,
         **kwargs,
-    ) -> Union[GradientShap, LayerGradientShap]:
+    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.
 
         Uses parameter `layer` from `kwargs`. If not provided function will call
@@ -264,16 +280,18 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
                 model inputs' multiplier in the final attribution scores.
                 In the literature this is also known as local vs global
                 attribution. If inputs' multiplier isn't factored in
-                then this type of attribution method is also called local
+                then that type of attribution method is also called local
                 attribution. If it is, then that type of attribution
                 method is called global.
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of layer gradient shap, if `multiply_by_inputs`
-                is set to True, the sensitivity scores for scaled inputs
-                are being multiplied by
-                layer activations for inputs - layer activations for baselines.
+                In case of LayerDeepLiftShap, if `multiply_by_inputs`
+                is set to True, final sensitivity scores are being
+                multiplied by
+                layer activations for inputs - layer activations for baselines
+                This flag applies only if `custom_attribution_func` is
+                set to None.
 
         Returns:
             Explainer object.
@@ -281,12 +299,13 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
         Raises:
             ValueError: if model does not contain conv layers.
         """
-
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
-        return LayerGradientShap(
-            forward_func=model,
+        model = modify_modules(model)
+
+        return LayerDeepLiftShap(
+            model=model,
             layer=layer,
             multiply_by_inputs=multiply_by_inputs,
         )

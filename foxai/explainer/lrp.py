@@ -1,7 +1,7 @@
-"""File with Input X Gradient algorithm explainer classes.
+"""File with LRP algorithm explainer classes.
 
-Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/input_x_gradient.py
-and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_gradient_x_activation.py.
+Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/lrp.py
+and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_lrp.py.
 """
 
 from abc import abstractmethod
@@ -9,22 +9,23 @@ from typing import Any, Optional, Union
 
 import torch
 from captum._utils.typing import TargetType
-from captum.attr import InputXGradient, LayerGradientXActivation
+from captum.attr import LRP, LayerLRP
+from captum.attr._utils.lrp_rules import EpsilonRule, GammaRule
 
-from autoxai.array_utils import validate_result
-from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer.model_utils import get_last_conv_model_layer
+from foxai.array_utils import validate_result
+from foxai.explainer.base_explainer import CVExplainer
+from foxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
 
-class BaseInputXGradientSHAPCVExplainer(CVExplainer):
-    """Base Input X Gradient algorithm explainer."""
+class BaseLRPCVExplainer(CVExplainer):
+    """Base LRP algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
         self,
         model: torch.nn.Module,
         **kwargs,
-    ) -> Union[InputXGradient, LayerGradientXActivation]:
+    ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Args:
@@ -42,15 +43,16 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
         pred_label_idx: TargetType = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
+        verbose: bool = False,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate model's attributes with Input X Gradient algorithm explainer.
+        """Generate model's attributes with LRP algorithm explainer.
 
         Args:
             model: The forward function of the model or any
                 modification of it.
-            input_data: Input for which
-                attributions are computed. If forward_func takes a single
+            input_data: Input for which relevance is
+                propagated. If forward_func takes a single
                 tensor as input, a single input tensor should be provided.
             pred_label_idx: Output indices for
                 which gradients are computed (for classification cases,
@@ -84,7 +86,7 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
                 argument of a Tensor or arbitrary (non-tuple) type or a tuple
                 containing multiple additional arguments including tensors
                 or any arbitrary python types. These arguments are provided to
-                forward_func in order following the arguments in inputs.
+                forward_func in order, following the arguments in inputs.
                 Note that attributions are not computed with respect
                 to these arguments.
                 Default: None
@@ -94,48 +96,71 @@ class BaseInputXGradientSHAPCVExplainer(CVExplainer):
                 then the attributions will be computed with respect to
                 layer input, otherwise it will be computed with respect
                 to layer output.
+            verbose: Indicates whether information on application
+                of rules is printed during propagation.
                 Default: False
 
         Returns:
-            The input x gradient with respect to each input feature or gradient
-            and activation for each neuron in given layer output. Attributions
-            will always be the same size as the provided inputs, with each value
-            providing the attribution of the corresponding input index.
-            If a single tensor is provided as inputs, a single tensor is
-            returned. If a tuple is provided for inputs, a tuple of
-            corresponding sized tensors is returned.
+            Features matrix.
 
         Raises:
             RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        input_x_gradient = self.create_explainer(model=model, layer=layer)
 
-        if isinstance(input_x_gradient, LayerGradientXActivation):
-            attributions = input_x_gradient.attribute(
+        lrp = self.create_explainer(model=model, layer=layer)
+
+        if isinstance(lrp, LRP):
+            attributions = lrp.attribute(
                 input_data,
                 target=pred_label_idx,
                 additional_forward_args=additional_forward_args,
-                attribute_to_layer_input=attribute_to_layer_input,
+                return_convergence_delta=False,
+                verbose=verbose,
             )
         else:
-            attributions = input_x_gradient.attribute(
+            attributions = lrp.attribute(
                 input_data,
                 target=pred_label_idx,
                 additional_forward_args=additional_forward_args,
+                return_convergence_delta=False,
+                attribute_to_layer_input=attribute_to_layer_input,
+                verbose=verbose,
             )
         validate_result(attributions=attributions)
         return attributions
 
+    def add_rules(self, model: torch.nn.Module) -> torch.nn.Module:
+        """Add rules for the LRP explainer,
+        according to https://arxiv.org/pdf/1910.09840.pdf.
 
-class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
-    """Input X Gradient algorithm explainer."""
+        Args:
+            model: The forward function of the model or any
+                modification of it.
+
+        Returns:
+            Modified DNN object.
+        """
+        layers_number: int = len(list(model.modules()))
+        for idx_layer, module in enumerate(model.modules()):
+            if idx_layer <= layers_number // 2:
+                setattr(module, "rule", GammaRule())
+            elif idx_layer != (layers_number - 1):
+                setattr(module, "rule", EpsilonRule())
+            else:
+                setattr(module, "rule", EpsilonRule(epsilon=0))  # LRP-0
+
+        return model
+
+
+class LRPCVExplainer(BaseLRPCVExplainer):
+    """LRP algorithm explainer."""
 
     def create_explainer(
         self,
         model: torch.nn.Module,
         **kwargs,
-    ) -> Union[InputXGradient, LayerGradientXActivation]:
+    ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Args:
@@ -145,22 +170,20 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
         Returns:
             Explainer object.
         """
+        model = self.add_rules(modify_modules(model))
 
-        return InputXGradient(
-            forward_func=model,
-        )
+        return LRP(model=model)
 
 
-class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
-    """Layer Input X Gradient algorithm explainer."""
+class LayerLRPCVExplainer(BaseLRPCVExplainer):
+    """Layer LRP algorithm explainer."""
 
     def create_explainer(
         self,
         model: torch.nn.Module,
         layer: Optional[torch.nn.Module] = None,
-        multiply_by_inputs: bool = True,
         **kwargs,
-    ) -> Union[InputXGradient, LayerGradientXActivation]:
+    ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
 
         Uses parameter `layer` from `kwargs`. If not provided function will call
@@ -177,19 +200,6 @@ class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
                 attribution of each neuron in the input or output of
                 this layer.
                 Default: None
-            multiply_by_inputs: Indicates whether to factor
-                model inputs' multiplier in the final attribution scores.
-                In the literature this is also known as local vs global
-                attribution. If inputs' multiplier isn't factored in,
-                then this type of attribution method is also called local
-                attribution. If it is, then that type of attribution
-                method is called global.
-                More detailed can be found here:
-                https://arxiv.org/abs/1711.06104
-
-                In case of layer gradient x activation, if `multiply_by_inputs`
-                is set to True, final sensitivity scores are being multiplied by
-                layer activations for inputs.
 
         Returns:
             Explainer object.
@@ -197,12 +207,9 @@ class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
         Raises:
             ValueError: if model does not contain conv layers.
         """
-
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
-        return LayerGradientXActivation(
-            forward_func=model,
-            layer=layer,
-            multiply_by_inputs=multiply_by_inputs,
-        )
+        model = self.add_rules(modify_modules(model))
+
+        return LayerLRP(model=model, layer=layer)

@@ -9,8 +9,8 @@ import torch
 from captum._utils.typing import TargetType
 from captum.attr import Occlusion
 
-from autoxai.array_utils import validate_result
-from autoxai.explainer.base_explainer import CVExplainer
+from foxai.array_utils import validate_result
+from foxai.explainer.base_explainer import CVExplainer
 
 
 class OcclusionCVExplainer(CVExplainer):

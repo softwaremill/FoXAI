@@ -43,7 +43,7 @@ jobs:
         run: echo ::set-output name=VERSION::$(poetry version | cut -d " " -f 2)
 
       - name: Build docs
-        run: poetry run sphinx-apidoc -o docs/source autoxai && cd docs && poetry run make html
+        run: poetry run sphinx-apidoc -o docs/source foxai && cd docs && poetry run make html
 
       - name: Compress production artifacts
         run: tar -czvf docs/build/foxai-docs-${{ steps.get_version.outputs.VERSION }}.tar.gz docs/build/html/

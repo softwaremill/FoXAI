@@ -4,7 +4,7 @@ import pytest
 import torch
 from matplotlib.pyplot import Figure
 
-from autoxai.visualizer import single_channel_visualization
+from foxai.visualizer import single_channel_visualization
 
 
 def test_single_channel_visualization_selected_channel_should_raise_exception() -> None:

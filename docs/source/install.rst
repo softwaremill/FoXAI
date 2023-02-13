@@ -15,8 +15,8 @@ You can build ``wheel`` with Python package yourself. To do so clone repository 
 
 .. code-block:: bash
 
-    $ git clone https://github.com/softwaremill/AutoXAI.git
-    $ cd AutoXAI/
+    $ git clone https://github.com/softwaremill/FoXAI.git
+    $ cd FoXAI/
 
 Then setup development environment by installing ``Poetry`` and project dependencies.
 

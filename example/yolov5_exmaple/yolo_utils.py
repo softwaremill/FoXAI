@@ -1,14 +1,15 @@
 import logging
 import math
 import time
-from typing import Any, Final, Iterator, Optional, Tuple, Union
+from typing_extensions import Final
+from typing import Any, Iterator, Optional, Tuple, Union
 
 import cv2
 import numpy as np
 import torch
 import torchvision
 
-from autoxai.logger import create_logger
+from foxai.logger import create_logger
 
 _LOGGER: Optional[logging.Logger] = None
 
@@ -335,8 +336,8 @@ def letterbox(
         r = min(r, 1.0)
 
     # Compute padding
-    ratio: Tuple[float, float] = r, r  # width, height ratios
-    new_unpad: int = int(round(shape[1] * r)), int(round(shape[0] * r))
+    ratio: Tuple[float, float] = (r, r)  # width, height ratios
+    new_unpad: Tuple(int, int) = (int(round(shape[1] * r)), int(round(shape[0] * r)))
     dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     if auto:  # minimum rectangle
         dw, dh = np.mod(dw, stride), np.mod(dh, stride)  # wh padding
