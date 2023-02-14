@@ -253,8 +253,6 @@ def test_resize_attributes() -> None:
     )
 
     assert result.shape == (4, 3)
-    assert result.shape != (3, 4)
-
 
 
 def test_normalize_attributes_should_return_the_same_array_if_has_2_dimensions() -> None:

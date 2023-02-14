@@ -3,7 +3,7 @@ name = "foxai"
 version = "0.5.3"
 description = "Model Interpretability for PyTorch."
 authors = ["ReasonField Lab Team"]
-repository = "https://github.com/softwaremill/AutoXAI"
+repository = "https://github.com/softwaremill/FoXAI"
 keywords = [
     "Model Interpretability",
     "XAI",

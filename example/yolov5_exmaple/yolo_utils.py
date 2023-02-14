@@ -337,7 +337,7 @@ def letterbox(
 
     # Compute padding
     ratio: Tuple[float, float] = (r, r)  # width, height ratios
-    new_unpad: Tuple(int, int) = (int(round(shape[1] * r)), int(round(shape[0] * r)))
+    new_unpad: Tuple[int, int] = (int(round(shape[1] * r)), int(round(shape[0] * r)))
     dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     if auto:  # minimum rectangle
         dw, dh = np.mod(dw, stride), np.mod(dh, stride)  # wh padding
