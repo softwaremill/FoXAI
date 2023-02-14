@@ -1,0 +1,55 @@
+foxai package
+=============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   foxai.callbacks
+   foxai.cli
+   foxai.explainer
+
+Submodules
+----------
+
+foxai.array\_utils module
+-------------------------
+
+.. automodule:: foxai.array_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+foxai.context\_manager module
+-----------------------------
+
+.. automodule:: foxai.context_manager
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+foxai.logger module
+-------------------
+
+.. automodule:: foxai.logger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+foxai.visualizer module
+-----------------------
+
+.. automodule:: foxai.visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: foxai
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>foxai package &mdash; FoXAI  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="foxai.callbacks package" href="foxai.callbacks.html" />
+    <link rel="prev" title="foxai" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> FoXAI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">foxai</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">foxai package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html">foxai.callbacks package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.cli.html">foxai.cli package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html">foxai.explainer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-foxai.array_utils">foxai.array_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.array_utils.convert_standardized_float_to_uint8"><code class="docutils literal notranslate"><span class="pre">convert_standardized_float_to_uint8()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.array_utils.normalize_attributes"><code class="docutils literal notranslate"><span class="pre">normalize_attributes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.array_utils.resize_attributes"><code class="docutils literal notranslate"><span class="pre">resize_attributes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.array_utils.retain_only_positive"><code class="docutils literal notranslate"><span class="pre">retain_only_positive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.array_utils.standardize_array"><code class="docutils literal notranslate"><span class="pre">standardize_array()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.array_utils.transpose_array"><code class="docutils literal notranslate"><span class="pre">transpose_array()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.array_utils.validate_result"><code class="docutils literal notranslate"><span class="pre">validate_result()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-foxai.context_manager">foxai.context_manager module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.context_manager.ExplainerClassWithParams"><code class="docutils literal notranslate"><span class="pre">ExplainerClassWithParams</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.context_manager.ExplainerWithParams"><code class="docutils literal notranslate"><span class="pre">ExplainerWithParams</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.context_manager.Explainers"><code class="docutils literal notranslate"><span class="pre">Explainers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.context_manager.FoXaiExplainer"><code class="docutils literal notranslate"><span class="pre">FoXaiExplainer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.context_manager.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-foxai.logger">foxai.logger module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.logger.create_logger"><code class="docutils literal notranslate"><span class="pre">create_logger()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-foxai.visualizer">foxai.visualizer module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.visualizer.generate_figure"><code class="docutils literal notranslate"><span class="pre">generate_figure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.visualizer.mean_channels_visualization"><code class="docutils literal notranslate"><span class="pre">mean_channels_visualization()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.visualizer.single_channel_visualization"><code class="docutils literal notranslate"><span class="pre">single_channel_visualization()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-foxai">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FoXAI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">foxai</a></li>
+      <li class="breadcrumb-item active">foxai package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/foxai.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="foxai-package">
+<h1>foxai package<a class="headerlink" href="#foxai-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="foxai.callbacks.html">foxai.callbacks package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foxai.callbacks.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.callbacks.html#module-foxai.callbacks.wandb_callback">foxai.callbacks.wandb_callback module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.callbacks.html#foxai.callbacks.wandb_callback.WandBCallback"><code class="docutils literal notranslate"><span class="pre">WandBCallback</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html#foxai.callbacks.wandb_callback.WandBCallback.explain"><code class="docutils literal notranslate"><span class="pre">WandBCallback.explain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html#foxai.callbacks.wandb_callback.WandBCallback.iterate_dataloader"><code class="docutils literal notranslate"><span class="pre">WandBCallback.iterate_dataloader()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html#foxai.callbacks.wandb_callback.WandBCallback.log_explanations"><code class="docutils literal notranslate"><span class="pre">WandBCallback.log_explanations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html#foxai.callbacks.wandb_callback.WandBCallback.on_train_start"><code class="docutils literal notranslate"><span class="pre">WandBCallback.on_train_start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html#foxai.callbacks.wandb_callback.WandBCallback.on_validation_epoch_end"><code class="docutils literal notranslate"><span class="pre">WandBCallback.on_validation_epoch_end()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.callbacks.html#module-foxai.callbacks">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="foxai.cli.html">foxai.cli package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foxai.cli.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.cli.html#module-foxai.cli.config_model">foxai.cli.config_model module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.config_model.ConfigDataModel"><code class="docutils literal notranslate"><span class="pre">ConfigDataModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.cli.html#foxai.cli.config_model.ConfigDataModel.method_config_list"><code class="docutils literal notranslate"><span class="pre">ConfigDataModel.method_config_list</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.config_model.MethodDataModel"><code class="docutils literal notranslate"><span class="pre">MethodDataModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.cli.html#foxai.cli.config_model.MethodDataModel.artifact_name"><code class="docutils literal notranslate"><span class="pre">MethodDataModel.artifact_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.cli.html#foxai.cli.config_model.MethodDataModel.explainer_with_params"><code class="docutils literal notranslate"><span class="pre">MethodDataModel.explainer_with_params</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.cli.html#module-foxai.cli.experiment_update">foxai.cli.experiment_update module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.experiment_update.download_upload_metadata"><code class="docutils literal notranslate"><span class="pre">download_upload_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.experiment_update.fetch_model_checkpoints"><code class="docutils literal notranslate"><span class="pre">fetch_model_checkpoints()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.experiment_update.get_labels"><code class="docutils literal notranslate"><span class="pre">get_labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.experiment_update.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.experiment_update.load_images_to_tensors"><code class="docutils literal notranslate"><span class="pre">load_images_to_tensors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.cli.html#foxai.cli.experiment_update.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.cli.html#module-foxai.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="foxai.explainer.html">foxai.explainer package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.base_explainer">foxai.explainer.base_explainer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.base_explainer.CVExplainer"><code class="docutils literal notranslate"><span class="pre">CVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.base_explainer.CVExplainer.algorithm_name"><code class="docutils literal notranslate"><span class="pre">CVExplainer.algorithm_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.base_explainer.CVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">CVExplainer.calculate_features()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.base_explainer.CVExplainerT"><code class="docutils literal notranslate"><span class="pre">CVExplainerT</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.conductance">foxai.explainer.conductance module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.conductance.LayerConductanceCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerConductanceCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.conductance.LayerConductanceCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">LayerConductanceCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.conductance.LayerConductanceCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerConductanceCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.deconv">foxai.explainer.deconv module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deconv.BaseDeconvolutionCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseDeconvolutionCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deconv.BaseDeconvolutionCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseDeconvolutionCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deconv.BaseDeconvolutionCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseDeconvolutionCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deconv.DeconvolutionCVExplainer"><code class="docutils literal notranslate"><span class="pre">DeconvolutionCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deconv.DeconvolutionCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">DeconvolutionCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.deeplift">foxai.explainer.deeplift module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift.BaseDeepLIFTCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift.BaseDeepLIFTCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift.BaseDeepLIFTCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift.DeepLIFTCVExplainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift.DeepLIFTCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift.LayerDeepLIFTCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift.LayerDeepLIFTCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.deeplift_shap">foxai.explainer.deeplift_shap module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift_shap.BaseDeepLIFTSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift_shap.BaseDeepLIFTSHAPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTSHAPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift_shap.BaseDeepLIFTSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift_shap.DeepLIFTSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift_shap.DeepLIFTSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift_shap.LayerDeepLIFTSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.deeplift_shap.LayerDeepLIFTSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.gradcam">foxai.explainer.gradcam module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.BaseGradCAMCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseGradCAMCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.BaseGradCAMCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseGradCAMCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.BaseGradCAMCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseGradCAMCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.GuidedGradCAMCVExplainer"><code class="docutils literal notranslate"><span class="pre">GuidedGradCAMCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.GuidedGradCAMCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">GuidedGradCAMCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.GuidedGradCAMCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">GuidedGradCAMCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.LayerGradCAMCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.LayerGradCAMCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradcam.LayerGradCAMCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.gradient_shap">foxai.explainer.gradient_shap module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradient_shap.BaseGradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseGradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradient_shap.BaseGradientSHAPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseGradientSHAPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradient_shap.BaseGradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseGradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradient_shap.GradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">GradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradient_shap.GradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">GradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradient_shap.LayerGradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerGradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.gradient_shap.LayerGradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerGradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.guided_backprop">foxai.explainer.guided_backprop module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.guided_backprop.BaseGuidedBackpropCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseGuidedBackpropCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.guided_backprop.BaseGuidedBackpropCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseGuidedBackpropCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.guided_backprop.BaseGuidedBackpropCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseGuidedBackpropCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.guided_backprop.GuidedBackpropCVExplainer"><code class="docutils literal notranslate"><span class="pre">GuidedBackpropCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.guided_backprop.GuidedBackpropCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">GuidedBackpropCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.input_x_gradient">foxai.explainer.input_x_gradient module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.input_x_gradient.BaseInputXGradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseInputXGradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.input_x_gradient.BaseInputXGradientSHAPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseInputXGradientSHAPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.input_x_gradient.BaseInputXGradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseInputXGradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.input_x_gradient.InputXGradientCVExplainer"><code class="docutils literal notranslate"><span class="pre">InputXGradientCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.input_x_gradient.InputXGradientCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">InputXGradientCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.input_x_gradient.LayerInputXGradientCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerInputXGradientCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.input_x_gradient.LayerInputXGradientCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerInputXGradientCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.integrated_gradients">foxai.explainer.integrated_gradients module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.integrated_gradients.BaseIntegratedGradientsCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseIntegratedGradientsCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.integrated_gradients.BaseIntegratedGradientsCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseIntegratedGradientsCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.integrated_gradients.BaseIntegratedGradientsCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseIntegratedGradientsCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.integrated_gradients.IntegratedGradientsCVExplainer"><code class="docutils literal notranslate"><span class="pre">IntegratedGradientsCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.integrated_gradients.IntegratedGradientsCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">IntegratedGradientsCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.integrated_gradients.LayerIntegratedGradientsCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerIntegratedGradientsCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.integrated_gradients.LayerIntegratedGradientsCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerIntegratedGradientsCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.lrp">foxai.explainer.lrp module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.BaseLRPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.BaseLRPCVExplainer.add_rules"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer.add_rules()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.BaseLRPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.BaseLRPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.LRPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LRPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.LRPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LRPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.LayerLRPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerLRPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.lrp.LayerLRPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerLRPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.model_utils">foxai.explainer.model_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.model_utils.get_last_conv_model_layer"><code class="docutils literal notranslate"><span class="pre">get_last_conv_model_layer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.model_utils.modify_modules"><code class="docutils literal notranslate"><span class="pre">modify_modules()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.noise_tunnel">foxai.explainer.noise_tunnel module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.noise_tunnel.BaseNoiseTunnelCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseNoiseTunnelCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.noise_tunnel.BaseNoiseTunnelCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseNoiseTunnelCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.noise_tunnel.BaseNoiseTunnelCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseNoiseTunnelCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.noise_tunnel.LayerNoiseTunnelCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerNoiseTunnelCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.noise_tunnel.LayerNoiseTunnelCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerNoiseTunnelCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.noise_tunnel.NoiseTunnelCVExplainer"><code class="docutils literal notranslate"><span class="pre">NoiseTunnelCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.noise_tunnel.NoiseTunnelCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">NoiseTunnelCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.occlusion">foxai.explainer.occlusion module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.occlusion.OcclusionCVExplainer"><code class="docutils literal notranslate"><span class="pre">OcclusionCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.occlusion.OcclusionCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">OcclusionCVExplainer.calculate_features()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer.saliency">foxai.explainer.saliency module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.saliency.SaliencyCVExplainer"><code class="docutils literal notranslate"><span class="pre">SaliencyCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html#foxai.explainer.saliency.SaliencyCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">SaliencyCVExplainer.calculate_features()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-foxai.array_utils">
+<span id="foxai-array-utils-module"></span><h2>foxai.array_utils module<a class="headerlink" href="#module-foxai.array_utils" title="Permalink to this heading"></a></h2>
+<p>File contains functions to handle numpy arrays.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.array_utils.convert_standardized_float_to_uint8">
+<span class="sig-prename descclassname"><span class="pre">foxai.array_utils.</span></span><span class="sig-name descname"><span class="pre">convert_standardized_float_to_uint8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/foxai/array_utils.html#convert_standardized_float_to_uint8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.array_utils.convert_standardized_float_to_uint8" title="Permalink to this definition"></a></dt>
+<dd><p>Convert float standardize float array to uint8 with values scaling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>array</strong> – Numpy array of floats.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array with scaled values with type np.uint8.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if array is not of type np.float.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.array_utils.normalize_attributes">
+<span class="sig-prename descclassname"><span class="pre">foxai.array_utils.</span></span><span class="sig-name descname"><span class="pre">normalize_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/foxai/array_utils.html#normalize_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.array_utils.normalize_attributes" title="Permalink to this definition"></a></dt>
+<dd><p>Normalize attributes.</p>
+<p>For attributes with color dimension calculate mean over all colors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>attributes</strong> – Array of attributes.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Single channel array of attributes.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if shape of attribute array is incorrect.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.array_utils.resize_attributes">
+<span class="sig-prename descclassname"><span class="pre">foxai.array_utils.</span></span><span class="sig-name descname"><span class="pre">resize_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/foxai/array_utils.html#resize_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.array_utils.resize_attributes" title="Permalink to this definition"></a></dt>
+<dd><p>Resize attributes to match desired shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attributes</strong> – Array of attributes.</p></li>
+<li><p><strong>dest_width</strong> – Desired width of attributes array.</p></li>
+<li><p><strong>dest_height</strong> – Desired height of attributes array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Resized attributes array.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.array_utils.retain_only_positive">
+<span class="sig-prename descclassname"><span class="pre">foxai.array_utils.</span></span><span class="sig-name descname"><span class="pre">retain_only_positive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/foxai/array_utils.html#retain_only_positive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.array_utils.retain_only_positive" title="Permalink to this definition"></a></dt>
+<dd><p>Retain only positive values from array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>array</strong> – Array.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array with negative values replaced by zero.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.array_utils.standardize_array">
+<span class="sig-prename descclassname"><span class="pre">foxai.array_utils.</span></span><span class="sig-name descname"><span class="pre">standardize_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/foxai/array_utils.html#standardize_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.array_utils.standardize_array" title="Permalink to this definition"></a></dt>
+<dd><p>Standardize array values to range [0-1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>array</strong> – Numpy array of floats.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array with scaled values.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if array is not of type np.float.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.array_utils.transpose_array">
+<span class="sig-prename descclassname"><span class="pre">foxai.array_utils.</span></span><span class="sig-name descname"><span class="pre">transpose_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/foxai/array_utils.html#transpose_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.array_utils.transpose_array" title="Permalink to this definition"></a></dt>
+<dd><p>Transpoze array from (C x H x W) to (H x W x C) shape.</p>
+<p>C stands for color, H stands for height and W stands for width.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>array</strong> – Array of shape (C x H x W).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of shape (H x W x C).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.array_utils.validate_result">
+<span class="sig-prename descclassname"><span class="pre">foxai.array_utils.</span></span><span class="sig-name descname"><span class="pre">validate_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/foxai/array_utils.html#validate_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.array_utils.validate_result" title="Permalink to this definition"></a></dt>
+<dd><p>Validate calculated attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>attributions</strong> – Tensor with calculated attributions.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>RuntimeError if tensor is empty.</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-foxai.context_manager">
+<span id="foxai-context-manager-module"></span><h2>foxai.context_manager module<a class="headerlink" href="#module-foxai.context_manager" title="Permalink to this heading"></a></h2>
+<p>Run xai alongside with inference.</p>
+<p class="rubric">Example</p>
+<dl>
+<dt>with FoXaiExplainer(</dt><dd><p>model=classifier,
+explainers=[</p>
+<blockquote>
+<div><dl class="simple">
+<dt>ExplainerWithParams(</dt><dd><p>explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER,
+n_samples=100,
+stdevs=0.0005,</p>
+</dd>
+</dl>
+<p>),</p>
+</div></blockquote>
+<p>],
+target=pred_label_idx,</p>
+</dd>
+<dt>) as xai_model:</dt><dd><p>output, xai_explanations = xai_model(img_tensor)</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="foxai.context_manager.ExplainerClassWithParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">foxai.context_manager.</span></span><span class="sig-name descname"><span class="pre">ExplainerClassWithParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">explainer_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CVExplainerT</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foxai/context_manager.html#ExplainerClassWithParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.context_manager.ExplainerClassWithParams" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<a class="reference internal" href="foxai.explainer.html#foxai.explainer.base_explainer.CVExplainerT" title="foxai.explainer.base_explainer.CVExplainerT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CVExplainerT</span></code></a>]</p>
+<p>Holder for explainer class and it’s params</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.ExplainerClassWithParams.explainer_class">
+<span class="sig-name descname"><span class="pre">explainer_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">CVExplainerT</span></em><a class="headerlink" href="#foxai.context_manager.ExplainerClassWithParams.explainer_class" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.ExplainerClassWithParams.kwargs">
+<span class="sig-name descname"><span class="pre">kwargs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#foxai.context_manager.ExplainerClassWithParams.kwargs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="foxai.context_manager.ExplainerWithParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">foxai.context_manager.</span></span><span class="sig-name descname"><span class="pre">ExplainerWithParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">explainer_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#foxai.context_manager.Explainers" title="foxai.context_manager.Explainers"><span class="pre">Explainers</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foxai/context_manager.html#ExplainerWithParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.context_manager.ExplainerWithParams" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holder for explainer name (class name) and it’s params</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.ExplainerWithParams.explainer_name">
+<span class="sig-name descname"><span class="pre">explainer_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#foxai.context_manager.Explainers" title="foxai.context_manager.Explainers"><span class="pre">Explainers</span></a></em><a class="headerlink" href="#foxai.context_manager.ExplainerWithParams.explainer_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.ExplainerWithParams.kwargs">
+<span class="sig-name descname"><span class="pre">kwargs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#foxai.context_manager.ExplainerWithParams.kwargs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">foxai.context_manager.</span></span><span class="sig-name descname"><span class="pre">Explainers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foxai/context_manager.html#Explainers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.context_manager.Explainers" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enum of supported explainers types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_DECONVOLUTION_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_DECONVOLUTION_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'DeconvolutionCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_DECONVOLUTION_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_DEEPLIFT_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_DEEPLIFT_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'DeepLIFTCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_DEEPLIFT_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_DEEPLIFT_SHAP_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_DEEPLIFT_SHAP_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'DeepLIFTSHAPCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_DEEPLIFT_SHAP_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_GRADIENT_SHAP_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_GRADIENT_SHAP_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GradientSHAPCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_GRADIENT_SHAP_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_GUIDEDGRADCAM_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_GUIDEDGRADCAM_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GuidedGradCAMCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_GUIDEDGRADCAM_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_GUIDED_BACKPOPAGATION_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_GUIDED_BACKPOPAGATION_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GuidedBackpropCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_GUIDED_BACKPOPAGATION_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_INPUT_X_GRADIENT_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_INPUT_X_GRADIENT_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'InputXGradientCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_INPUT_X_GRADIENT_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_INTEGRATED_GRADIENTS_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IntegratedGradientsCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_CONDUCTANCE_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_CONDUCTANCE_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerConductanceCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_CONDUCTANCE_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_DEEPLIFT_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_DEEPLIFT_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerDeepLIFTCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_DEEPLIFT_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_DEEPLIFT_SHAP_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_DEEPLIFT_SHAP_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerDeepLIFTSHAPCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_DEEPLIFT_SHAP_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_GRADCAM_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_GRADCAM_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerGradCAMCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_GRADCAM_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_GRADIENT_SHAP_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_GRADIENT_SHAP_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerGradientSHAPCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_GRADIENT_SHAP_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_INPUT_X_GRADIENT_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_INPUT_X_GRADIENT_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerInputXGradientCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_INPUT_X_GRADIENT_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerIntegratedGradientsCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_LRP_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_LRP_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerLRPCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_LRP_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LAYER_NOISE_TUNNEL_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LAYER_NOISE_TUNNEL_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LayerNoiseTunnelCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LAYER_NOISE_TUNNEL_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_LRP_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_LRP_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LRPCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_LRP_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_NOISE_TUNNEL_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_NOISE_TUNNEL_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NoiseTunnelCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_NOISE_TUNNEL_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_OCCLUSION_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_OCCLUSION_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'OcclusionCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_OCCLUSION_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="foxai.context_manager.Explainers.CV_SALIENCY_EXPLAINER">
+<span class="sig-name descname"><span class="pre">CV_SALIENCY_EXPLAINER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SaliencyCVExplainer'</span></em><a class="headerlink" href="#foxai.context_manager.Explainers.CV_SALIENCY_EXPLAINER" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="foxai.context_manager.FoXaiExplainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">foxai.context_manager.</span></span><span class="sig-name descname"><span class="pre">FoXaiExplainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explainers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#foxai.context_manager.ExplainerWithParams" title="foxai.context_manager.ExplainerWithParams"><span class="pre">ExplainerWithParams</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foxai/context_manager.html#FoXaiExplainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.context_manager.FoXaiExplainer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<a class="reference internal" href="foxai.explainer.html#foxai.explainer.base_explainer.CVExplainerT" title="foxai.explainer.base_explainer.CVExplainerT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CVExplainerT</span></code></a>]</p>
+<p>Context menager for FoXAI explanation.</p>
+<p class="rubric">Example</p>
+<dl>
+<dt>with FoXaiExplainer(</dt><dd><p>model=classifier,
+explainers=[</p>
+<blockquote>
+<div><dl class="simple">
+<dt>ExplainerWithParams(</dt><dd><p>explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER,
+n_samples=100,
+stdevs=0.0005,</p>
+</dd>
+</dl>
+<p>),</p>
+</div></blockquote>
+<p>],
+target=pred_label_idx,</p>
+</dd>
+<dt>) as xai_model:</dt><dd><p>output, xai_explanations = xai_model(img_tensor)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if no explainer provided</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.context_manager.log">
+<span class="sig-prename descclassname"><span class="pre">foxai.context_manager.</span></span><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="reference internal" href="_modules/foxai/context_manager.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.context_manager.log" title="Permalink to this definition"></a></dt>
+<dd><p>Get or create logger.</p>
+</dd></dl>
+
+</section>
+<section id="module-foxai.logger">
+<span id="foxai-logger-module"></span><h2>foxai.logger module<a class="headerlink" href="#module-foxai.logger" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.logger.create_logger">
+<span class="sig-prename descclassname"><span class="pre">foxai.logger.</span></span><span class="sig-name descname"><span class="pre">create_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="reference internal" href="_modules/foxai/logger.html#create_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.logger.create_logger" title="Permalink to this definition"></a></dt>
+<dd><p>Create logger with the goven name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>logger_name</strong> – the name of the logger</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>created logger object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-foxai.visualizer">
+<span id="foxai-visualizer-module"></span><h2>foxai.visualizer module<a class="headerlink" href="#module-foxai.visualizer" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.visualizer.generate_figure">
+<span class="sig-prename descclassname"><span class="pre">foxai.visualizer.</span></span><span class="sig-name descname"><span class="pre">generate_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformed_img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(8,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/foxai/visualizer.html#generate_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.visualizer.generate_figure" title="Permalink to this definition"></a></dt>
+<dd><p>Create figure from image and heatmap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attributions</strong> – Heatmap.</p></li>
+<li><p><strong>transformed_img</strong> – Image in shape (H x W x C).</p></li>
+<li><p><strong>title</strong> – Title of the figure. Defaults to “”.</p></li>
+<li><p><strong>figsize</strong> – Tuple with size of figure. Defaults to (8, 8).</p></li>
+<li><p><strong>alpha</strong> – Opacity level. Defaults to 0.5,</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Heatmap of single channel applied on original image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.visualizer.mean_channels_visualization">
+<span class="sig-prename descclassname"><span class="pre">foxai.visualizer.</span></span><span class="sig-name descname"><span class="pre">mean_channels_visualization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformed_img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(8,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_positive_attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/foxai/visualizer.html#mean_channels_visualization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.visualizer.mean_channels_visualization" title="Permalink to this definition"></a></dt>
+<dd><p>Create image with calculated heatmap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attributions</strong> – Features.</p></li>
+<li><p><strong>transformed_img</strong> – Image in shape (C x H x W) or (H x W).</p></li>
+<li><p><strong>title</strong> – Title of the figure. Defaults to “”.</p></li>
+<li><p><strong>figsize</strong> – Tuple with size of figure. Defaults to (8, 8).</p></li>
+<li><p><strong>alpha</strong> – Opacity level. Defaults to 0.5,</p></li>
+<li><p><strong>only_positive_attr</strong> – Whether to display only positive or all attributes.
+Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Heatmap of mean channel values applied on original image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.visualizer.single_channel_visualization">
+<span class="sig-prename descclassname"><span class="pre">foxai.visualizer.</span></span><span class="sig-name descname"><span class="pre">single_channel_visualization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformed_img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(8,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_positive_attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/foxai/visualizer.html#single_channel_visualization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.visualizer.single_channel_visualization" title="Permalink to this definition"></a></dt>
+<dd><p>Create image with calculated heatmap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attributions</strong> – Features.</p></li>
+<li><p><strong>transformed_img</strong> – Image in shape (C x H x W) or (H x W).</p></li>
+<li><p><strong>selected_channel</strong> – Single color channel to visualize.</p></li>
+<li><p><strong>title</strong> – Title of the figure. Defaults to “”.</p></li>
+<li><p><strong>figsize</strong> – Tuple with size of figure. Defaults to (8, 8).</p></li>
+<li><p><strong>alpha</strong> – Opacity level. Defaults to 0.5,</p></li>
+<li><p><strong>only_positive_attr</strong> – Whether to display only positive or all attributes.
+Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Heatmap of single channel applied on original image.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if selected channel is negative number or exceed dimension
+    of color channels of attributes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-foxai">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-foxai" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="foxai" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="foxai.callbacks.html" class="btn btn-neutral float-right" title="foxai.callbacks package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ReasonField Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
