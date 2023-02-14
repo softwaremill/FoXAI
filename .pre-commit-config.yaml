@@ -29,7 +29,7 @@ repos:
       - id: mypy
         name: mypy
         language: system
-        files: autoxai
+        files: foxai
         types: [ python ]
         entry: poetry run mypy
         args: ["--ignore-missing-imports"]

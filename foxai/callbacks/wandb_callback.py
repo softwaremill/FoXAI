@@ -10,9 +10,9 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
 import wandb
-from autoxai.array_utils import convert_standardized_float_to_uint8, standardize_array
-from autoxai.context_manager import AutoXaiExplainer, ExplainerWithParams
-from autoxai.visualizer import mean_channels_visualization
+from foxai.array_utils import convert_standardized_float_to_uint8, standardize_array
+from foxai.context_manager import FoXaiExplainer, ExplainerWithParams
+from foxai.visualizer import mean_channels_visualization
 
 AttributeMapType = Dict[str, List[np.ndarray]]
 CaptionMapType = Dict[str, List[str]]
@@ -101,7 +101,7 @@ class WandBCallback(pl.callbacks.Callback):
             Tuple of maps containing attributes, captions and figures for
             every explainer and sample.
         """
-        with AutoXaiExplainer(
+        with FoXaiExplainer(
             model=model,
             explainers=self.explainers,
             target=int(target_label.item()),

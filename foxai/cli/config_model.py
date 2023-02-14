@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from autoxai.context_manager import ExplainerWithParams
+from foxai.context_manager import ExplainerWithParams
 
 
 @dataclass

@@ -1,7 +1,7 @@
-autoxai
+foxai
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   autoxai
+   foxai

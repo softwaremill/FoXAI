@@ -11,8 +11,8 @@ from omegaconf import DictConfig
 from torchvision.io import ImageReadMode, read_image
 
 import wandb
-from autoxai.cli.config_model import ConfigDataModel, MethodDataModel
-from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
+from foxai.cli.config_model import ConfigDataModel, MethodDataModel
+from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
 
 
 def download_upload_metadata(api_run: wandb.apis.public.Run) -> Dict[str, Any]:
@@ -205,7 +205,7 @@ def main(cfg: DictConfig) -> None:  # pylint: disable = (too-many-locals)
 
             explanations: List[wandb.Image] = []
             for input_data, label in zip(image_list, labels):
-                with AutoXaiExplainer(
+                with FoXaiExplainer(
                     model=model,
                     explainers=[explainer_config.explainer_with_params],
                     target=label,

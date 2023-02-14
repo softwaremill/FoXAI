@@ -110,7 +110,7 @@ def resize_attributes(
     single_channel_attributes: np.ndarray = np.array(
         cv2.resize(
             attributes,
-            (dest_height, dest_width),
+            (dest_width, dest_height),
         ),
         dtype=np.dtype(float),
     )

@@ -6,13 +6,13 @@ import pytest
 import torch
 from torchvision import transforms
 
-from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
-from autoxai.explainer import InputXGradientCVExplainer
+from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
+from foxai.explainer import InputXGradientCVExplainer
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
 
 
-class TestAutoXaiExplainer:
+class TestFoXaiExplainer:
     """Test whether context manager correctly
     switches model to eval mode and thows exception
     if no explainers provided.
@@ -20,11 +20,11 @@ class TestAutoXaiExplainer:
 
     @pytest.fixture
     def classifier(self) -> SampleModel:
-        """Sample model to run AutoXaiExplainer on."""
+        """Sample model to run FoXaiExplainer on."""
         return SampleModel()
 
     def test_evel_mode(self, classifier: SampleModel, caplog: pytest.LogCaptureFixture):
-        """Test whether AutoXaiExplainer correctly switches to eval mode
+        """Test whether FoXaiExplainer correctly switches to eval mode
         if the model was given in train mode and if the proper WARNING
         massage if provided."""
 
@@ -38,9 +38,9 @@ class TestAutoXaiExplainer:
             ]
         )
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
-        caplog.set_level(level=logging.WARNING, logger="autoxai.context_manager")
+        caplog.set_level(level=logging.WARNING, logger="foxai.context_manager")
 
-        with AutoXaiExplainer(
+        with FoXaiExplainer(
             model=classifier,
             explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
         ) as xai_model:
@@ -50,7 +50,7 @@ class TestAutoXaiExplainer:
             assert "The model should be in the eval model" in caplog.text
 
     def test_no_explainers_given(self, classifier: torch.nn.Module):
-        """Test whether AutoXaiExplainer correctly raises error,
+        """Test whether FoXaiExplainer correctly raises error,
         if explainers not provided.
 
         There should be at least on explainer provided.
@@ -68,14 +68,14 @@ class TestAutoXaiExplainer:
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
         with pytest.raises(ValueError):
-            with AutoXaiExplainer(
+            with FoXaiExplainer(
                 model=classifier,
                 explainers=[],
             ) as xai_model:
                 _, _ = xai_model(img_tensor)
 
     def test_whether_output_match_requested_inputs(self, classifier: torch.nn.Module):
-        """Test whether AutoXaiExplainer returns explanations,
+        """Test whether FoXaiExplainer returns explanations,
         for each requested explainer.
         """
 
@@ -95,7 +95,7 @@ class TestAutoXaiExplainer:
             ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER),
             ExplainerWithParams(Explainers.CV_OCCLUSION_EXPLAINER),
         ]
-        with AutoXaiExplainer(
+        with FoXaiExplainer(
             model=classifier,
             explainers=explainers,
         ) as xai_model:
@@ -106,7 +106,7 @@ class TestAutoXaiExplainer:
             ) == list(xai_explanations.keys())
 
     def test_model_inference_with_explainer(self, classifier: torch.nn.Module):
-        """Test whether regular inference and inference with AutoXaiExplainer
+        """Test whether regular inference and inference with FoXaiExplainer
         gives same results.
         """
 
@@ -123,13 +123,13 @@ class TestAutoXaiExplainer:
 
         inference_output = classifier(img_tensor)
 
-        with AutoXaiExplainer(
+        with FoXaiExplainer(
             model=classifier,
             explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
         ) as xai_model:
-            autoxai_inference_output, _ = xai_model(img_tensor)
+            foxai_inference_output, _ = xai_model(img_tensor)
 
-            assert autoxai_inference_output == inference_output
+            assert foxai_inference_output == inference_output
 
     def test_model_with_disabled_gradients(self, classifier: torch.nn.Module):
         """Test whether model properly turns gradients enabled, when feed
@@ -149,7 +149,7 @@ class TestAutoXaiExplainer:
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
         with torch.no_grad():
-            with AutoXaiExplainer(
+            with FoXaiExplainer(
                 model=classifier,
                 explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
             ) as xai_model:
@@ -159,11 +159,11 @@ class TestAutoXaiExplainer:
             assert not torch.is_grad_enabled()
 
     def test_explainers_kwargs(self, classifier: torch.nn.Module):
-        """Test whether kwargs are correctly set up in AutoXaiExplainer."""
+        """Test whether kwargs are correctly set up in FoXaiExplainer."""
 
         classifier.eval()
 
-        with AutoXaiExplainer(
+        with FoXaiExplainer(
             model=classifier,
             explainers=[
                 ExplainerWithParams(
@@ -212,14 +212,14 @@ class TestAutoXaiExplainer:
             input_data=img_tensor,
             pred_label_idx=0,
         )
-        with AutoXaiExplainer(
+        with FoXaiExplainer(
             model=classifier,
             explainers=[ExplainerWithParams(Explainers.CV_INPUT_X_GRADIENT_EXPLAINER)],
         ) as xai_model:
-            _, autoxai_attributes_dict = xai_model(img_tensor)
+            _, foxai_attributes_dict = xai_model(img_tensor)
 
         assert torch.equal(
-            autoxai_attributes_dict[Explainers.CV_INPUT_X_GRADIENT_EXPLAINER.name],
+            foxai_attributes_dict[Explainers.CV_INPUT_X_GRADIENT_EXPLAINER.name],
             explainer_attributes,
         )
 
@@ -235,7 +235,7 @@ class TestAutoXaiExplainer:
         assert classifier.training
 
         with torch.no_grad():
-            with AutoXaiExplainer(
+            with FoXaiExplainer(
                 model=classifier,
                 explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
             ) as _:

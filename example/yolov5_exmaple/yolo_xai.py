@@ -1,6 +1,6 @@
 """Example of running XAI on YOLOv5.
 
-Below two, same options. One directly using captum, and second using AutoXAI
+Below two, same options. One directly using captum, and second using FoXAI
 
 # XAI inference:
 # Option 1
@@ -11,7 +11,7 @@ attributions = noise_tunnel.attribute(
 )
 
 # Option 2
-with AutoXaiExplainer(
+with FoXaiExplainer(
     model=yolo_model,
     explainers=[
         ExplainerWithParams(
@@ -37,8 +37,8 @@ import torchvision
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from PIL import Image
 
-from autoxai.context_manager import AutoXaiExplainer, Explainers, ExplainerWithParams
-from autoxai.explainer.base_explainer import CVExplainer
+from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
+from foxai.explainer.base_explainer import CVExplainer
 from example.yolov5_exmaple.yolo_utils import (  # scale_boxes,
     MAXIMUM_BBOX_WIDTH_HEIGHT,
     MAXIMUM_NUMBER_OF_BOXES_TO_NMS,
@@ -348,7 +348,7 @@ def main():
         device=device
     )
 
-    with AutoXaiExplainer(
+    with FoXaiExplainer(
         model=yolo_model,
         explainers=[
             ExplainerWithParams(

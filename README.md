@@ -1,6 +1,6 @@
-# AutoXAI
+# FoXAI
 
-AutoXAI simplifies the application of e**X**plainable **AI** algorithms to explain the
+FoXAI simplifies the application of e**X**plainable **AI** algorithms to explain the
 performance of neural network models during training. The library acts as an
 aggregator of existing libraries with implementations of various XAI algorithms and
 seeks to facilitate and popularize their use in machine learning projects.
@@ -45,8 +45,8 @@ The assumption is that the `poetry` package is installed. You can find how to in
 `poetry` [here](#poetry). To build `wheel` package run:
 
 ```bash
-git clone https://github.com/softwaremill/AutoXAI.git
-cd AutoXAI/
+git clone https://github.com/softwaremill/FoXAI.git
+cd FoXAI/
 poetry install
 poetry build
 ```
@@ -54,12 +54,12 @@ poetry build
 As a result you will get `wheel` file inside `dist/` directory that you can install
 via `pip`:
 ```bash
-pip install dist/autoxai-x.y.z-py3-none-any.whl
+pip install dist/foxai-x.y.z-py3-none-any.whl
 ```
 
 # Getting started
 
-To use the AutoXAI library in your ML project, simply add an additional object of type
+To use the FoXAI library in your ML project, simply add an additional object of type
 `WandBCallback` to the `Trainer`'s callback list from the `pytorch-lightning` library.
 Currently, only the Weights and Biases tool for tracking experiments is supported.
 
@@ -71,8 +71,8 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 
 import wandb
-from autoxai.callbacks.wandb_callback import WandBCallback
-from autoxai.context_manager import Explainers, ExplainerWithParams
+from foxai.callbacks.wandb_callback import WandBCallback
+from foxai.context_manager import Explainers, ExplainerWithParams
 
     ...
     wandb.login()
@@ -108,12 +108,12 @@ W&B offline. This tool is using `hydra` to handle the configuration of `yaml` fi
 To check options type:
 
 ```bash
-autoxai-wandb-updater --help
+foxai-wandb-updater --help
 ```
 
 Typical usage with configuration in `config/config.yaml`:
 ```bash
-autoxai-wandb-updater --config-dir config/ --config-name config
+foxai-wandb-updater --config-dir config/ --config-name config
 ```
 
 Content of `config.yaml`:

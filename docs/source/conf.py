@@ -11,9 +11,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 
-project = "AutoXAI"
+project = "FoXAI"
 copyright = "2023, ReasonField Lab"  # pylint: disable = (redefined-builtin)
-author = "Adam Jan Kaczmarek, Kamil Rzechowski, Adam Wawrzyński"
+author = "ReasonField Lab Team"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

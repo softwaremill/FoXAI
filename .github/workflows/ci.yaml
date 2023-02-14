@@ -16,7 +16,7 @@ env:
   POETRY_VERSION: '1.2.1'
   PYTHON_VERSION: '3.8'
 jobs:
-  autoxai:
+  foxai:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3

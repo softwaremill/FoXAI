@@ -1,4 +1,4 @@
-"""File with DeepLIFT SHAP algorithm explainer classes.
+"""File with DeepLIFT algorithm explainer classes.
 
 Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/deep_lift.py
 and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_deep_lift.py.
@@ -9,15 +9,15 @@ from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
 from captum._utils.typing import TargetType
-from captum.attr import DeepLiftShap, LayerDeepLiftShap
+from captum.attr import DeepLift, LayerDeepLift
 
-from autoxai.array_utils import validate_result
-from autoxai.explainer.base_explainer import CVExplainer
-from autoxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
+from foxai.array_utils import validate_result
+from foxai.explainer.base_explainer import CVExplainer
+from foxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
 
 
-class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
-    """Base DeepLIFT SHAP algorithm explainer."""
+class BaseDeepLIFTCVExplainer(CVExplainer):
+    """Base DeepLIFT algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
@@ -25,7 +25,7 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
         model: torch.nn.Module,
         multiply_by_inputs: bool = True,
         **kwargs,
-    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
+    ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Args:
@@ -64,11 +64,7 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
         attribute_to_layer_input: bool = False,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate model's attributes with DeepLIFT SHAP algorithm explainer.
-
-        Under the hood this method is calling `DeepLiftShap.attribute` function and
-        therefore uses the same arguments. Source of parameters documentation:
-        https://github.com/pytorch/captum/blob/master/captum/attr/_core/deep_lift.py.
+        """Generate model's attributes with DeepLIFT algorithm explainer.
 
         Args:
             model: The forward function of the model or any
@@ -101,8 +97,7 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
                     target for the corresponding example.
 
                 Default: None
-            baselines:
-                Baselines define reference samples that are compared with
+            baselines: Baselines define reference samples that are compared with
                 the inputs. In order to assign attribution scores DeepLift
                 computes the differences between the inputs/outputs and
                 corresponding references.
@@ -149,14 +144,15 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
                 attribution tensors that have the same length as the
                 `inputs`.
                 Default: None
-            attribute_to_layer_input: Argument present only for `LayerDeepLiftShap`.
-                Indicates whether to compute the attributions with respect
-                to the layer input or output. If `attribute_to_layer_input`
-                is set to True then the attributions will be computed with
-                respect to layer inputs, otherwise it will be computed with
-                respect to layer outputs.
-                Note that currently it assumes that both the inputs and
-                outputs of internal layers are single tensors.
+            attribute_to_layer_input: Indicates whether to
+                compute the attribution with respect to the layer input
+                or output. If `attribute_to_layer_input` is set to True
+                then the attributions will be computed with respect to
+                layer input, otherwise it will be computed with respect
+                to layer output.
+                Note that currently it is assumed that either the input
+                or the output of internal layer, depending on whether we
+                attribute to the input or output, is a single tensor.
                 Support for multiple tensors will be added later.
                 Default: False
 
@@ -177,21 +173,18 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
 
         if baselines is None:
             baselines = torch.randn(
-                (
-                    2 * input_data.shape[0],
-                    *input_data.shape[1:],
-                ),
+                input_data.shape,
                 requires_grad=True,
                 device=input_data.device,
             )
 
-        if isinstance(deeplift, LayerDeepLiftShap):
+        if isinstance(deeplift, LayerDeepLift):
             attributions = deeplift.attribute(
                 input_data,
                 target=pred_label_idx,
                 baselines=baselines,
-                additional_forward_args=additional_forward_args,
                 return_convergence_delta=False,
+                additional_forward_args=additional_forward_args,
                 custom_attribution_func=custom_attribution_func,
                 attribute_to_layer_input=attribute_to_layer_input,
             )
@@ -200,23 +193,24 @@ class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
                 input_data,
                 target=pred_label_idx,
                 baselines=baselines,
-                additional_forward_args=additional_forward_args,
                 return_convergence_delta=False,
+                additional_forward_args=additional_forward_args,
                 custom_attribution_func=custom_attribution_func,
             )
         validate_result(attributions=attributions)
         return attributions
 
 
-class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
-    """DeepLIFTC SHAP algorithm explainer."""
+class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """DeepLIFTC algorithm explainer."""
 
     def create_explainer(
         self,
         model: torch.nn.Module,
         multiply_by_inputs: bool = True,
+        eps: float = 1e-10,
         **kwargs,
-    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
+    ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Args:
@@ -232,26 +226,31 @@ class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of LayerDeepLiftShap, if `multiply_by_inputs`
-                is set to True, final sensitivity scores are being
-                multiplied by
-                layer activations for inputs - layer activations for baselines
+                In case of DeepLift, if `multiply_by_inputs`
+                is set to True, final sensitivity scores
+                are being multiplied by (inputs - baselines).
                 This flag applies only if `custom_attribution_func` is
                 set to None.
+            eps: A value at which to consider output/input change
+                significant when computing the gradients for non-linear layers.
+                This is useful to adjust, depending on your model's bit depth,
+                to avoid numerical issues during the gradient computation.
+                Default: 1e-10
 
         Returns:
             Explainer object.
         """
         model = modify_modules(model)
 
-        return DeepLiftShap(
+        return DeepLift(
             model=model,
             multiply_by_inputs=multiply_by_inputs,
+            eps=eps,
         )
 
 
-class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
-    """Layer DeepLIFT SHAP algorithm explainer."""
+class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """Layer DeepLIFT algorithm explainer."""
 
     def create_explainer(
         self,
@@ -259,7 +258,7 @@ class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
         multiply_by_inputs: bool = True,
         layer: Optional[torch.nn.Module] = None,
         **kwargs,
-    ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
+    ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Uses parameter `layer` from `kwargs`. If not provided function will call
@@ -286,10 +285,9 @@ class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of LayerDeepLiftShap, if `multiply_by_inputs`
-                is set to True, final sensitivity scores are being
-                multiplied by
-                layer activations for inputs - layer activations for baselines
+                In case of DeepLift, if `multiply_by_inputs`
+                is set to True, final sensitivity scores
+                are being multiplied by (inputs - baselines).
                 This flag applies only if `custom_attribution_func` is
                 set to None.
 
@@ -304,7 +302,7 @@ class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
 
         model = modify_modules(model)
 
-        return LayerDeepLiftShap(
+        return LayerDeepLift(
             model=model,
             layer=layer,
             multiply_by_inputs=multiply_by_inputs,

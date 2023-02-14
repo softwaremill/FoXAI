@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from matplotlib.pyplot import Figure
 
-from autoxai.array_utils import (
+from foxai.array_utils import (
     convert_standardized_float_to_uint8,
     normalize_attributes,
     resize_attributes,
