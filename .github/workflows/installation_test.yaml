@@ -16,9 +16,12 @@ env:
   PYTHON_VERSION: "3.8"
   POETRY_VERSION: "1.3.2"
 jobs:
-  autoxai:
+  foxai:
     name: Launch GKE Pod with GPU
-    runs-on: gpu-cuda-${{inputs.cuda_version}} # need to add `gpu` labels to self-hosted runners
+    runs-on: gpu-t4-pool # need to add `gpu` labels to self-hosted runners
+    container:
+      image: ${{inputs.cuda_version}}.2-runtime-ubuntu20.04
+      options: --cpus 2 --memory-reservation 8g --gpus all
     # strategy:
     #   matrix:
     #     CUDA_VERSION: ["10.2"] #  "11.0" , "11.4", "11.6"
