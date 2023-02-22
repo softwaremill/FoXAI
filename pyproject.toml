@@ -3,6 +3,12 @@ name = "foxai"
 version = "0.5.3"
 description = "Model Interpretability for PyTorch."
 authors = ["ReasonField Lab Team"]
+maintainers = [
+	"Adam Jan Kaczmarek <adam.kaczmarek@reasonfieldlab.com>",
+	"Adam Wawrzyński <adam.wawrzynski@reasonfieldlab.com>",
+	"Kamil Rzechowski <kamil.rzechowski@reasonfieldlab.com>",
+	"Rafał Pytel <rafal.pytel@reasonfieldlab.com>"
+]
 repository = "https://github.com/softwaremill/FoXAI"
 keywords = [
     "Model Interpretability",
@@ -22,6 +28,11 @@ classifiers = [
 ]
 readme = "README.md"
 packages = [{include = "foxai"}]
+license = "Apache-2.0"
+documentation = "https://softwaremill.github.io/foxai/"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/softwaremill/foxai/issues"
 
 [tool.poetry.dependencies]
 python = ">=3.7.2,<3.11"
