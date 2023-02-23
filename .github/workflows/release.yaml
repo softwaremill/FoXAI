@@ -9,4 +9,4 @@ jobs:
       - name: Create new patch release
         run: .github/scripts/release.py
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
