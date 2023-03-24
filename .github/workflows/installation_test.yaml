@@ -6,26 +6,37 @@ on:
       cuda_version:
         description: "Select CUDA version"
         required: true
-        default: "11.6"
+        default: "10.2"
         type: choice
         options:
-          - "11.6"
-          - "11.4"
+          - "10.2"
+          - "11.0.3"
+          - "11.2.2"
+          - "11.4.3"
+          - "11.6.2"
+          - "11.8.0"
+          - "12.0.0"
+      python_version:
+        description: "Select Python version"
+        required: true
+        default: "3.7"
+        type: choice
+        options:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
 
 env:
-  PYTHON_VERSION: "3.8"
   POETRY_VERSION: "1.3.2"
 jobs:
   foxai:
     name: Launch GKE Pod with GPU
-    runs-on: gpu-t4-pool # need to add `gpu` labels to self-hosted runners
+    runs-on: gpu-t4-pool
     container:
-      image: ${{inputs.cuda_version}}.2-runtime-ubuntu20.04
+      image: nvidia/cuda:${{ inputs.cuda_version }}-runtime-ubuntu20.04 # https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist
       options: --cpus 2 --memory-reservation 8g --gpus all
-    # strategy:
-    #   matrix:
-    #     CUDA_VERSION: ["10.2"] #  "11.0" , "11.4", "11.6"
-    #     PYTHON_VERSION: ["3.8"] # "3.9", "3.10", "3.11"
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -33,7 +44,7 @@ jobs:
       - name: Set up Python 3.x
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ inputs.python_version }}
           architecture: "x64"
 
       - name: Install Poetry
@@ -44,7 +55,7 @@ jobs:
       - name: Install dependencies
         working-directory: .
         run: |
-          poetry env use ${{ env.PYTHON_VERSION }}
+          poetry env use ${{ inputs.python_version }}
           poetry install
 
       - name: Launch code formatter
