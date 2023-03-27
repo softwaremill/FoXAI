@@ -1,8 +1,10 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import torch
 from torch import nn
 from yolo_models.yolo import Detect
+
+DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
 
 
 class WrapperDetect(nn.Module):
@@ -38,9 +40,7 @@ class WrapperDetect(nn.Module):
     def i(self):
         return self.model.i
 
-    def forward(
-        self, x: torch.Tensor
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+    def forward(self, x: torch.Tensor) -> DetectionOutput:
         z: List[torch.Tensor] = []  # inference output
         logits_: List[torch.Tensor] = []
         for i in range(self.model.nl):
@@ -79,7 +79,7 @@ class WrapperDetect(nn.Module):
                     y = torch.cat((xy, wh, y[..., 4:]), -1)
                 z.append(y.view(bs, -1, self.model.no))
                 logits_.append(logits.view(bs, -1, self.model.no - 5))
-        return x if self.model.training else (torch.cat(z, 1), torch.cat(logits_, 1), x)
+        return torch.cat(z, 1), torch.cat(logits_, 1)
 
     def _make_grid(
         self, nx: int = 20, ny: int = 20, i: int = 0
@@ -130,10 +130,16 @@ class WrapperYOLOv5ObjectDetectionModel(nn.Module):
         self.model = model
         self.model.eval().to(device)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+    ) -> DetectionOutput:
         return self._forward_once(x)  # single-scale inference, train
 
-    def _forward_once(self, x: torch.Tensor) -> torch.Tensor:
+    def _forward_once(
+        self,
+        x: torch.Tensor,
+    ) -> DetectionOutput:
         y: List[torch.Tensor] = []  # outputs
         for m in self.model.model:
             if m.f != -1:  # if not from previous layer

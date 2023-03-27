@@ -4,6 +4,7 @@ Based on code: https://github.com/pooya-mohammadi/yolov5-gradcam.
 
 import time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -15,8 +16,16 @@ from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
 from yolo_models.utils import box_iou, letterbox, xywh2xyxy
 
 
+@dataclass
+class PredictionOutput:
+    bbox: List[List[int]]
+    class_number: List[List[int]]
+    class_name: List[List[str]]
+    confidence: List[List[float]]
+
+
 class BaseObjectDetector(nn.Module, ABC):
-    """Base Custom ObjectDetector class which returns predictions with logits to explain.
+    """Base ObjectDetector class which returns predictions with logits to explain.
 
     Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
     """
@@ -175,15 +184,7 @@ class BaseObjectDetector(nn.Module, ABC):
     def forward(
         self,
         img: torch.Tensor,
-    ) -> Tuple[
-        Tuple[
-            List[List[int]],
-            List[List[int]],
-            List[List[str]],
-            List[List[float]],
-        ],
-        List[torch.Tensor],
-    ]:
+    ) -> Tuple[List[PredictionOutput], List[torch.Tensor],]:
         """Forward pass of the network.
 
         Args:
@@ -194,7 +195,7 @@ class BaseObjectDetector(nn.Module, ABC):
             class number, class name and confidence; second value is list of tensor
             with logits per each detection.
         """
-        prediction, logits, _ = self.get_model()(img)
+        prediction, logits = self.get_model()(img)
         prediction, logits = self.non_max_suppression(
             prediction,
             logits,
@@ -224,7 +225,20 @@ class BaseObjectDetector(nn.Module, ABC):
                         class_names[i].append(names[cls])
                     else:
                         class_names[i].append(cls)
-        return [boxes, classes, class_names, confidences], logits
+        return (
+            [
+                PredictionOutput(
+                    bbox=bbox,
+                    class_number=class_no,
+                    class_name=class_name,
+                    confidence=confidence,
+                )
+                for bbox, class_no, class_name, confidence in zip(
+                    boxes[0], classes[0], class_names[0], confidences[0]
+                )
+            ],
+            logits,
+        )
 
     def preprocessing(self, img: np.ndarray) -> torch.Tensor:
         if len(img.shape) != 4:

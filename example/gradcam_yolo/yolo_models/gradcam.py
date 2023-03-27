@@ -2,12 +2,23 @@
 Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
 """
 
+from dataclasses import dataclass
 from typing import List, Tuple
 
 import torch
 import torch.nn.functional as F
 
-from example.gradcam_yolo.yolo_models.object_detector import BaseObjectDetector
+from example.gradcam_yolo.yolo_models.object_detector import (
+    BaseObjectDetector,
+    PredictionOutput,
+)
+
+
+@dataclass
+class ObjectDetectionOutput:
+    saliency_maps: List[torch.Tensor]
+    logits: List[torch.Tensor]
+    predictions: List[PredictionOutput]
 
 
 class GradCAMObjectDetection:
@@ -48,7 +59,7 @@ class GradCAMObjectDetection:
         self,
         input_img: torch.Tensor,
         class_idx: bool = True,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor], torch.Tensor]:
+    ) -> ObjectDetectionOutput:
         """
         Args:
             input_img: input image with shape of (1, 3, H, W)
@@ -57,10 +68,10 @@ class GradCAMObjectDetection:
             logit: model output
             preds: The object predictions
         """
-        saliency_maps = []
+        saliency_maps: List[torch.Tensor] = []
         b, _, h, w = input_img.size()
-        preds, logits = self.model(input_img)
-        for logit, cls, _ in zip(logits[0], preds[1][0], preds[2][0]):
+        predictions, logits = self.model.forward(input_img)
+        for logit, cls in zip(logits[0], [p.class_number for p in predictions]):
             if class_idx:
                 score = logit[cls]
             else:
@@ -84,10 +95,14 @@ class GradCAMObjectDetection:
                 .data
             )
             saliency_maps.append(saliency_map)
-        return saliency_maps, logits, preds
+        return ObjectDetectionOutput(
+            saliency_maps=saliency_maps,
+            logits=logits,
+            predictions=predictions,
+        )
 
     def __call__(
         self,
         input_img: torch.Tensor,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor], torch.Tensor]:
+    ) -> ObjectDetectionOutput:
         return self.forward(input_img)

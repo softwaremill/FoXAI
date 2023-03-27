@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from deep_utils import Box
 from PIL import Image
-from yolo_models.gradcam import GradCAMObjectDetection
+from yolo_models.gradcam import GradCAMObjectDetection, ObjectDetectionOutput
 from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
 
 from example.gradcam_yolo.yolo_models.object_detector import (
@@ -87,7 +87,10 @@ def main():
         target_layer=target_layer,
         img_size=img_size,
     )
-    masks, _, [boxes, _, class_names, _] = saliency_method(input_img=input_image)
+    outputs: ObjectDetectionOutput = saliency_method(input_img=input_image)
+    masks = outputs.saliency_maps
+    boxes = [pred.bbox for pred in outputs.predictions]
+    class_names = [pred.class_name for pred in outputs.predictions]
 
     img_to_display = (
         input_image.squeeze(0)
@@ -104,7 +107,7 @@ def main():
 
     for i, mask in enumerate(masks):
         res_img = img_to_display.copy()
-        bbox, cls_name = boxes[0][i], class_names[0][i]
+        bbox, cls_name = boxes[i], class_names[i]
         res_img, _ = get_res_img(bbox, mask, res_img)
         res_img = put_text_box(bbox, cls_name, res_img)
         images.append(res_img)
