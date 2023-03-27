@@ -16,7 +16,10 @@ from yolo_models.utils import box_iou, letterbox, xywh2xyxy
 
 
 class BaseObjectDetector(nn.Module, ABC):
-    """Base Custom ObjectDetector class which returns predictions with logits to explain."""
+    """Base Custom ObjectDetector class which returns predictions with logits to explain.
+
+    Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
+    """
 
     @abstractmethod
     def get_model(self) -> nn.Module:
