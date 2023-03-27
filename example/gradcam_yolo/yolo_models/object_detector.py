@@ -155,7 +155,7 @@ class BaseObjectDetector(nn.Module, ABC):
         return output, logits_output
 
     @staticmethod
-    def yolo_resize(
+    def resize(
         img: np.ndarray,
         new_shape: Tuple[int, int] = (640, 640),
         color: Tuple[int, int, int] = (114, 114, 114),
@@ -231,7 +231,7 @@ class BaseObjectDetector(nn.Module, ABC):
             img = np.expand_dims(img, axis=0)
         im0 = img.astype(np.uint8)
         img = np.array(
-            [self.yolo_resize(im, new_shape=self.get_img_size())[0] for im in im0]
+            [self.resize(im, new_shape=self.get_img_size())[0] for im in im0]
         )
         img = img.transpose((0, 3, 1, 2))
         img = np.ascontiguousarray(img)
@@ -384,3 +384,23 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
 
     def get_agnostic(self) -> bool:
         return self.agnostic
+
+
+def find_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Module:
+    """Find yolov5 layer to calculate GradCAM and GradCAM++
+
+    Args:
+        model: yolov5 model.
+        layer_name (str): the name of layer with its hierarchical information.
+
+    Return:
+        target_layer: found layer
+    """
+    hierarchy = layer_name.split("_")
+    target_layer = model.model.model._modules[  # pylint: disable = (protected-access)
+        hierarchy[0]
+    ]
+
+    for h in hierarchy[1:]:
+        target_layer = target_layer._modules[h]  # pylint: disable = (protected-access)
+    return target_layer

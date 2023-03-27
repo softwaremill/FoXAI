@@ -11,7 +11,10 @@ from PIL import Image
 from yolo_models.gradcam import GradCAMObjectDetection
 from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
 
-from example.gradcam_yolo.yolo_models.object_detector import YOLOv5ObjectDetector
+from example.gradcam_yolo.yolo_models.object_detector import (
+    YOLOv5ObjectDetector,
+    find_yolo_layer,
+)
 
 
 def get_res_img(bbox: List[int], mask: torch.Tensor, res_img: np.ndarray) -> np.ndarray:
@@ -75,9 +78,13 @@ def main():
     )
     input_image = model_wrapper.preprocessing(img=np.asarray(image))
 
-    saliency_method = GradCAMObjectDetection(
+    target_layer = find_yolo_layer(
         model=model_wrapper,
         layer_name="model_23_cv3_act",  # last feature extractor layer in YOLOv5
+    )
+    saliency_method = GradCAMObjectDetection(
+        model=model_wrapper,
+        target_layer=target_layer,
         img_size=img_size,
     )
     masks, _, [boxes, _, class_names, _] = saliency_method(input_img=input_image)

@@ -10,38 +10,19 @@ import torch.nn.functional as F
 from example.gradcam_yolo.yolo_models.object_detector import BaseObjectDetector
 
 
-def find_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Module:
-    """Find yolov5 layer to calculate GradCAM and GradCAM++
-
-    Args:
-        model: yolov5 model.
-        layer_name (str): the name of layer with its hierarchical information.
-
-    Return:
-        target_layer: found layer
-    """
-    hierarchy = layer_name.split("_")
-    target_layer = model.model.model._modules[  # pylint: disable = (protected-access)
-        hierarchy[0]
-    ]
-
-    for h in hierarchy[1:]:
-        target_layer = target_layer._modules[h]  # pylint: disable = (protected-access)
-    return target_layer
-
-
 class GradCAMObjectDetection:
     """GradCAM for object detection task."""
 
     def __init__(
         self,
         model: BaseObjectDetector,
-        layer_name: str,
+        target_layer: torch.nn.Module,
         img_size: Tuple[int, int] = (640, 640),
     ):
         self.model = model
         self.gradients = {}
         self.activations = {}
+        self.target_layer = target_layer
 
         def backward_hook(
             module,  # pylint: disable = (unused-argument)
@@ -57,9 +38,8 @@ class GradCAMObjectDetection:
         ):
             self.activations["value"] = output
 
-        target_layer = find_yolo_layer(self.model, layer_name)
-        target_layer.register_forward_hook(forward_hook)
-        target_layer.register_backward_hook(backward_hook)
+        self.target_layer.register_forward_hook(forward_hook)
+        self.target_layer.register_backward_hook(backward_hook)
 
         device = "cuda" if next(self.model.model.parameters()).is_cuda else "cpu"
         self.model(torch.zeros(1, 3, *img_size, device=device))
