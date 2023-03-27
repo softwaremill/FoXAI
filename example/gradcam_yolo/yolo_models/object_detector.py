@@ -3,6 +3,7 @@ Based on code: https://github.com/pooya-mohammadi/yolov5-gradcam.
 """
 
 import time
+from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -14,132 +15,32 @@ from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
 from yolo_models.utils import box_iou, letterbox, xywh2xyxy
 
 
-class ObjectDetector(nn.Module):
-    """Custom ObjectDetector class which returns predictions with logits to explain."""
+class BaseObjectDetector(nn.Module, ABC):
+    """Base Custom ObjectDetector class which returns predictions with logits to explain."""
 
-    def __init__(
-        self,
-        model: WrapperYOLOv5ObjectDetectionModel,
-        device: torch.DeviceObjType,
-        img_size: Tuple[int, int],
-        names: Optional[List[str]] = None,
-        mode: str = "eval",
-        confidence: float = 0.4,
-        iou_thresh: float = 0.45,
-        agnostic_nms: bool = False,
-    ):
-        super().__init__()
-        self.device = device
+    @abstractmethod
+    def get_model(self) -> nn.Module:
+        ...
 
-        # in this case model on __call__ or on forward function has to return tuple of 3 variables:
-        # 1st would be prediction tensor of shape [bs, x, number_of_classes + 5]
-        # 2nd would be logits tensor of shape [bs, x, number_of_classes]
-        # 3rd is discarded in this class
-        # where x is number of hidden sizes of target layer
-        self.model = None
+    @abstractmethod
+    def get_names(self) -> List[str]:
+        ...
 
-        self.img_size = img_size
-        self.mode = mode
-        self.confidence = confidence
-        self.iou_thresh = iou_thresh
-        self.agnostic = agnostic_nms
-        self.model = model
-        self.model.requires_grad_(True)
-        self.model.to(device)
-        if self.mode == "train":
-            self.model.train()
-        else:
-            self.model.eval()
-        # fetch the names
-        if names is None:
-            self.names = [
-                "person",
-                "bicycle",
-                "car",
-                "motorcycle",
-                "airplane",
-                "bus",
-                "train",
-                "truck",
-                "boat",
-                "traffic light",
-                "fire hydrant",
-                "stop sign",
-                "parking meter",
-                "bench",
-                "bird",
-                "cat",
-                "dog",
-                "horse",
-                "sheep",
-                "cow",
-                "elephant",
-                "bear",
-                "zebra",
-                "giraffe",
-                "backpack",
-                "umbrella",
-                "handbag",
-                "tie",
-                "suitcase",
-                "frisbee",
-                "skis",
-                "snowboard",
-                "sports ball",
-                "kite",
-                "baseball bat",
-                "baseball glove",
-                "skateboard",
-                "surfboard",
-                "tennis racket",
-                "bottle",
-                "wine glass",
-                "cup",
-                "fork",
-                "knife",
-                "spoon",
-                "bowl",
-                "banana",
-                "apple",
-                "sandwich",
-                "orange",
-                "broccoli",
-                "carrot",
-                "hot dog",
-                "pizza",
-                "donut",
-                "cake",
-                "chair",
-                "couch",
-                "potted plant",
-                "bed",
-                "dining table",
-                "toilet",
-                "tv",
-                "laptop",
-                "mouse",
-                "remote",
-                "keyboard",
-                "cell phone",
-                "microwave",
-                "oven",
-                "toaster",
-                "sink",
-                "refrigerator",
-                "book",
-                "clock",
-                "vase",
-                "scissors",
-                "teddy bear",
-                "hair drier",
-                "toothbrush",
-            ]
-        else:
-            self.names = names
+    @abstractmethod
+    def get_img_size(self) -> Tuple[int, int]:
+        ...
 
-        # preventing cold start
-        img = torch.zeros((1, 3, *self.img_size), device=device)
-        self.model(img)
+    @abstractmethod
+    def get_confidence(self) -> float:
+        ...
+
+    @abstractmethod
+    def get_iou_thresh(self) -> float:
+        ...
+
+    @abstractmethod
+    def get_agnostic(self) -> bool:
+        ...
 
     @staticmethod
     def non_max_suppression(
@@ -290,18 +191,19 @@ class ObjectDetector(nn.Module):
             class number, class name and confidence; second value is list of tensor
             with logits per each detection.
         """
-        prediction, logits, _ = self.model(img)
+        prediction, logits, _ = self.get_model()(img)
         prediction, logits = self.non_max_suppression(
             prediction,
             logits,
-            self.confidence,
-            self.iou_thresh,
+            self.get_confidence(),
+            self.get_iou_thresh(),
             classes=None,
-            agnostic=self.agnostic,
+            agnostic=self.get_agnostic(),
         )
-        self.boxes, self.class_names, self.classes, self.confidences = [
+        boxes, class_names, classes, confidences = [
             [[] for _ in range(img.shape[0])] for _ in range(4)
         ]
+        names = self.get_names()
         for i, det in enumerate(prediction):  # detections per image
             if len(det):
                 for *xyxy, conf, cls in det:
@@ -311,23 +213,171 @@ class ObjectDetector(nn.Module):
                         to_source=Box.BoxSource.Numpy,
                         return_int=True,
                     )
-                    self.boxes[i].append(bbox)
-                    self.confidences[i].append(round(conf.item(), 2))
+                    boxes[i].append(bbox)
+                    confidences[i].append(round(conf.item(), 2))
                     cls = int(cls.item())
-                    self.classes[i].append(cls)
-                    if self.names is not None:
-                        self.class_names[i].append(self.names[cls])
+                    classes[i].append(cls)
+                    if names is not None:
+                        class_names[i].append(names[cls])
                     else:
-                        self.class_names[i].append(cls)
-        return [self.boxes, self.classes, self.class_names, self.confidences], logits
+                        class_names[i].append(cls)
+        return [boxes, classes, class_names, confidences], logits
 
     def preprocessing(self, img: np.ndarray) -> torch.Tensor:
         if len(img.shape) != 4:
             img = np.expand_dims(img, axis=0)
         im0 = img.astype(np.uint8)
-        img = np.array([self.yolo_resize(im, new_shape=self.img_size)[0] for im in im0])
+        img = np.array(
+            [self.yolo_resize(im, new_shape=self.get_img_size())[0] for im in im0]
+        )
         img = img.transpose((0, 3, 1, 2))
         img = np.ascontiguousarray(img)
         img = torch.from_numpy(img).to(self.device)
         img = img / 255.0
         return img
+
+
+class YOLOv5ObjectDetector(BaseObjectDetector):
+    """Custom YOLOv5 ObjectDetector class which returns predictions with logits to explain."""
+
+    def __init__(
+        self,
+        model: WrapperYOLOv5ObjectDetectionModel,
+        device: torch.DeviceObjType,
+        img_size: Tuple[int, int],
+        names: Optional[List[str]] = None,
+        mode: str = "eval",
+        confidence: float = 0.4,
+        iou_thresh: float = 0.45,
+        agnostic_nms: bool = False,
+    ):
+        super().__init__()
+        self.device = device
+
+        # in this case model on __call__ or on forward function has to return tuple of 3 variables:
+        # 1st would be prediction tensor of shape [bs, x, number_of_classes + 5]
+        # 2nd would be logits tensor of shape [bs, x, number_of_classes]
+        # 3rd is discarded in this class
+        # where x is number of hidden sizes of target layer
+        self.model = None
+
+        self.img_size = img_size
+        self.mode = mode
+        self.confidence = confidence
+        self.iou_thresh = iou_thresh
+        self.agnostic = agnostic_nms
+        self.model = model
+        self.model.requires_grad_(True)
+        self.model.to(device)
+        if self.mode == "train":
+            self.model.train()
+        else:
+            self.model.eval()
+        # fetch the names
+        if names is None:
+            self.names = [
+                "person",
+                "bicycle",
+                "car",
+                "motorcycle",
+                "airplane",
+                "bus",
+                "train",
+                "truck",
+                "boat",
+                "traffic light",
+                "fire hydrant",
+                "stop sign",
+                "parking meter",
+                "bench",
+                "bird",
+                "cat",
+                "dog",
+                "horse",
+                "sheep",
+                "cow",
+                "elephant",
+                "bear",
+                "zebra",
+                "giraffe",
+                "backpack",
+                "umbrella",
+                "handbag",
+                "tie",
+                "suitcase",
+                "frisbee",
+                "skis",
+                "snowboard",
+                "sports ball",
+                "kite",
+                "baseball bat",
+                "baseball glove",
+                "skateboard",
+                "surfboard",
+                "tennis racket",
+                "bottle",
+                "wine glass",
+                "cup",
+                "fork",
+                "knife",
+                "spoon",
+                "bowl",
+                "banana",
+                "apple",
+                "sandwich",
+                "orange",
+                "broccoli",
+                "carrot",
+                "hot dog",
+                "pizza",
+                "donut",
+                "cake",
+                "chair",
+                "couch",
+                "potted plant",
+                "bed",
+                "dining table",
+                "toilet",
+                "tv",
+                "laptop",
+                "mouse",
+                "remote",
+                "keyboard",
+                "cell phone",
+                "microwave",
+                "oven",
+                "toaster",
+                "sink",
+                "refrigerator",
+                "book",
+                "clock",
+                "vase",
+                "scissors",
+                "teddy bear",
+                "hair drier",
+                "toothbrush",
+            ]
+        else:
+            self.names = names
+
+        # preventing cold start
+        img = torch.zeros((1, 3, *self.img_size), device=device)
+        self.model(img)
+
+    def get_model(self) -> nn.Module:
+        return self.model
+
+    def get_names(self) -> List[str]:
+        return self.names
+
+    def get_img_size(self) -> Tuple[int, int]:
+        return self.img_size
+
+    def get_confidence(self) -> float:
+        return self.confidence
+
+    def get_iou_thresh(self) -> float:
+        return self.iou_thresh
+
+    def get_agnostic(self) -> bool:
+        return self.agnostic

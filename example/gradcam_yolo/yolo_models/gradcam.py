@@ -7,10 +7,10 @@ from typing import List, Tuple
 import torch
 import torch.nn.functional as F
 
-from example.gradcam_yolo.yolo_models.object_detector import ObjectDetector
+from example.gradcam_yolo.yolo_models.object_detector import BaseObjectDetector
 
 
-def find_yolo_layer(model: ObjectDetector, layer_name: str) -> torch.nn.Module:
+def find_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Module:
     """Find yolov5 layer to calculate GradCAM and GradCAM++
 
     Args:
@@ -35,7 +35,7 @@ class GradCAMObjectDetection:
 
     def __init__(
         self,
-        model: ObjectDetector,
+        model: BaseObjectDetector,
         layer_name: str,
         img_size: Tuple[int, int] = (640, 640),
     ):

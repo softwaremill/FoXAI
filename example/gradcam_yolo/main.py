@@ -11,7 +11,7 @@ from PIL import Image
 from yolo_models.gradcam import GradCAMObjectDetection
 from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
 
-from example.gradcam_yolo.yolo_models.object_detector import ObjectDetector
+from example.gradcam_yolo.yolo_models.object_detector import YOLOv5ObjectDetector
 
 
 def get_res_img(bbox: List[int], mask: torch.Tensor, res_img: np.ndarray) -> np.ndarray:
@@ -68,7 +68,7 @@ def main():
     wrapper_model = WrapperYOLOv5ObjectDetectionModel(
         model=model.model.model, device=device
     )
-    model_wrapper = ObjectDetector(
+    model_wrapper = YOLOv5ObjectDetector(
         model=wrapper_model,
         device=device,
         img_size=img_size,
