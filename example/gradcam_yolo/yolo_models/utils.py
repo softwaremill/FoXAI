@@ -10,16 +10,18 @@ import torch
 
 
 def box_iou(box1: torch.Tensor, box2: torch.Tensor) -> torch.Tensor:
-    # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
     """
     Return intersection-over-union (Jaccard index) of boxes.
+
     Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
-    Arguments:
-        box1 (Tensor[N, 4])
-        box2 (Tensor[M, 4])
+    Original code: https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+
+    Args:
+        box1: First box.
+        box2: Second box.
     Returns:
-        iou (Tensor[N, M]): the NxM matrix containing the pairwise
-            IoU values for every element in boxes1 and boxes2
+        The NxM matrix containing the pairwise IoU values for every element
+            in boxes1 and boxes2
     """
 
     def box_area(box):
@@ -44,6 +46,14 @@ def box_iou(box1: torch.Tensor, box2: torch.Tensor) -> torch.Tensor:
 
 
 def xywh2xyxy(x: torch.Tensor) -> torch.Tensor:
+    """Convert tensor in [x, y, w, h] to [x1, y1, x2, y2].
+
+    Args:
+        x: Tensor in [x, y, w, h] to convert.
+
+    Returns:
+        Tensor in [x1, y1, x2, y2].
+    """
     # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
     y[:, 0] = x[:, 0] - x[:, 2] / 2  # top left x
@@ -53,44 +63,41 @@ def xywh2xyxy(x: torch.Tensor) -> torch.Tensor:
     return y
 
 
-def letterbox(
-    im: torch.Tensor,
+def resize_image(
+    image: torch.Tensor,
     new_shape: Tuple[int, int] = (640, 640),
-    color: Tuple[int, int, int] = (114, 114, 114),
-    auto: bool = True,
-    scale_fill: bool = False,
+    change_original_ratio: bool = False,
     scaleup: bool = True,
-    stride: int = 32,
-) -> Tuple[torch.Tensor, Tuple[float, float], Tuple[float, float]]:
+) -> torch.Tensor:
+    """Resize image to given shape.
+
+    Args:
+        image: Image to resize.
+        new_shape: Desired shape of image. Defaults to (640, 640).
+        change_original_ratio: If resized image should have different height to
+            width ratio than original image. Defaults to False.
+        scaleup: If scale up image. Defaults to True.
+
+    Returns:
+        Resized image.
+    """
     # Resize and pad image while meeting stride-multiple constraints
-    shape = im.shape[:2]  # current shape [height, width]
-    if isinstance(new_shape, int):
-        new_shape = (new_shape, new_shape)
+    # image has shape (H x W x C)
+    shape = image.shape[:2]  # current shape [height, width]
 
     # Scale ratio (new / old)
+    # get minimum of width and height ratios
     r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
     if not scaleup:  # only scale down, do not scale up (for better val mAP)
         r = min(r, 1.0)
 
-    # Compute padding
-    ratio = r, r  # width, height ratios
+    # do not change the width/height ratio of the image, assign the same ratio
     new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
-    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
-    if auto:  # minimum rectangle
-        dw, dh = np.mod(dw, stride), np.mod(dh, stride)  # wh padding
-    elif scale_fill:  # stretch
-        dw, dh = 0.0, 0.0
+    if change_original_ratio:  # stretch
         new_unpad = (new_shape[1], new_shape[0])
-        ratio = new_shape[1] / shape[1], new_shape[0] / shape[0]  # width, height ratios
 
-    dw /= 2  # divide padding into 2 sides
-    dh /= 2
-
+    # if current shape is different than desired shape call resize function
     if shape[::-1] != new_unpad:  # resize
-        im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
-    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
-    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    im = cv2.copyMakeBorder(
-        im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color
-    )  # add border
-    return im, ratio, (dw, dh)
+        image = cv2.resize(image, new_unpad, interpolation=cv2.INTER_LINEAR)
+
+    return image

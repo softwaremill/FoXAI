@@ -13,11 +13,13 @@ import torchvision
 from deep_utils.utils.box_utils.boxes import Box
 from torch import nn
 from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
-from yolo_models.utils import box_iou, letterbox, xywh2xyxy
+from yolo_models.utils import box_iou, resize_image, xywh2xyxy
 
 
 @dataclass
 class PredictionOutput:
+    """Data class for model prediction output in YOLO style."""
+
     bbox: List[List[int]]
     class_number: List[List[int]]
     class_name: List[List[str]]
@@ -36,6 +38,10 @@ class BaseObjectDetector(nn.Module, ABC):
 
     @abstractmethod
     def get_names(self) -> List[str]:
+        ...
+
+    @abstractmethod
+    def get_number_of_classes(self) -> int:
         ...
 
     @abstractmethod
@@ -58,30 +64,48 @@ class BaseObjectDetector(nn.Module, ABC):
     def non_max_suppression(
         prediction: torch.Tensor,
         logits: torch.Tensor,
-        conf_thres: float = 0.6,
-        iou_thres: float = 0.45,
+        number_of_classes: int,
+        confidence_threshold: float = 0.6,
+        iou_threshold: float = 0.45,
         classes: Optional[List[str]] = None,
         agnostic: bool = False,
         multi_label: bool = False,
         labels: Tuple[str] = (),
         max_det: int = 300,
-    ):
-        """Runs Non-Maximum Suppression (NMS) on inference and logits results
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+        """Runs Non-Maximum Suppression (NMS) on inference and logits results.
+
+        Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
+
+        Args:
+            prediction: Predictions from model forward pass.
+            logits: Logits from model forward pass.
+            number_of_classes: Number of classes that model can predict.
+            confidence_threshold: Confidence threshold. Defaults to 0.6.
+            iou_threshold: IoU threshold. Defaults to 0.45.
+            classes: List of class names. Defaults to None.
+            agnostic: If True it restricts max width of detection. Defaults to False.
+            multi_label: If True function will assign multiple classes to single
+                detection. Defaults to False.
+            labels: If not empty function will process only detection of objects from
+                this list of classes. Defaults to ().
+            max_det: Maximum detections. Defaults to 300.
 
         Returns:
-             list of detections, on (n,6) tensor per image [xyxy, conf, cls] and pruned input logits (n, number-classes)
+           Tuple of list of detections, on (n, 6) tensor per image [xyxy, conf, cls]
+            and list of pruned input logits tensors (n, number-classes).
         """
 
         nc = prediction.shape[2] - 5  # number of classes
-        xc = prediction[..., 4] > conf_thres  # candidates
+        xc = prediction[..., 4] > confidence_threshold  # candidates
 
         # Checks
         assert (
-            0 <= conf_thres <= 1
-        ), f"Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0"
+            0 <= confidence_threshold <= 1
+        ), f"Invalid Confidence threshold {confidence_threshold}, valid values are between 0.0 and 1.0"
         assert (
-            0 <= iou_thres <= 1
-        ), f"Invalid IoU {iou_thres}, valid values are between 0.0 and 1.0"
+            0 <= iou_threshold <= 1
+        ), f"Invalid IoU {iou_threshold}, valid values are between 0.0 and 1.0"
 
         # Settings
         max_wh = 4096  # (pixels) maximum box width and height
@@ -93,7 +117,9 @@ class BaseObjectDetector(nn.Module, ABC):
 
         t = time.time()
         output = [torch.zeros((0, 6), device=prediction.device)] * prediction.shape[0]
-        logits_output = [torch.zeros((0, 80), device=logits.device)] * logits.shape[0]
+        logits_output = [
+            torch.zeros((0, number_of_classes), device=logits.device)
+        ] * logits.shape[0]
         for xi, (x, log_) in enumerate(
             zip(prediction, logits)
         ):  # image index, image inference
@@ -114,19 +140,19 @@ class BaseObjectDetector(nn.Module, ABC):
 
             # Compute conf
             x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
-            # log_ *= x[:, 4:5]
             # Box (center x, center y, width, height) to (x1, y1, x2, y2)
             box = xywh2xyxy(x[:, :4])
 
             # Detections matrix nx6 (xyxy, conf, cls)
             if multi_label:
-                i, j = (x[:, 5:] > conf_thres).nonzero(as_tuple=False).T
+                i, j = (x[:, 5:] > confidence_threshold).nonzero(as_tuple=False).T
                 x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
             else:  # best class only
                 conf, j = x[:, 5:].max(1, keepdim=True)
-                # log_ = x[:, 5:]
-                x = torch.cat((box, conf, j.float()), 1)[conf.view(-1) > conf_thres]
-                log_ = log_[conf.view(-1) > conf_thres]
+                x = torch.cat((box, conf, j.float()), 1)[
+                    conf.view(-1) > confidence_threshold
+                ]
+                log_ = log_[conf.view(-1) > confidence_threshold]
             # Filter by class
             if classes is not None:
                 x = x[(x[:, 5:6] == torch.tensor(classes, device=x.device)).any(1)]
@@ -141,12 +167,12 @@ class BaseObjectDetector(nn.Module, ABC):
             # Batched NMS
             c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
             boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
-            i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
+            i = torchvision.ops.nms(boxes, scores, iou_threshold)  # NMS
             if i.shape[0] > max_det:  # limit detections
                 i = i[:max_det]
             if merge and (1 < n < 3e3):  # Merge NMS (boxes merged using weighted mean)
                 # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
-                iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix
+                iou = box_iou(boxes[i], boxes) > iou_threshold  # iou matrix
                 weights = iou * scores[None]  # box weights
                 x[i, :4] = torch.mm(weights, x[:, :4]).float() / weights.sum(
                     1, keepdim=True
@@ -162,24 +188,6 @@ class BaseObjectDetector(nn.Module, ABC):
                 break  # time limit exceeded
 
         return output, logits_output
-
-    @staticmethod
-    def resize(
-        img: np.ndarray,
-        new_shape: Tuple[int, int] = (640, 640),
-        color: Tuple[int, int, int] = (114, 114, 114),
-        auto: bool = True,
-        scale_fill: bool = False,
-        scaleup: bool = True,
-    ):
-        return letterbox(
-            img,
-            new_shape=new_shape,
-            color=color,
-            auto=auto,
-            scale_fill=scale_fill,
-            scaleup=scaleup,
-        )
 
     def forward(
         self,
@@ -197,11 +205,11 @@ class BaseObjectDetector(nn.Module, ABC):
         """
         prediction, logits = self.get_model()(img)
         prediction, logits = self.non_max_suppression(
-            prediction,
-            logits,
-            self.get_confidence(),
-            self.get_iou_thresh(),
-            classes=None,
+            prediction=prediction,
+            logits=logits,
+            number_of_classes=self.get_number_of_classes(),
+            confidence_threshold=self.get_confidence(),
+            iou_threshold=self.get_iou_thresh(),
             agnostic=self.get_agnostic(),
         )
         boxes, class_names, classes, confidences = [
@@ -217,6 +225,9 @@ class BaseObjectDetector(nn.Module, ABC):
                         to_source=Box.BoxSource.Numpy,
                         return_int=True,
                     )
+                    # TODO: line below is used to test detectio on resized image when
+                    # width:height ratio was changed bboxes have negative coordinates
+                    bbox = [np.abs(b) for b in bbox]
                     boxes[i].append(bbox)
                     confidences[i].append(round(conf.item(), 2))
                     cls = int(cls.item())
@@ -240,16 +251,52 @@ class BaseObjectDetector(nn.Module, ABC):
             logits,
         )
 
-    def preprocessing(self, img: np.ndarray) -> torch.Tensor:
+    @staticmethod
+    def preprocessing(
+        img: np.ndarray,
+        new_shape: Tuple[int, int] = (640, 640),
+        change_original_ratio: bool = False,
+        scaleup: bool = True,
+    ) -> torch.Tensor:
+        """Preprocess image before prediction.
+
+        Preprocessing is a process consisting of steps:
+        * adding batch dimension
+        * resizing images to desired shapes
+        * adjusting image channels to (B x C x H x W)
+        * convertion to float
+
+        Args:
+            img: Image to preprocess.
+            new_shape: Desired shape of image. Defaults to (640, 640).
+            change_original_ratio: If resized image should have different height to
+                width ratio than original image. Defaults to False.
+            scaleup: If scale up image. Defaults to True.
+
+        Returns:
+            Tensor containing preprocessed image.
+        """
         if len(img.shape) != 4:
+            # add batch dimension
             img = np.expand_dims(img, axis=0)
-        im0 = img.astype(np.uint8)
+
+        # resize all images from batch
         img = np.array(
-            [self.resize(im, new_shape=self.get_img_size())[0] for im in im0]
+            [
+                resize_image(
+                    image=im,
+                    new_shape=new_shape,
+                    change_original_ratio=change_original_ratio,
+                    scaleup=scaleup,
+                )
+                for im in img
+            ]
         )
+        # convert array from (B x H x W x C) to (B x C x H x W)
         img = img.transpose((0, 3, 1, 2))
-        img = np.ascontiguousarray(img)
-        img = torch.from_numpy(img).to(self.device)
+        img = torch.from_numpy(img)  # .to(self.device)
+
+        # convert from uint8 to float
         img = img / 255.0
         return img
 
@@ -387,6 +434,9 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
     def get_names(self) -> List[str]:
         return self.names
 
+    def get_number_of_classes(self) -> int:
+        return len(self.names)
+
     def get_img_size(self) -> Tuple[int, int]:
         return self.img_size
 
@@ -400,15 +450,15 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         return self.agnostic
 
 
-def find_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Module:
-    """Find yolov5 layer to calculate GradCAM and GradCAM++
+def get_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Module:
+    """Obtain YOLOv5 layer from model by name.
 
     Args:
-        model: yolov5 model.
-        layer_name (str): the name of layer with its hierarchical information.
+        model: YOLOv5 model.
+        layer_name: The name of the layer with its hierarchical information.
 
     Return:
-        target_layer: found layer
+        Model's layer.
     """
     hierarchy = layer_name.split("_")
     target_layer = model.model.model._modules[  # pylint: disable = (protected-access)

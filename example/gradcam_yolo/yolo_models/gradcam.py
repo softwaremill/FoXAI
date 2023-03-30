@@ -16,6 +16,11 @@ from example.gradcam_yolo.yolo_models.object_detector import (
 
 @dataclass
 class ObjectDetectionOutput:
+    """Data class for model predictions for object detection.
+
+    It contains heatmaps, logits and predictions in YOLO style.
+    """
+
     saliency_maps: List[torch.Tensor]
     logits: List[torch.Tensor]
     predictions: List[PredictionOutput]
@@ -60,13 +65,13 @@ class GradCAMObjectDetection:
         input_img: torch.Tensor,
         class_idx: bool = True,
     ) -> ObjectDetectionOutput:
-        """
+        """Forward pass of GradCAM aglorithm.
+
         Args:
-            input_img: input image with shape of (1, 3, H, W)
-        Return:
-            mask: saliency map of the same spatial dimension with input
-            logit: model output
-            preds: The object predictions
+            input_img: Input image with shape of (B, C, H, W).
+
+        Returns:
+            ObjectDetectionOutput object.
         """
         saliency_maps: List[torch.Tensor] = []
         b, _, h, w = input_img.size()

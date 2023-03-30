@@ -102,9 +102,7 @@ class WrapperYOLOv5ObjectDetectionModel(nn.Module):
     Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
     """
 
-    def __init__(
-        self, model: nn.Module, device: torch.DeviceObjType
-    ):  # model, input channels, number of classes
+    def __init__(self, model: nn.Module, device: torch.DeviceObjType):
         super().__init__()
         self.save = model.save
         self.yaml = model.yaml
@@ -125,6 +123,7 @@ class WrapperYOLOv5ObjectDetectionModel(nn.Module):
             self.stride = m.stride
 
         # replace Detect class with DetectWrapper class in YOLOv5 network
+        # to return predictions with logits
         custom_detect = WrapperDetect(m)
         model.model[-1] = custom_detect
         self.model = model
