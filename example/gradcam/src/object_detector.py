@@ -1,19 +1,20 @@
-"""
-Based on code: https://github.com/pooya-mohammadi/yolov5-gradcam.
-"""
-
 import time
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple
+from collections import OrderedDict
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 import torchvision
 from deep_utils.utils.box_utils.boxes import Box
 from src.model import WrapperYOLOv5ObjectDetectionModel
 from src.types import PredictionOutput
 from src.utils import box_iou, resize_image, xywh2xyxy
 from torch import nn
+from torchvision.models.detection import _utils as det_utils
+from torchvision.models.detection.ssd import SSD
+from torchvision.ops import boxes as box_ops
 
 
 class BaseObjectDetector(nn.Module, ABC):
@@ -23,32 +24,115 @@ class BaseObjectDetector(nn.Module, ABC):
     """
 
     @abstractmethod
-    def get_model(self) -> nn.Module:
-        ...
+    def forward(
+        self,
+        image: torch.Tensor,
+    ) -> Tuple[List[PredictionOutput], List[torch.Tensor],]:
+        """Forward pass of the network.
 
-    @abstractmethod
-    def get_names(self) -> List[str]:
-        ...
+        Args:
+            image: Image to process.
 
-    @abstractmethod
-    def get_number_of_classes(self) -> int:
-        ...
+        Returns:
+            Tuple of 2 values, first is tuple of predictions containing bounding-boxes,
+            class number, class name and confidence; second value is list of tensor
+            with logits per each detection.
+        """
 
-    @abstractmethod
-    def get_img_size(self) -> Tuple[int, int]:
-        ...
+    @staticmethod
+    def preprocessing(
+        img: np.ndarray,
+        new_shape: Tuple[int, int] = (640, 640),
+        change_original_ratio: bool = False,
+        scaleup: bool = True,
+    ) -> torch.Tensor:
+        """Preprocess image before prediction.
 
-    @abstractmethod
-    def get_confidence(self) -> float:
-        ...
+        Preprocessing is a process consisting of steps:
+        * adding batch dimension
+        * resizing images to desired shapes
+        * adjusting image channels to (B x C x H x W)
+        * convertion to float
 
-    @abstractmethod
-    def get_iou_thresh(self) -> float:
-        ...
+        Args:
+            img: Image to preprocess.
+            new_shape: Desired shape of image. Defaults to (640, 640).
+            change_original_ratio: If resized image should have different height to
+                width ratio than original image. Defaults to False.
+            scaleup: If scale up image. Defaults to True.
 
-    @abstractmethod
-    def get_agnostic(self) -> bool:
-        ...
+        Returns:
+            Tensor containing preprocessed image.
+        """
+        if len(img.shape) != 4:
+            # add batch dimension
+            img = np.expand_dims(img, axis=0)
+
+        # resize all images from batch
+        img = np.array(
+            [
+                resize_image(
+                    image=im,
+                    new_shape=new_shape,
+                    change_original_ratio=change_original_ratio,
+                    scaleup=scaleup,
+                )
+                for im in img
+            ]
+        )
+        # convert array from (B x H x W x C) to (B x C x H x W)
+        img = img.transpose((0, 3, 1, 2))
+        img = torch.from_numpy(img)
+
+        # convert from uint8 to float
+        img = img / 255.0
+        return img
+
+
+class YOLOv5ObjectDetector(BaseObjectDetector):
+    """Custom YOLOv5 ObjectDetector class which returns predictions with logits to explain.
+
+    Based on code: https://github.com/pooya-mohammadi/yolov5-gradcam.
+    """
+
+    def __init__(
+        self,
+        model: WrapperYOLOv5ObjectDetectionModel,
+        device: torch.DeviceObjType,
+        img_size: Tuple[int, int],
+        names: Optional[List[str]] = None,
+        mode: str = "eval",
+        confidence: float = 0.4,
+        iou_thresh: float = 0.45,
+        agnostic_nms: bool = False,
+    ):
+        super().__init__()
+        self.device = device
+
+        # in this case model on __call__ or on forward function has to return tuple of 3 variables:
+        # 1st would be prediction tensor of shape [bs, x, number_of_classes + 5]
+        # 2nd would be logits tensor of shape [bs, x, number_of_classes]
+        # 3rd is discarded in this class
+        # where x is number of hidden sizes of target layer
+        self.model = None
+
+        self.img_size = img_size
+        self.mode = mode
+        self.confidence = confidence
+        self.iou_thresh = iou_thresh
+        self.agnostic = agnostic_nms
+        self.names = names
+        self.model = model
+        self.model.requires_grad_(True)
+        self.model.to(device)
+        if self.mode == "train":
+            self.model.train()
+        else:
+            self.model.eval()
+
+        # preventing cold start
+        img = torch.zeros((1, 3, *self.img_size), device=device)
+        self.model(img)
 
     @staticmethod
     def non_max_suppression(
@@ -181,31 +265,30 @@ class BaseObjectDetector(nn.Module, ABC):
 
     def forward(
         self,
-        img: torch.Tensor,
+        image: torch.Tensor,
     ) -> Tuple[List[PredictionOutput], List[torch.Tensor],]:
         """Forward pass of the network.
 
         Args:
-            img: Image to process.
+            image: Image to process.
 
         Returns:
             Tuple of 2 values, first is tuple of predictions containing bounding-boxes,
             class number, class name and confidence; second value is list of tensor
             with logits per each detection.
         """
-        prediction, logits = self.get_model()(img)
+        prediction, logits = self.model(image)
         prediction, logits = self.non_max_suppression(
             prediction=prediction,
             logits=logits,
-            number_of_classes=self.get_number_of_classes(),
-            confidence_threshold=self.get_confidence(),
-            iou_threshold=self.get_iou_thresh(),
-            agnostic=self.get_agnostic(),
+            number_of_classes=len(self.names),
+            confidence_threshold=self.confidence,
+            iou_threshold=self.iou_thresh,
+            agnostic=self.agnostic,
         )
         boxes, class_names, classes, confidences = [
-            [[] for _ in range(img.shape[0])] for _ in range(4)
+            [[] for _ in range(image.shape[0])] for _ in range(4)
         ]
-        names = self.get_names()
         for i, det in enumerate(prediction):  # detections per image
             if len(det):
                 for *xyxy, conf, cls in det:
@@ -222,8 +305,8 @@ class BaseObjectDetector(nn.Module, ABC):
                     confidences[i].append(round(conf.item(), 2))
                     cls = int(cls.item())
                     classes[i].append(cls)
-                    if names is not None:
-                        class_names[i].append(names[cls])
+                    if self.names is not None:
+                        class_names[i].append(self.names[cls])
                     else:
                         class_names[i].append(cls)
         return (
@@ -240,119 +323,6 @@ class BaseObjectDetector(nn.Module, ABC):
             ],
             logits,
         )
-
-    @staticmethod
-    def preprocessing(
-        img: np.ndarray,
-        new_shape: Tuple[int, int] = (640, 640),
-        change_original_ratio: bool = False,
-        scaleup: bool = True,
-    ) -> torch.Tensor:
-        """Preprocess image before prediction.
-
-        Preprocessing is a process consisting of steps:
-        * adding batch dimension
-        * resizing images to desired shapes
-        * adjusting image channels to (B x C x H x W)
-        * convertion to float
-
-        Args:
-            img: Image to preprocess.
-            new_shape: Desired shape of image. Defaults to (640, 640).
-            change_original_ratio: If resized image should have different height to
-                width ratio than original image. Defaults to False.
-            scaleup: If scale up image. Defaults to True.
-
-        Returns:
-            Tensor containing preprocessed image.
-        """
-        if len(img.shape) != 4:
-            # add batch dimension
-            img = np.expand_dims(img, axis=0)
-
-        # resize all images from batch
-        img = np.array(
-            [
-                resize_image(
-                    image=im,
-                    new_shape=new_shape,
-                    change_original_ratio=change_original_ratio,
-                    scaleup=scaleup,
-                )
-                for im in img
-            ]
-        )
-        # convert array from (B x H x W x C) to (B x C x H x W)
-        img = img.transpose((0, 3, 1, 2))
-        img = torch.from_numpy(img)  # .to(self.device)
-
-        # convert from uint8 to float
-        img = img / 255.0
-        return img
-
-
-class YOLOv5ObjectDetector(BaseObjectDetector):
-    """Custom YOLOv5 ObjectDetector class which returns predictions with logits to explain."""
-
-    def __init__(
-        self,
-        model: WrapperYOLOv5ObjectDetectionModel,
-        device: torch.DeviceObjType,
-        img_size: Tuple[int, int],
-        names: Optional[List[str]] = None,
-        mode: str = "eval",
-        confidence: float = 0.4,
-        iou_thresh: float = 0.45,
-        agnostic_nms: bool = False,
-    ):
-        super().__init__()
-        self.device = device
-
-        # in this case model on __call__ or on forward function has to return tuple of 3 variables:
-        # 1st would be prediction tensor of shape [bs, x, number_of_classes + 5]
-        # 2nd would be logits tensor of shape [bs, x, number_of_classes]
-        # 3rd is discarded in this class
-        # where x is number of hidden sizes of target layer
-        self.model = None
-
-        self.img_size = img_size
-        self.mode = mode
-        self.confidence = confidence
-        self.iou_thresh = iou_thresh
-        self.agnostic = agnostic_nms
-        self.names = names
-        self.model = model
-        self.model.requires_grad_(True)
-        self.model.to(device)
-        if self.mode == "train":
-            self.model.train()
-        else:
-            self.model.eval()
-
-        # preventing cold start
-        img = torch.zeros((1, 3, *self.img_size), device=device)
-        self.model(img)
-
-    def get_model(self) -> nn.Module:
-        return self.model
-
-    def get_names(self) -> List[str]:
-        return self.names
-
-    def get_number_of_classes(self) -> int:
-        return len(self.names)
-
-    def get_img_size(self) -> Tuple[int, int]:
-        return self.img_size
-
-    def get_confidence(self) -> float:
-        return self.confidence
-
-    def get_iou_thresh(self) -> float:
-        return self.iou_thresh
-
-    def get_agnostic(self) -> bool:
-        return self.agnostic
 
 
 def get_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Module:
@@ -373,3 +343,189 @@ def get_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Modul
     for h in hierarchy[1:]:
         target_layer = target_layer._modules[h]  # pylint: disable = (protected-access)
     return target_layer
+
+
+class SSDObjectDetector(BaseObjectDetector):
+    """Custom SSD ObjectDetector class which returns predictions with logits to explain.
+
+    Code based on https://github.com/pytorch/vision/blob/main/torchvision/models/detection/ssd.py.
+    """
+
+    def __init__(
+        self,
+        model: SSD,
+        class_names: Optional[List[str]] = None,
+    ):
+        super().__init__()
+        self.model = model
+        self.class_names = class_names
+
+    def forward(
+        self,
+        image: torch.Tensor,
+    ) -> Tuple[List[PredictionOutput], List[torch.Tensor],]:
+        """Forward pass of the network.
+
+        Args:
+            image: Image to process.
+
+        Returns:
+            Tuple of 2 values, first is tuple of predictions containing bounding-boxes,
+            class number, class name and confidence; second value is list of tensor
+            with logits per each detection.
+        """
+        # get the original image sizes
+        images = [image[0]]
+        original_image_sizes: List[Tuple[int, int]] = []
+        for img in images:
+            val = img.shape[-2:]
+            assert (
+                len(val) == 2
+            ), f"expecting the last two dimensions of the Tensor to be H and W instead got {img.shape[-2:]}"
+            original_image_sizes.append((val[0], val[1]))
+
+        # transform the input
+        images, targets = self.model.transform(images, None)
+
+        # Check for degenerate boxes
+        if targets is not None:
+            for target_idx, target in enumerate(targets):
+                boxes = target["boxes"]
+                degenerate_boxes = boxes[:, 2:] <= boxes[:, :2]
+                if degenerate_boxes.any():
+                    bb_idx = torch.where(degenerate_boxes.any(dim=1))[0][0]
+                    degen_bb: List[float] = boxes[bb_idx].tolist()
+                    assert False, (
+                        "All bounding boxes should have positive height and width. "
+                        + f"Found invalid box {degen_bb} for target at index {target_idx}."
+                    )
+
+        # get the features from the backbone
+        features = self.model.backbone(images.tensors)
+        if isinstance(features, torch.Tensor):
+            features = OrderedDict([("0", features)])
+
+        features = list(features.values())
+
+        # compute the ssd heads outputs using the features
+        head_outputs = self.model.head(features)
+
+        # create the set of anchors
+        anchors = self.model.anchor_generator(images, features)
+
+        detections: List[Dict[str, torch.Tensor]] = []
+        detections, logits = self.postprocess_detections(
+            head_outputs=head_outputs,
+            image_anchors=anchors,
+            image_shapes=images.image_sizes,
+        )
+        detections = self.model.transform.postprocess(
+            detections, images.image_sizes, original_image_sizes
+        )
+
+        detection_class_names = [str(val.item()) for val in detections[0]["labels"]]
+        if self.class_names:
+            detection_class_names = [
+                self.class_names[val.item()] for val in detections[0]["labels"]
+            ]
+
+        # change order of bounding boxes
+        # at the moment they are [x2, y2, x1, y1] and we need them in
+        # [x1, y1, x2, y2]
+        detections[0]["boxes"] = detections[0]["boxes"].detach().cpu()
+        for detection in detections[0]["boxes"]:
+            tmp1 = detection[0].item()
+            tmp2 = detection[2].item()
+            detection[0] = detection[1]
+            detection[2] = detection[3]
+            detection[1] = tmp1
+            detection[3] = tmp2
+
+        predictions = [
+            PredictionOutput(
+                bbox=bbox.tolist(),
+                class_number=[class_no.tolist()],
+                class_name=class_name,
+                confidence=[confidence.tolist()],
+            )
+            for bbox, class_no, class_name, confidence in zip(
+                detections[0]["boxes"],
+                detections[0]["labels"],
+                detection_class_names,
+                detections[0]["scores"],
+            )
+        ]
+
+        return predictions, logits
+
+    def postprocess_detections(
+        self,
+        head_outputs: Dict[str, torch.Tensor],
+        image_anchors: List[torch.Tensor],
+        image_shapes: List[Tuple[int, int]],
+    ) -> List[Dict[str, torch.Tensor]]:
+        bbox_regression = head_outputs["bbox_regression"]
+        logits = head_outputs["cls_logits"]
+        pred_scores = F.softmax(head_outputs["cls_logits"], dim=-1)
+        pred_class = torch.argmax(pred_scores[0], dim=1)
+        pred_class = pred_class[None, :, None]
+
+        num_classes = pred_scores.size(-1)
+        device = pred_scores.device
+
+        detections: List[Dict[str, torch.Tensor]] = []
+
+        for boxes, scores, anchors, image_shape in zip(
+            bbox_regression, pred_scores, image_anchors, image_shapes
+        ):
+            boxes = self.model.box_coder.decode_single(boxes, anchors)
+            boxes = box_ops.clip_boxes_to_image(boxes, image_shape)
+
+            image_boxes: List[torch.Tensor] = []
+            image_scores: List[torch.Tensor] = []
+            image_labels: List[torch.Tensor] = []
+            for label in range(1, num_classes):
+                score = scores[:, label]
+
+                keep_idxs = score > self.model.score_thresh
+                score = score[keep_idxs]
+                box = boxes[keep_idxs]
+
+                # keep only topk scoring predictions
+                num_topk = det_utils._topk_min(  # pylint: disable = (protected-access)
+                    score, self.model.topk_candidates, 0
+                )
+                score, idxs = score.topk(num_topk)
+                box = box[idxs]
+
+                image_boxes.append(box)
+                image_scores.append(score)
+                image_labels.append(
+                    torch.full_like(
+                        score, fill_value=label, dtype=torch.int64, device=device
+                    )
+                )
+
+            image_boxes = torch.cat(image_boxes, dim=0)
+            image_scores = torch.cat(image_scores, dim=0)
+            image_labels = torch.cat(image_labels, dim=0)
+
+            # non-maximum suppression
+            keep = box_ops.batched_nms(
+                boxes=image_boxes,
+                scores=image_scores,
+                idxs=image_labels,
+                iou_threshold=self.model.nms_thresh,
+            )
+            keep = keep[: self.model.detections_per_img]
+
+            detections.append(
+                {
+                    "boxes": image_boxes[keep],
+                    "scores": image_scores[keep],
+                    "labels": image_labels[keep],
+                }
+            )
+        # add batch dimension for further processing
+        keep_logits = logits[0][keep][None, :]
+        return detections, keep_logits

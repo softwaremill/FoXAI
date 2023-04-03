@@ -11,8 +11,8 @@ import torchvision
 from deep_utils import Box
 from PIL import Image
 from src.gradcam import GradCAMObjectDetection, ObjectDetectionOutput
-from src.model import WrapperSSD, WrapperYOLOv5ObjectDetectionModel
-from src.object_detector import YOLOv5ObjectDetector, get_yolo_layer
+from src.model import WrapperYOLOv5ObjectDetectionModel
+from src.object_detector import SSDObjectDetector, YOLOv5ObjectDetector, get_yolo_layer
 from torchvision.models._meta import _COCO_CATEGORIES
 from torchvision.models.detection import SSD300_VGG16_Weights
 
@@ -145,7 +145,7 @@ def main():
         model.detections_per_img = 10
         input_image = preprocess(org_input_image).to(device)
 
-        model_wrapper = WrapperSSD(model=model, class_names=_COCO_CATEGORIES)
+        model_wrapper = SSDObjectDetector(model=model, class_names=_COCO_CATEGORIES)
         target_layer = model_wrapper.model.backbone.features[-1]
     else:
         model = torch.hub.load("ultralytics/yolov5", args.model_name, pretrained=True)
