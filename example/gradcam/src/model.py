@@ -3,11 +3,11 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
+from src.types import PredictionOutput
+from src.yolo import Detect
 from torch import nn
 from torchvision.models.detection import _utils as det_utils
 from torchvision.ops import boxes as box_ops
-from yolo_models.types import PredictionOutput
-from yolo_models.yolo import Detect
 
 DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
 

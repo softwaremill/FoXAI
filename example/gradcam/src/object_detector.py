@@ -10,10 +10,10 @@ import numpy as np
 import torch
 import torchvision
 from deep_utils.utils.box_utils.boxes import Box
+from src.model import WrapperYOLOv5ObjectDetectionModel
+from src.types import PredictionOutput
+from src.utils import box_iou, resize_image, xywh2xyxy
 from torch import nn
-from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
-from yolo_models.types import PredictionOutput
-from yolo_models.utils import box_iou, resize_image, xywh2xyxy
 
 
 class BaseObjectDetector(nn.Module, ABC):

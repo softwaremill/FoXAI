@@ -10,15 +10,11 @@ import torch
 import torchvision
 from deep_utils import Box
 from PIL import Image
+from src.gradcam import GradCAMObjectDetection, ObjectDetectionOutput
+from src.model import WrapperSSD, WrapperYOLOv5ObjectDetectionModel
+from src.object_detector import YOLOv5ObjectDetector, get_yolo_layer
 from torchvision.models._meta import _COCO_CATEGORIES
 from torchvision.models.detection import SSD300_VGG16_Weights
-from yolo_models.gradcam import GradCAMObjectDetection, ObjectDetectionOutput
-from yolo_models.model import WrapperSSD, WrapperYOLOv5ObjectDetectionModel
-
-from example.gradcam_yolo.yolo_models.object_detector import (
-    YOLOv5ObjectDetector,
-    get_yolo_layer,
-)
 
 
 def draw_heatmap_in_bbox(

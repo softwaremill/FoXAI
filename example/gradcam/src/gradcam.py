@@ -7,11 +7,7 @@ from typing import List, Tuple
 
 import torch
 import torch.nn.functional as F
-
-from example.gradcam_yolo.yolo_models.object_detector import (
-    BaseObjectDetector,
-    PredictionOutput,
-)
+from src.object_detector import BaseObjectDetector, PredictionOutput
 
 
 @dataclass
