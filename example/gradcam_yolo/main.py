@@ -7,10 +7,13 @@ from typing import List
 import cv2
 import numpy as np
 import torch
+import torchvision
 from deep_utils import Box
 from PIL import Image
+from torchvision.models._meta import _COCO_CATEGORIES
+from torchvision.models.detection import SSD300_VGG16_Weights
 from yolo_models.gradcam import GradCAMObjectDetection, ObjectDetectionOutput
-from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
+from yolo_models.model import WrapperSSD, WrapperYOLOv5ObjectDetectionModel
 
 from example.gradcam_yolo.yolo_models.object_detector import (
     YOLOv5ObjectDetector,
@@ -126,26 +129,48 @@ def main():
     image = Image.open(args.img_path)
     img_size = (640, 640)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.hub.load("ultralytics/yolov5", args.model_name, pretrained=True)
-    wrapper_model = WrapperYOLOv5ObjectDetectionModel(
-        model=model.model.model, device=device
-    )
-    input_image = YOLOv5ObjectDetector.preprocessing(
+
+    org_input_image = YOLOv5ObjectDetector.preprocessing(
         img=np.asarray(image),
         new_shape=img_size,
         change_original_ratio=False,
     ).to(device)
-    real_input_image_shape = input_image.shape[-2:]
-    model_wrapper = YOLOv5ObjectDetector(
-        model=wrapper_model,
-        device=device,
-        img_size=real_input_image_shape,
-    )
 
-    target_layer = get_yolo_layer(
-        model=model_wrapper,
-        layer_name=args.layer_name,
-    )
+    real_input_image_shape = org_input_image.shape[-2:]
+
+    if "ssd" in args.model_name:
+        weights = SSD300_VGG16_Weights.COCO_V1
+        model = (
+            torchvision.models.detection.ssd300_vgg16(weights=weights, pretrained=True)
+            .eval()
+            .to(device)
+        )
+        preprocess = weights.transforms()
+        model.detections_per_img = 10
+        input_image = preprocess(org_input_image).to(device)
+
+        model_wrapper = WrapperSSD(model=model, class_names=_COCO_CATEGORIES)
+        target_layer = model_wrapper.model.backbone.features[-1]
+    else:
+        model = torch.hub.load("ultralytics/yolov5", args.model_name, pretrained=True)
+        names = model.model.names
+        wrapper_model = WrapperYOLOv5ObjectDetectionModel(
+            model=model.model.model,
+            device=device,
+        )
+        model_wrapper = YOLOv5ObjectDetector(
+            model=wrapper_model,
+            device=device,
+            img_size=real_input_image_shape,
+            names=names,
+        )
+        target_layer = get_yolo_layer(
+            model=model_wrapper,
+            layer_name=args.layer_name,
+        )
+
+        input_image = org_input_image
+
     saliency_method = GradCAMObjectDetection(
         model=model_wrapper,
         target_layer=target_layer,
@@ -155,7 +180,6 @@ def main():
     masks = outputs.saliency_maps
     boxes = [pred.bbox for pred in outputs.predictions]
     class_names = [pred.class_name for pred in outputs.predictions]
-
     img_to_display = (
         input_image.squeeze(0)
         .mul(255)
@@ -172,6 +196,7 @@ def main():
     for i, mask in enumerate(masks):
         res_img = img_to_display.copy()
         bbox, cls_name = boxes[i], class_names[i]
+        bbox = [int(val) for val in bbox]
         res_img, _ = draw_heatmap_in_bbox(bbox, mask, res_img)
         res_img = put_text_box(bbox, cls_name, res_img)
         images.append(res_img)

@@ -4,7 +4,6 @@ Based on code: https://github.com/pooya-mohammadi/yolov5-gradcam.
 
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -13,17 +12,8 @@ import torchvision
 from deep_utils.utils.box_utils.boxes import Box
 from torch import nn
 from yolo_models.model import WrapperYOLOv5ObjectDetectionModel
+from yolo_models.types import PredictionOutput
 from yolo_models.utils import box_iou, resize_image, xywh2xyxy
-
-
-@dataclass
-class PredictionOutput:
-    """Data class for model prediction output in YOLO style."""
-
-    bbox: List[List[int]]
-    class_number: List[List[int]]
-    class_name: List[List[str]]
-    confidence: List[List[float]]
 
 
 class BaseObjectDetector(nn.Module, ABC):
@@ -330,6 +320,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         self.confidence = confidence
         self.iou_thresh = iou_thresh
         self.agnostic = agnostic_nms
+        self.names = names
         self.model = model
         self.model.requires_grad_(True)
         self.model.to(device)
@@ -337,92 +328,6 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
             self.model.train()
         else:
             self.model.eval()
-        # fetch the names
-        if names is None:
-            self.names = [
-                "person",
-                "bicycle",
-                "car",
-                "motorcycle",
-                "airplane",
-                "bus",
-                "train",
-                "truck",
-                "boat",
-                "traffic light",
-                "fire hydrant",
-                "stop sign",
-                "parking meter",
-                "bench",
-                "bird",
-                "cat",
-                "dog",
-                "horse",
-                "sheep",
-                "cow",
-                "elephant",
-                "bear",
-                "zebra",
-                "giraffe",
-                "backpack",
-                "umbrella",
-                "handbag",
-                "tie",
-                "suitcase",
-                "frisbee",
-                "skis",
-                "snowboard",
-                "sports ball",
-                "kite",
-                "baseball bat",
-                "baseball glove",
-                "skateboard",
-                "surfboard",
-                "tennis racket",
-                "bottle",
-                "wine glass",
-                "cup",
-                "fork",
-                "knife",
-                "spoon",
-                "bowl",
-                "banana",
-                "apple",
-                "sandwich",
-                "orange",
-                "broccoli",
-                "carrot",
-                "hot dog",
-                "pizza",
-                "donut",
-                "cake",
-                "chair",
-                "couch",
-                "potted plant",
-                "bed",
-                "dining table",
-                "toilet",
-                "tv",
-                "laptop",
-                "mouse",
-                "remote",
-                "keyboard",
-                "cell phone",
-                "microwave",
-                "oven",
-                "toaster",
-                "sink",
-                "refrigerator",
-                "book",
-                "clock",
-                "vase",
-                "scissors",
-                "teddy bear",
-                "hair drier",
-                "toothbrush",
-            ]
-        else:
-            self.names = names
 
         # preventing cold start
         img = torch.zeros((1, 3, *self.img_size), device=device)
