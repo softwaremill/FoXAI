@@ -6,7 +6,7 @@
         <b>While trying to use the library installed from source you encounter error: ``RuntimeError: CUDA error: no kernel image is available for execution on the device``</b>
     </summary>
 
-This error indicates that you actually have pytorch version which does not have CUDA enabled. To solve that you should refer to [https://pytorch.org/get-started/previous-versions/](https://pytorch.org/get-started/previous-versions/). 
+This error indicates that you actually have pytorch version which does not have CUDA enabled. To solve that you should refer to [https://pytorch.org/get-started/previous-versions/](https://pytorch.org/get-started/previous-versions/).
 
 </details>
 <details>
@@ -26,7 +26,7 @@ Source: [StackOverflow](https://stackoverflow.com/questions/55313610/importerror
         <b>While trying to install poetry you get an error: ``ModuleNotFoundError: No module named 'distutils.cmd'``</b>
     </summary>
 
-It helps to install the following: 
+It helps to install the following:
 ```bash
 apt-get install python3-distutils
 ```

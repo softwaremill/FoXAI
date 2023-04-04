@@ -145,12 +145,12 @@ The recommended version of CUDA is `10.2` as it is supported since version
 with the current version of `torch`:
 https://pytorch.org/get-started/previous-versions/.
 
-As our starting Docker image we were using the one provided by Nvidia: ``nvidia/cuda:10.2-devel-ubuntu18.04``. 
+As our starting Docker image we were using the one provided by Nvidia: ``nvidia/cuda:10.2-devel-ubuntu18.04``.
 
-If you wish an easy to use docker image we advise to use our ``Dockerfile``. 
+If you wish an easy to use docker image we advise to use our ``Dockerfile``.
 
 ## pyenv
-Optional step, but probably one of the easiest way to actually get Python version with all the needed aditional tools (e.g. pip). 
+Optional step, but probably one of the easiest way to actually get Python version with all the needed aditional tools (e.g. pip).
 
 `pyenv` is a tool used to manage multiple versions of Python. To install
 this package follow the instructions on the project repository page:

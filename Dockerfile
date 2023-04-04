@@ -7,12 +7,12 @@ ARG BUILD_PYTHON_DEPS=" \
         libffi-dev \
         libgdbm-dev \
         libncurses5-dev \
-        libncursesw5-dev \ 
+        libncursesw5-dev \
         libnss3-dev \
         libreadline-dev \
-        libsqlite3-dev \ 
+        libsqlite3-dev \
         libssl-dev \
-        xz-utils \ 
+        xz-utils \
         zlib1g-dev \
         liblzma-dev \
         "

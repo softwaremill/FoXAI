@@ -11,7 +11,7 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -26,18 +26,18 @@ jobs:
           restore-keys: |
             venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('poetry.lock') }}
             venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
-      
+
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.1.5
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
-      
+
       - name: Install dependencies
         shell: bash
         run: |
           poetry install --with docs
         working-directory: ""
-  
+
       - name: Get Package Version
         id: get_version
         run: echo ::set-output name=VERSION::$(poetry version | cut -d " " -f 2)
@@ -77,7 +77,7 @@ jobs:
           echo ${{ github.ref }}
           echo "BRANCH_NAME=$(echo ${GITHUB_REF##*/} | tr / -)" >> $GITHUB_ENV
           cat $GITHUB_ENV
-    
+
       - uses: actions/checkout@v3
         name: Check out gh-pages branch (full history)
         with:
@@ -109,13 +109,13 @@ jobs:
 
       - name: Run docs-versions-menu
         run: docs-versions-menu
-      
+
       - name: Set git configuration
         shell: bash
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-      
+
       - name: Commit changes
         shell: bash
         run: |
@@ -124,7 +124,7 @@ jobs:
           git add -A --verbose
           echo "# GIT STATUS"
           git status
-          echo "# GIT COMMIT"      
+          echo "# GIT COMMIT"
           git commit --verbose -m "Auto-update from Github Actions Workflow" -m "Deployed from commit ${GITHUB_SHA} (${GITHUB_REF})"
           git log -n 1
 
