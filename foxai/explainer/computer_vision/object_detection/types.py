@@ -1,5 +1,10 @@
+"""File contains data class for object detection unified model output."""
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
+
+import torch
+
+DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
 
 
 @dataclass
@@ -10,3 +15,15 @@ class PredictionOutput:
     class_number: int
     class_name: str
     confidence: float
+
+
+@dataclass
+class ObjectDetectionOutput:
+    """Data class for model predictions for object detection.
+
+    It contains heatmaps, logits and predictions in YOLO style.
+    """
+
+    saliency_maps: List[torch.Tensor]
+    logits: List[torch.Tensor]
+    predictions: List[PredictionOutput]

@@ -1,29 +1,18 @@
 """
+File contains GradCAM algorithm for object detection task.
+
 Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
 """
 
-from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
 import torch
 import torch.nn.functional as F
 
-from foxai.explainer.computer_vision.object_detection.object_detector import (
+from foxai.explainer.computer_vision.object_detection.base_object_detector import (
     BaseObjectDetector,
-    PredictionOutput,
 )
-
-
-@dataclass
-class ObjectDetectionOutput:
-    """Data class for model predictions for object detection.
-
-    It contains heatmaps, logits and predictions in YOLO style.
-    """
-
-    saliency_maps: List[torch.Tensor]
-    logits: List[torch.Tensor]
-    predictions: List[PredictionOutput]
+from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
 
 
 class GradCAMObjectDetection:

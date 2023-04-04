@@ -17,11 +17,13 @@ from foxai.explainer.computer_vision.object_detection.gradcam import (
     GradCAMObjectDetection,
     ObjectDetectionOutput,
 )
-from foxai.explainer.computer_vision.object_detection.model import (
+from foxai.explainer.computer_vision.object_detection.models.ssd.ssd_object_detector import (
+    SSDObjectDetector,
+)
+from foxai.explainer.computer_vision.object_detection.models.yolov5.model import (
     WrapperYOLOv5ObjectDetectionModel,
 )
-from foxai.explainer.computer_vision.object_detection.object_detector import (
-    SSDObjectDetector,
+from foxai.explainer.computer_vision.object_detection.models.yolov5.yolo_object_detector import (
     YOLOv5ObjectDetector,
     get_yolo_layer,
 )

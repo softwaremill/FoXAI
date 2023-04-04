@@ -1,4 +1,6 @@
 """
+File contains functions to handle images, coordinates and calcualte IoU.
+
 Based on code: https://github.com/pooya-mohammadi/yolov5-gradcam.
 """
 

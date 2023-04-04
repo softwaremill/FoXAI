@@ -1,3 +1,4 @@
+"""File contains YOLOv5 wrappers used for explanation process."""
 # mypy: ignore-errors
 
 from typing import List, Tuple
@@ -5,9 +6,8 @@ from typing import List, Tuple
 import torch
 from torch import nn
 
-from foxai.explainer.computer_vision.object_detection.yolo import Detect
-
-DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
+from foxai.explainer.computer_vision.object_detection.models.yolov5.yolo import Detect
+from foxai.explainer.computer_vision.object_detection.types import DetectionOutput
 
 
 class WrapperDetect(nn.Module):
