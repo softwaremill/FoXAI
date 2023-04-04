@@ -1,4 +1,4 @@
-"""File with Deconvolution algorithm explainer classes.
+"""File with Guided Backpropagation algorithm explainer class.
 
 Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/guided_backprop_deconvnet.py.
 """
@@ -8,26 +8,25 @@ from typing import Any
 
 import torch
 from captum._utils.typing import TargetType
-from captum.attr import Deconvolution
+from captum.attr import GuidedBackprop
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import CVExplainer
-from foxai.explainer.model_utils import modify_modules
+from foxai.explainer.computer_vision.image_classification.base_explainer import (
+    Explainer,
+)
+from foxai.explainer.computer_vision.model_utils import modify_modules
 
 
-class BaseDeconvolutionCVExplainer(CVExplainer):
-    """Base Deconvolution algorithm explainer."""
+class BaseGuidedBackpropCVExplainer(Explainer):
+    """Base Guided Backpropagation algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
         self,
         model: torch.nn.Module,
-    ) -> Deconvolution:
+        **kwargs,
+    ) -> GuidedBackprop:
         """Create explainer object.
-
-        Args:
-            model: The forward function of the model or any
-                modification of it.
 
         Returns:
             Explainer object.
@@ -41,14 +40,20 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
         additional_forward_args: Any = None,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate model's attributes with Deconvolution algorithm explainer.
+        """Generate model's attributes with Guided Backpropagation algorithm explainer.
 
         Args:
             model: The forward function of the model or any
                 modification of it.
-            inputs: Input for which
+            input_data: Input for which
                 attributions are computed. If forward_func takes a single
                 tensor as input, a single input tensor should be provided.
+                If forward_func takes multiple tensors as input, a tuple
+                of the input tensors should be provided. It is assumed
+                that for all given input tensors, dimension 0 corresponds
+                to the number of examples (aka batch size), and if
+                multiple input tensors are provided, the examples must
+                be aligned appropriately.
             pred_label_idx: Output indices for
                 which gradients are computed (for classification cases,
                 this is usually the target class).
@@ -72,6 +77,7 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
                     examples in inputs (dim 0), and each tuple containing
                     #output_dims - 1 elements. Each tuple is applied as the
                     target for the corresponding example.
+
                 Default: None
             additional_forward_args: If the forward function
                 requires additional arguments other than the inputs for
@@ -86,7 +92,7 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
                 Default: None
 
         Returns:
-            The deconvolution attributions with respect to each
+            The guided backprop gradients with respect to each
             input feature. Attributions will always
             be the same size as the provided inputs, with each value
             providing the attribution of the corresponding input index.
@@ -97,9 +103,8 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-
-        deconv = self.create_explainer(model=model)
-        attributions = deconv.attribute(
+        guided_backprop = self.create_explainer(model=model)
+        attributions = guided_backprop.attribute(
             input_data,
             target=pred_label_idx,
             additional_forward_args=additional_forward_args,
@@ -108,23 +113,18 @@ class BaseDeconvolutionCVExplainer(CVExplainer):
         return attributions
 
 
-class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
-    """Base Deconvolution algorithm explainer."""
+class GuidedBackpropCVExplainer(BaseGuidedBackpropCVExplainer):
+    """Guided Backpropagation algorithm explainer."""
 
     def create_explainer(
         self,
         model: torch.nn.Module,
-    ) -> Deconvolution:
+        **kwargs,
+    ) -> GuidedBackprop:
         """Create explainer object.
-
-        Args:
-            model: The forward function of the model or any
-                modification of it.
 
         Returns:
             Explainer object.
         """
-        model = modify_modules(model=model)
-        deconv = Deconvolution(model=model)
 
-        return deconv
+        return GuidedBackprop(model=modify_modules(model))

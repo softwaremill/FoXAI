@@ -46,7 +46,9 @@ from foxai.explainer import (
     OcclusionCVExplainer,
     SaliencyCVExplainer,
 )
-from foxai.explainer.base_explainer import CVExplainerT
+from foxai.explainer.computer_vision.image_classification.base_explainer import (
+    CVExplainerT,
+)
 from foxai.logger import create_logger
 
 _LOGGER: Optional[logging.Logger] = None

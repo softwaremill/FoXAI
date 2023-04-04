@@ -12,11 +12,16 @@ from captum._utils.typing import TargetType
 from captum.attr import DeepLiftShap, LayerDeepLiftShap
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import CVExplainer
-from foxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
+from foxai.explainer.computer_vision.image_classification.base_explainer import (
+    Explainer,
+)
+from foxai.explainer.computer_vision.model_utils import (
+    get_last_conv_model_layer,
+    modify_modules,
+)
 
 
-class BaseDeepLIFTSHAPCVExplainer(CVExplainer):
+class BaseDeepLIFTSHAPCVExplainer(Explainer):
     """Base DeepLIFT SHAP algorithm explainer."""
 
     @abstractmethod

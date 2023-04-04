@@ -8,13 +8,21 @@ import torch
 import torch.nn.functional as F
 import torchvision
 from deep_utils.utils.box_utils.boxes import Box
-from src.model import WrapperYOLOv5ObjectDetectionModel
-from src.types import PredictionOutput
-from src.utils import box_iou, resize_image, xywh2xyxy
 from torch import nn
 from torchvision.models.detection import _utils as det_utils
+from torchvision.models.detection.image_list import ImageList
 from torchvision.models.detection.ssd import SSD
 from torchvision.ops import boxes as box_ops
+
+from foxai.explainer.computer_vision.object_detection.model import (
+    WrapperYOLOv5ObjectDetectionModel,
+)
+from foxai.explainer.computer_vision.object_detection.types import PredictionOutput
+from foxai.explainer.computer_vision.object_detection.utils import (
+    box_iou,
+    resize_image,
+    xywh2xyxy,
+)
 
 
 class BaseObjectDetector(nn.Module, ABC):
@@ -27,7 +35,7 @@ class BaseObjectDetector(nn.Module, ABC):
     def forward(
         self,
         image: torch.Tensor,
-    ) -> Tuple[List[PredictionOutput], List[torch.Tensor],]:
+    ) -> Tuple[List[PredictionOutput], List[torch.Tensor]]:
         """Forward pass of the network.
 
         Args:
@@ -35,7 +43,7 @@ class BaseObjectDetector(nn.Module, ABC):
 
         Returns:
             Tuple of 2 values, first is tuple of predictions containing bounding-boxes,
-            class number, class name and confidence; second value is list of tensor
+            class number, class name and confidence; second value is list of tensors
             with logits per each detection.
         """
 
@@ -82,11 +90,11 @@ class BaseObjectDetector(nn.Module, ABC):
         )
         # convert array from (B x H x W x C) to (B x C x H x W)
         img = img.transpose((0, 3, 1, 2))
-        img = torch.from_numpy(img)
+        img_tensor = torch.from_numpy(img)
 
         # convert from uint8 to float
-        img = img / 255.0
-        return img
+        img_tensor = img_tensor / 255.0
+        return img_tensor
 
 
 class YOLOv5ObjectDetector(BaseObjectDetector):
@@ -98,9 +106,9 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
     def __init__(
         self,
         model: WrapperYOLOv5ObjectDetectionModel,
-        device: torch.DeviceObjType,
+        device: torch.device,
         img_size: Tuple[int, int],
-        names: Optional[List[str]] = None,
+        names: List[str],
         mode: str = "eval",
         confidence: float = 0.4,
         iou_thresh: float = 0.45,
@@ -114,8 +122,6 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         # 2nd would be logits tensor of shape [bs, x, number_of_classes]
         # 3rd is discarded in this class
         # where x is number of hidden sizes of target layer
-        self.model = None
-
         self.img_size = img_size
         self.mode = mode
         self.confidence = confidence
@@ -144,7 +150,6 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         classes: Optional[List[str]] = None,
         agnostic: bool = False,
         multi_label: bool = False,
-        labels: Tuple[str] = (),
         max_det: int = 300,
     ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         """Runs Non-Maximum Suppression (NMS) on inference and logits results.
@@ -161,13 +166,11 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
             agnostic: If True it restricts max width of detection. Defaults to False.
             multi_label: If True function will assign multiple classes to single
                 detection. Defaults to False.
-            labels: If not empty function will process only detection of objects from
-                this list of classes. Defaults to ().
             max_det: Maximum detections. Defaults to 300.
 
         Returns:
            Tuple of list of detections, on (n, 6) tensor per image [xyxy, conf, cls]
-            and list of pruned input logits tensors (n, number-classes).
+            and list of pruned input logits tensor (n, number-classes).
         """
 
         nc = prediction.shape[2] - 5  # number of classes
@@ -199,14 +202,6 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         ):  # image index, image inference
             x = x[xc[xi]]  # confidence
             log_ = log_[xc[xi]]
-            # Cat apriori labels if autolabelling
-            if labels and len(labels[xi]):
-                l = labels[xi]
-                v = torch.zeros((len(l), nc + 5), device=x.device)
-                v[:, :4] = l[:, 1:5]  # box
-                v[:, 4] = 1.0  # conf
-                v[range(len(l)), l[:, 0].long() + 5] = 1.0  # cls
-                x = torch.cat((x, v), 0)
 
             # If none remain process next image
             if not x.shape[0]:
@@ -266,7 +261,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
     def forward(
         self,
         image: torch.Tensor,
-    ) -> Tuple[List[PredictionOutput], List[torch.Tensor],]:
+    ) -> Tuple[List[PredictionOutput], List[torch.Tensor]]:
         """Forward pass of the network.
 
         Args:
@@ -274,7 +269,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
 
         Returns:
             Tuple of 2 values, first is tuple of predictions containing bounding-boxes,
-            class number, class name and confidence; second value is list of tensor
+            class number, class name and confidence; second value is list of tensors
             with logits per each detection.
         """
         prediction, logits = self.model(image)
@@ -286,7 +281,11 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
             iou_threshold=self.iou_thresh,
             agnostic=self.agnostic,
         )
-        boxes, class_names, classes, confidences = [
+        boxes: List[List[np.ndarray]] = []
+        class_names: List[List[str]] = []
+        classes: List[List[int]] = []
+        confidences: List[List[float]] = []
+        boxes, class_names, classes, confidences = [  # type: ignore
             [[] for _ in range(image.shape[0])] for _ in range(4)
         ]
         for i, det in enumerate(prediction):  # detections per image
@@ -312,7 +311,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         return (
             [
                 PredictionOutput(
-                    bbox=bbox,
+                    bbox=bbox.tolist(),
                     class_number=class_no,
                     class_name=class_name,
                     confidence=confidence,
@@ -335,14 +334,30 @@ def get_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Modul
     Return:
         Model's layer.
     """
+    if not isinstance(model.model, torch.nn.Module) or not isinstance(
+        model.model.model, torch.nn.Module
+    ):
+        raise RuntimeError("Model is not valid YOLOv5 model.")
+
     hierarchy = layer_name.split("_")
+    target_layer: Optional[torch.nn.Module] = None
     target_layer = model.model.model._modules[  # pylint: disable = (protected-access)
         hierarchy[0]
     ]
 
     for h in hierarchy[1:]:
-        target_layer = target_layer._modules[h]  # pylint: disable = (protected-access)
-    return target_layer
+        if not isinstance(target_layer, torch.nn.Module):
+            raise RuntimeError("Selected layer is not present in network.")
+
+        if target_layer._modules is not None:  # pylint: disable = (protected-access)
+            target_layer = target_layer._modules[h]  # pylint: disable = W0212
+        else:
+            raise RuntimeError("Selected layer is not present in network.")
+
+    if target_layer is not None:
+        return target_layer
+    else:
+        raise RuntimeError("Selected layer is not present in network.")
 
 
 class SSDObjectDetector(BaseObjectDetector):
@@ -363,7 +378,7 @@ class SSDObjectDetector(BaseObjectDetector):
     def forward(
         self,
         image: torch.Tensor,
-    ) -> Tuple[List[PredictionOutput], List[torch.Tensor],]:
+    ) -> Tuple[List[PredictionOutput], List[torch.Tensor]]:
         """Forward pass of the network.
 
         Args:
@@ -371,8 +386,8 @@ class SSDObjectDetector(BaseObjectDetector):
 
         Returns:
             Tuple of 2 values, first is tuple of predictions containing bounding-boxes,
-            class number, class name and confidence; second value is list of tensor
-            with logits per each detection.
+            class number, class name and confidence; second value is tensor with logits
+            per each detection.
         """
         # get the original image sizes
         images = [image[0]]
@@ -385,7 +400,8 @@ class SSDObjectDetector(BaseObjectDetector):
             original_image_sizes.append((val[0], val[1]))
 
         # transform the input
-        images, targets = self.model.transform(images, None)
+        image_list: ImageList
+        image_list, targets = self.model.transform(images, None)
 
         # Check for degenerate boxes
         if targets is not None:
@@ -401,7 +417,7 @@ class SSDObjectDetector(BaseObjectDetector):
                     )
 
         # get the features from the backbone
-        features = self.model.backbone(images.tensors)
+        features = self.model.backbone(image_list.tensors)
         if isinstance(features, torch.Tensor):
             features = OrderedDict([("0", features)])
 
@@ -411,16 +427,16 @@ class SSDObjectDetector(BaseObjectDetector):
         head_outputs = self.model.head(features)
 
         # create the set of anchors
-        anchors = self.model.anchor_generator(images, features)
+        anchors = self.model.anchor_generator(image_list, features)
 
         detections: List[Dict[str, torch.Tensor]] = []
         detections, logits = self.postprocess_detections(
             head_outputs=head_outputs,
             image_anchors=anchors,
-            image_shapes=images.image_sizes,
+            image_shapes=image_list.image_sizes,
         )
         detections = self.model.transform.postprocess(
-            detections, images.image_sizes, original_image_sizes
+            detections, image_list.image_sizes, original_image_sizes
         )
 
         detection_class_names = [str(val.item()) for val in detections[0]["labels"]]
@@ -444,9 +460,9 @@ class SSDObjectDetector(BaseObjectDetector):
         predictions = [
             PredictionOutput(
                 bbox=bbox.tolist(),
-                class_number=[class_no.tolist()],
+                class_number=class_no.item(),
                 class_name=class_name,
-                confidence=[confidence.tolist()],
+                confidence=confidence.item(),
             )
             for bbox, class_no, class_name, confidence in zip(
                 detections[0]["boxes"],
@@ -463,7 +479,7 @@ class SSDObjectDetector(BaseObjectDetector):
         head_outputs: Dict[str, torch.Tensor],
         image_anchors: List[torch.Tensor],
         image_shapes: List[Tuple[int, int]],
-    ) -> List[Dict[str, torch.Tensor]]:
+    ) -> Tuple[List[Dict[str, torch.Tensor]], List[torch.Tensor]]:
         bbox_regression = head_outputs["bbox_regression"]
         logits = head_outputs["cls_logits"]
         pred_scores = F.softmax(head_outputs["cls_logits"], dim=-1)
@@ -506,26 +522,26 @@ class SSDObjectDetector(BaseObjectDetector):
                     )
                 )
 
-            image_boxes = torch.cat(image_boxes, dim=0)
-            image_scores = torch.cat(image_scores, dim=0)
-            image_labels = torch.cat(image_labels, dim=0)
+            image_box: torch.Tensor = torch.cat(image_boxes, dim=0)
+            image_score: torch.Tensor = torch.cat(image_scores, dim=0)
+            image_label: torch.Tensor = torch.cat(image_labels, dim=0)
 
             # non-maximum suppression
             keep = box_ops.batched_nms(
-                boxes=image_boxes,
-                scores=image_scores,
-                idxs=image_labels,
+                boxes=image_box,
+                scores=image_score,
+                idxs=image_label,
                 iou_threshold=self.model.nms_thresh,
             )
             keep = keep[: self.model.detections_per_img]
 
             detections.append(
                 {
-                    "boxes": image_boxes[keep],
-                    "scores": image_scores[keep],
-                    "labels": image_labels[keep],
+                    "boxes": image_box[keep],
+                    "scores": image_score[keep],
+                    "labels": image_label[keep],
                 }
             )
         # add batch dimension for further processing
         keep_logits = logits[0][keep][None, :]
-        return detections, keep_logits
+        return detections, list(keep_logits)

@@ -6,7 +6,7 @@ import torch
 from captum._utils.typing import TargetType
 
 
-class CVExplainer(ABC):
+class Explainer(ABC):
     """Abstract explainer class."""
 
     # TODO: add support in explainer for multiple input models
@@ -39,5 +39,5 @@ class CVExplainer(ABC):
         return type(self).__name__
 
 
-CVExplainerT = TypeVar("CVExplainerT", bound=CVExplainer)
+CVExplainerT = TypeVar("CVExplainerT", bound=Explainer)
 """CVExplainer subclass type."""

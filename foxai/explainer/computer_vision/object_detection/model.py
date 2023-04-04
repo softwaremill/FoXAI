@@ -1,8 +1,11 @@
+# mypy: ignore-errors
+
 from typing import List, Tuple
 
 import torch
-from src.yolo import Detect
 from torch import nn
+
+from foxai.explainer.computer_vision.object_detection.yolo import Detect
 
 DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
 
@@ -102,7 +105,7 @@ class WrapperYOLOv5ObjectDetectionModel(nn.Module):
     Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
     """
 
-    def __init__(self, model: nn.Module, device: torch.DeviceObjType):
+    def __init__(self, model: nn.Module, device: torch.device):
         super().__init__()
         self.save = model.save
         self.yaml = model.yaml
@@ -124,7 +127,7 @@ class WrapperYOLOv5ObjectDetectionModel(nn.Module):
 
         # replace Detect class with DetectWrapper class in YOLOv5 network
         # to return predictions with logits
-        custom_detect = WrapperDetect(m)
+        custom_detect = WrapperDetect(model=m)
         model.model[-1] = custom_detect
         self.model = model
         self.model.eval().to(device)

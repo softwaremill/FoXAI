@@ -3,11 +3,15 @@ Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import torch
 import torch.nn.functional as F
-from src.object_detector import BaseObjectDetector, PredictionOutput
+
+from foxai.explainer.computer_vision.object_detection.object_detector import (
+    BaseObjectDetector,
+    PredictionOutput,
+)
 
 
 @dataclass
@@ -32,8 +36,8 @@ class GradCAMObjectDetection:
         img_size: Tuple[int, int] = (640, 640),
     ):
         self.model = model
-        self.gradients = {}
-        self.activations = {}
+        self.gradients: Dict[str, torch.Tensor] = {}
+        self.activations: Dict[str, torch.Tensor] = {}
         self.target_layer = target_layer
 
         def backward_hook(
@@ -53,7 +57,12 @@ class GradCAMObjectDetection:
         self.target_layer.register_forward_hook(forward_hook)
         self.target_layer.register_backward_hook(backward_hook)
 
-        device = "cuda" if next(self.model.model.parameters()).is_cuda else "cpu"
+        device = (
+            "cuda"
+            if isinstance(self.model.model, torch.nn.Module)
+            and next(self.model.model.parameters()).is_cuda
+            else "cpu"
+        )
         self.model(torch.zeros(1, 3, *img_size, device=device))
 
     def forward(

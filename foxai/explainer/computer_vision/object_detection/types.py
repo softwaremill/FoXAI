@@ -6,7 +6,7 @@ from typing import List
 class PredictionOutput:
     """Data class for model prediction output in YOLO style."""
 
-    bbox: List[List[int]]
-    class_number: List[List[int]]
-    class_name: List[List[str]]
-    confidence: List[List[float]]
+    bbox: List[int]
+    class_number: int
+    class_name: str
+    confidence: float
