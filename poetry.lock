@@ -333,26 +333,6 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
-name = "deep-utils"
-version = "0.10.7"
-description = "Deep Utils"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-numpy = ">=1.21.0"
-requests = ">=2.27.1"
-tqdm = ">=4.62.3"
-
-[package.extras]
-cv = ["opencv-python (>=4.5.5.58)"]
-tf = ["opencv-python (>=4.5.5.58)", "tensorflow (>=2.6.0)"]
-torch = ["torch (>=1.8.0,<1.12.0)", "torchaudio (>=1.10.0)", "torchvision (>=0.10.0)"]
-torch_transformers = ["torch (>=1.8.0,<1.12.0)", "torchaudio (>=1.10.0)", "torchvision (>=0.10.0)", "transformers (>=4.18.0)"]
-torchvision = ["opencv-python (>=4.5.5.58)", "torch (>=1.8.0,<1.12.0)", "torchvision (>=0.10.0)"]
-
-[[package]]
 name = "defusedxml"
 version = "0.7.1"
 description = "XML bomb protection for Python stdlib modules"
@@ -942,7 +922,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "nbclassic"
-version = "0.5.4"
+version = "0.5.5"
 description = "Jupyter Notebook as a Jupyter Server extension."
 category = "dev"
 optional = false
@@ -2188,7 +2168,7 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.2,<3.11"
-content-hash = "f6491398f4b7d17dd5358ab5de5b6a9c0b289778fb42104cdde5cddbdbd7ea78"
+content-hash = "f610a16f0e6792cdcf7935f990d533b773dd117fe87eacd2c9aa209c8cba50d9"
 
 [metadata.files]
 aiohttp = [
@@ -2575,10 +2555,6 @@ debugpy = [
 decorator = [
     {file = "decorator-5.1.1-py3-none-any.whl", hash = "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"},
     {file = "decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
-]
-deep-utils = [
-    {file = "deep_utils-0.10.7-py3-none-any.whl", hash = "sha256:47efe05d68d6347b4b001ce5089b3670959d68c69b8a1c4650ae02615891e1b2"},
-    {file = "deep_utils-0.10.7.tar.gz", hash = "sha256:fadf2b3ec00faaec49bbf0144fd852df3025c1f59389ceeb3375f5e02c03fdce"},
 ]
 defusedxml = [
     {file = "defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"},
@@ -3106,8 +3082,8 @@ mypy-extensions = [
     {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
 ]
 nbclassic = [
-    {file = "nbclassic-0.5.4-py3-none-any.whl", hash = "sha256:df78e4ba143f35084ad060deec16cb1d4839dde47bfdbc4232beb7071a6d70ea"},
-    {file = "nbclassic-0.5.4.tar.gz", hash = "sha256:312b3f7d7ff2e6c261d51799bb12e6493498ab47d3469d3a01015d5533fd4d2b"},
+    {file = "nbclassic-0.5.5-py3-none-any.whl", hash = "sha256:47791b04dbcb89bf7fde910a3d848fd4793a4248a8936202453631a87da37d51"},
+    {file = "nbclassic-0.5.5.tar.gz", hash = "sha256:d2c91adc7909b0270c73e3e253d3687a6704b4f0a94bc156a37c85eba09f4d37"},
 ]
 nbclient = [
     {file = "nbclient-0.7.3-py3-none-any.whl", hash = "sha256:8fa96f7e36693d5e83408f5e840f113c14a45c279befe609904dbe05dad646d1"},

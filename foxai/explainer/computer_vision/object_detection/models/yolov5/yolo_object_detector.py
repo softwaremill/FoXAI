@@ -5,7 +5,6 @@ from typing import List, Optional, Tuple
 import numpy as np
 import torch
 import torchvision
-from deep_utils.utils.box_utils.boxes import Box
 
 from foxai.explainer.computer_vision.object_detection.base_object_detector import (
     BaseObjectDetector,
@@ -129,7 +128,6 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
 
             # Compute conf
             x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
-            # Box (center x, center y, width, height) to (x1, y1, x2, y2)
             box = xywh2xyxy(x[:, :4])
 
             # Detections matrix nx6 (xyxy, conf, cls)
@@ -211,15 +209,17 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         for i, det in enumerate(prediction):  # detections per image
             if len(det):
                 for *xyxy, conf, cls in det:
-                    bbox = Box.box2box(
-                        xyxy,
-                        in_source=Box.BoxSource.Torch,
-                        to_source=Box.BoxSource.Numpy,
-                        return_int=True,
-                    )
+                    bbox_raw: List[torch.Tensor] = [
+                        xyxy[1],
+                        xyxy[0],
+                        xyxy[3],
+                        xyxy[2],
+                    ]
                     # TODO: line below is used to test detectio on resized image when
                     # width:height ratio was changed bboxes have negative coordinates
-                    bbox = [np.abs(b) for b in bbox]
+                    bbox: np.ndarray = np.array(
+                        [np.abs(int(b.item())) for b in bbox_raw]
+                    )
                     boxes[i].append(bbox)
                     confidences[i].append(round(conf.item(), 2))
                     cls = int(cls.item())
