@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 import torch
 import torchvision
+from torchvision.ops.boxes import box_convert, box_iou
 
 from foxai.explainer.computer_vision.object_detection.base_object_detector import (
     BaseObjectDetector,
@@ -13,7 +14,6 @@ from foxai.explainer.computer_vision.object_detection.models.yolov5.model import
     WrapperYOLOv5ObjectDetectionModel,
 )
 from foxai.explainer.computer_vision.object_detection.types import PredictionOutput
-from foxai.explainer.computer_vision.object_detection.utils import box_iou, xywh2xyxy
 
 
 class YOLOv5ObjectDetector(BaseObjectDetector):
@@ -128,7 +128,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
 
             # Compute conf
             x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
-            box = xywh2xyxy(x[:, :4])
+            box = box_convert(x[:, :4], in_fmt="xywh", out_fmt="xyxy")
 
             # Detections matrix nx6 (xyxy, conf, cls)
             if multi_label:
