@@ -48,7 +48,6 @@ class GradCAMObjectDetection:
     def forward(
         self,
         input_img: torch.Tensor,
-        class_idx: bool = True,
     ) -> ObjectDetectionOutput:
         """Forward pass of GradCAM aglorithm.
 
@@ -62,10 +61,7 @@ class GradCAMObjectDetection:
         b, _, h, w = input_img.size()
         predictions, logits = self.model.forward(input_img)
         for logit, cls in zip(logits[0], [p.class_number for p in predictions]):
-            if class_idx:
-                score = logit[cls]
-            else:
-                score = logit.max()
+            score = logit[cls]
             self.model.zero_grad()
             score.backward(retain_graph=True)
             gradients = self.gradients["value"]
