@@ -7,15 +7,15 @@ Based on code: https://github.com/pooya-mohammadi/yolov5-gradcam.
 from typing import Tuple
 
 import cv2
-import torch
+import numpy as np
 
 
 def resize_image(
-    image: torch.Tensor,
+    image: np.ndarray,
     new_shape: Tuple[int, int] = (640, 640),
     change_original_ratio: bool = False,
     scaleup: bool = True,
-) -> torch.Tensor:
+) -> np.ndarray:
     """Resize image to given shape.
 
     Args:
