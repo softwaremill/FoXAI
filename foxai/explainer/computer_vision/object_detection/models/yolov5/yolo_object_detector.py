@@ -128,7 +128,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
 
             # Compute conf
             x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
-            box = box_convert(x[:, :4], in_fmt="xywh", out_fmt="xyxy")
+            box = box_convert(x[:, :4], in_fmt="cxcywh", out_fmt="xyxy")
 
             # Detections matrix nx6 (xyxy, conf, cls)
             if multi_label:
