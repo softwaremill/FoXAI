@@ -1,10 +1,13 @@
 # pylint: disable = missing-class-docstring
 
+from typing import List
+
+import numpy as np
 import pytest
 import torch
 from matplotlib.pyplot import Figure
 
-from foxai.visualizer import single_channel_visualization
+from foxai.visualizer import get_heatmap_bbox, single_channel_visualization
 
 
 def test_single_channel_visualization_selected_channel_should_raise_exception() -> None:
@@ -34,3 +37,25 @@ def test_single_channel_visualization_selected_channel_should_pass() -> None:
     )
 
     assert isinstance(result, Figure)
+
+
+def test_get_heatmap_bbox_should_return_valid_mask():
+    heatmap: np.ndarray = np.ones((5, 5), dtype=np.uint8)
+    bbox: List[int] = [1, 1, 4, 4]
+    expected = np.asarray(
+        [
+            [0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0],
+            [0, 1, 1, 1, 0],
+            [0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0],
+        ],
+        dtype=np.uint8,
+    )
+
+    result = get_heatmap_bbox(
+        heatmap=heatmap,
+        bbox=bbox,
+    )
+
+    np.testing.assert_almost_equal(expected, result)

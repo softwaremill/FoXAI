@@ -196,6 +196,27 @@ def single_channel_visualization(
     )
 
 
+def preprocess_object_detection_image(input_image: torch.Tensor) -> np.ndarray:
+    """Process input image to display.
+
+    Args:
+        input_image: Original image.
+
+    Returns:
+        Converted image as np.ndarray in (C x H x W).
+    """
+    return (
+        input_image.squeeze(0)
+        .mul(255)
+        .add_(0.5)
+        .clamp_(0, 255)
+        .permute(1, 2, 0)
+        .detach()
+        .cpu()
+        .numpy()
+    )
+
+
 def get_heatmap_bbox(
     heatmap: np.ndarray,
     bbox: List[int],
@@ -235,17 +256,7 @@ def draw_heatmap_in_bbox(
     Returns:
         Image with displayed heatmap in bounding box area.
     """
-    heatmap_np = (
-        heatmap.squeeze(0)
-        .mul(255)
-        .add_(0.5)
-        .clamp_(0, 255)
-        .permute(1, 2, 0)
-        .detach()
-        .cpu()
-        .numpy()
-        .astype(np.uint8)
-    )
+    heatmap_np = preprocess_object_detection_image(heatmap).astype(np.uint8)
     heatmap_np = cv2.applyColorMap(heatmap_np, cv2.COLORMAP_JET)
 
     masked_heatmap = get_heatmap_bbox(heatmap=heatmap_np, bbox=bbox).astype(np.float32)
@@ -291,16 +302,7 @@ def object_detection_visualization(
     masks = detections.saliency_maps
     boxes = [pred.bbox for pred in detections.predictions]
     class_names = [pred.class_name for pred in detections.predictions]
-    img_to_display = (
-        input_image.squeeze(0)
-        .mul(255)
-        .add_(0.5)
-        .clamp_(0, 255)
-        .permute(1, 2, 0)
-        .detach()
-        .cpu()
-        .numpy()
-    )
+    img_to_display = preprocess_object_detection_image(input_image)
     img_to_display = img_to_display[..., ::-1]  # convert to bgr
     images = [img_to_display]
 
