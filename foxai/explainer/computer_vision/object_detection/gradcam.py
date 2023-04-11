@@ -58,34 +58,64 @@ class GradCAMObjectDetection:
             ObjectDetectionOutput object.
         """
         saliency_maps: List[torch.Tensor] = []
-        b, _, h, w = input_img.size()
+        _, _, height, width = input_img.size()
         predictions, logits = self.model.forward(input_img)
         for logit, cls in zip(logits[0], [p.class_number for p in predictions]):
             score = logit[cls]
+
+            # clear gradients
             self.model.zero_grad()
+
+            # calculate gradients
             score.backward(retain_graph=True)
-            gradients = self.gradients["value"]
-            activations = self.activations["value"]
-            b, k, _, _ = gradients.size()
-            alpha = gradients.view(b, k, -1).mean(2)
-            weights = alpha.view(b, k, 1, 1)
-            saliency_map = (weights * activations).sum(1, keepdim=True)
-            saliency_map = F.relu(saliency_map)
-            saliency_map = F.upsample(
-                saliency_map, size=(h, w), mode="bilinear", align_corners=False
+
+            saliency_maps.append(
+                self.get_saliency_map(
+                    height=height,
+                    width=width,
+                    gradients=self.gradients["value"],
+                    activations=self.activations["value"],
+                )
             )
-            saliency_map_min, saliency_map_max = saliency_map.min(), saliency_map.max()
-            saliency_map = (
-                (saliency_map - saliency_map_min)
-                .div(saliency_map_max - saliency_map_min)
-                .data
-            )
-            saliency_maps.append(saliency_map)
         return ObjectDetectionOutput(
             saliency_maps=saliency_maps,
             logits=logits,
             predictions=predictions,
         )
+
+    def get_saliency_map(
+        self,
+        height: int,
+        width: int,
+        gradients: torch.Tensor,
+        activations: torch.Tensor,
+    ) -> torch.Tensor:
+        """Generate saliency map.
+
+        Args:
+            height: Original image height.
+            width: Original image width.
+            gradients: Layer gradients.
+            activations: Layer activations.
+
+        Returns:
+            Saliency map.
+        """
+        b, k, _, _ = gradients.size()
+        alpha = gradients.view(b, k, -1).mean(2)
+        weights = alpha.view(b, k, 1, 1)
+        saliency_map = (weights * activations).sum(1, keepdim=True)
+        saliency_map = F.relu(saliency_map)
+        saliency_map = F.upsample(
+            saliency_map, size=(height, width), mode="bilinear", align_corners=False
+        )
+        saliency_map_min, saliency_map_max = saliency_map.min(), saliency_map.max()
+        saliency_map = (
+            (saliency_map - saliency_map_min)
+            .div(saliency_map_max - saliency_map_min)
+            .data
+        )
+        return saliency_map
 
     def __call__(
         self,
