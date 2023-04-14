@@ -38,7 +38,7 @@ jobs:
       image: nvidia/cuda:${{ inputs.cuda_version }}-runtime-ubuntu20.04 # https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist
       options: --cpus 2 --memory-reservation 8g --gpus all
       volumes:
-        /usr/local/nvidia/lib64:/usr/local/nvidia/lib64
+        - /usr/local/nvidia/lib64:/usr/local/nvidia/lib64
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
