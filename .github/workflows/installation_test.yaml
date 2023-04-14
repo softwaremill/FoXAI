@@ -45,7 +45,7 @@ jobs:
       - name: Install system libs
         run: |
           apt-get update -y
-          apt-get install -y libglib2.0-0
+          apt-get install -y libglib2.0-0 libx11-dev libxext-dev
       - name: Set up Python 3.x
         uses: actions/setup-python@v4
         with:
