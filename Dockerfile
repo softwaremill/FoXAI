@@ -50,5 +50,7 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
     && poetry config virtualenvs.in-project true \
     && poetry install --no-root \
     && poetry build
-RUN python3 -m pip install dist/foxai-0.5.3-py3-none-any.whl
+RUN python3 -m pip install dist/foxai-0.5.4-py3-none-any.whl
 RUN python3 -m pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
+RUN python3 -m pip install jupyterlab==3.1.0
+
