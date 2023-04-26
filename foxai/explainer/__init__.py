@@ -6,6 +6,7 @@ from foxai.explainer.deeplift_shap import (
     DeepLIFTSHAPCVExplainer,
     LayerDeepLIFTSHAPCVExplainer,
 )
+from foxai.explainer.fullgradeints import FullGradientCVExplainer
 from foxai.explainer.gradcam import GuidedGradCAMCVExplainer, LayerGradCAMCVExplainer
 from foxai.explainer.gradient_shap import (
     GradientSHAPCVExplainer,
