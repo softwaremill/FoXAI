@@ -136,20 +136,4 @@ class WrapperYOLOv5ObjectDetectionModel(nn.Module):
         self,
         x: torch.Tensor,
     ) -> DetectionOutput:
-        return self._forward_once(x)  # single-scale inference, train
-
-    def _forward_once(
-        self,
-        x: torch.Tensor,
-    ) -> DetectionOutput:
-        y: List[torch.Tensor] = []  # outputs
-        for m in self.model.model:
-            if m.f != -1:  # if not from previous layer
-                x = (
-                    y[m.f]
-                    if isinstance(m.f, int)
-                    else [x if j == -1 else y[j] for j in m.f]
-                )  # from earlier layers
-            x = m(x)  # run
-            y.append(x if m.i in self.save else None)  # save output
-        return x
+        return self.model(x)  # single-scale inference, train
