@@ -92,7 +92,6 @@ def main():
         )
         model_wrapper = YOLOv5ObjectDetector(
             model=wrapper_model,
-            device=device,
             img_size=real_input_image_shape,
             names=names,
         )

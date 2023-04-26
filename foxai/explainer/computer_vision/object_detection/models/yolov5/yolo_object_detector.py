@@ -25,7 +25,6 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
     def __init__(
         self,
         model: WrapperYOLOv5ObjectDetectionModel,
-        device: torch.device,
         img_size: Tuple[int, int],
         names: List[str],
         mode: str = "eval",
@@ -34,7 +33,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         agnostic_nms: bool = False,
     ):
         super().__init__()
-        self.device = device
+        self.device = model.device
 
         # in this case model on __call__ or on forward function has to return tuple of 3 variables:
         # 1st would be prediction tensor of shape [bs, x, number_of_classes + 5]
@@ -49,14 +48,14 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         self.names = names
         self.model = model
         self.model.requires_grad_(True)
-        self.model.to(device)
+        self.model.to(self.device)
         if self.mode == "train":
             self.model.train()
         else:
             self.model.eval()
 
         # preventing cold start
-        img = torch.zeros((1, 3, *self.img_size), device=device)
+        img = torch.zeros((1, 3, *self.img_size), device=self.device)
         self.model(img)
 
     @staticmethod
