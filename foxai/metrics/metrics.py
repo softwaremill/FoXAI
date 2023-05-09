@@ -55,7 +55,7 @@ def _metric_calculation(attrs: torch.tensor, transformed_img: torch.tensor, mode
     
     preprocessed_attrs, _ = _preprocess_img_and_attributes(attributes_matrix=attributes_matrix, transformed_img_np=transformed_img_np, only_positive_attr=True)
     
-    sorted_attrs:np.ndarray = np.flip(np.sort(np.unique(preprocessed_attrs)))
+    sorted_attrs: np.ndarray = np.flip(np.sort(np.unique(preprocessed_attrs)))
     stepped_attrs:np.ndarray = _get_stepped_attrs(sorted_attrs, steps_num)
     
     importance_lst:List[np.ndarray] = []
