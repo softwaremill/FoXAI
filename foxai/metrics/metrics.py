@@ -25,7 +25,7 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
     Returns:
         Numpy array of sample values according to decided number of steps.
     """
-    total_samples:int = len(sorted_attrs)
+    total_samples: int = len(sorted_attrs)
     required_step:int = total_samples//steps_num
     return sorted_attrs[::required_step]
 
