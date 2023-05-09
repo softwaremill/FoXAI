@@ -15,7 +15,7 @@ class Metrics(Enum):
     INSERTION = 1
     DELETION = 2
     
-def _get_stepped_attrs(sorted_attrs:np.ndarray, steps_num:int)->np.ndarray:
+def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
     """Get elements from array according to the number of wanted steps.
 
     Args:
