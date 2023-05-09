@@ -26,7 +26,7 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
         Numpy array of sample values according to decided number of steps.
     """
     total_samples: int = len(sorted_attrs)
-    required_step:int = total_samples//steps_num
+    required_step: int = total_samples//steps_num
     return sorted_attrs[::required_step]
 
 def _metric_calculation(attrs: torch.tensor, transformed_img: torch.tensor, model: torch.nn.Module, chosen_class: int, steps_num=30, metric_type=Metrics.INSERTION) -> Tuple[np.ndarray, List]:
