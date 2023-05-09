@@ -90,7 +90,7 @@ def _metric_calculation(attrs: torch.tensor, transformed_img: torch.tensor, mode
         softmax_output:torch.tensor = torch.nn.functional.softmax(output)[0]
         importance_lst.append(softmax_output[chosen_class].detach().numpy())
 
-    metric:np.ndarray = np.round(np.trapz(importance_lst)/len(importance_lst), 4)
+    metric: np.ndarray = np.round(np.trapz(importance_lst)/len(importance_lst), 4)
     
     return metric, importance_lst  
 
