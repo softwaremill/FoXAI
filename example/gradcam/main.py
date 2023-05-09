@@ -12,7 +12,7 @@ from torchvision.models._meta import _COCO_CATEGORIES
 from torchvision.models.detection import SSD300_VGG16_Weights
 
 from foxai.explainer.computer_vision.object_detection.gradcam import (
-    GradCAMObjectDetection,
+    LayerGradCAMObjectDetection,
     ObjectDetectionOutput,
 )
 from foxai.explainer.computer_vision.object_detection.models.ssd.ssd_object_detector import (
@@ -102,7 +102,7 @@ def main():
 
         input_image = org_input_image
 
-    saliency_method = GradCAMObjectDetection(
+    saliency_method = LayerGradCAMObjectDetection(
         model=model_wrapper,
         target_layer=target_layer,
     )
