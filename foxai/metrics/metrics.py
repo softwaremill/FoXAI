@@ -130,7 +130,7 @@ def insertion(attrs:torch.tensor, transformed_img, model:torch.nn.Module, chosen
     """
     return _metric_calculation(attrs, transformed_img, model, chosen_class, metric_type=Metrics.INSERTION)
     
-def visualize_metric(importance_lst:List[np.ndarray], metric_result:float, metric_type:str="Deletion"):
+def visualize_metric(importance_lst: List[np.ndarray], metric_result: float, metric_type: str="Deletion"):
     """Visualize graph for Insertion or deletion metric based on which area under the curve is caluclated. 
     """
     plt.ylim((0,1))
