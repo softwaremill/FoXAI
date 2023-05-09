@@ -191,3 +191,18 @@ def single_channel_visualization(
         figsize=figsize,
         alpha=alpha,
     )
+
+
+def visualize_metric(
+    importance_lst: List[np.ndarray],
+    metric_result: float,
+    metric_type: str = "Deletion",
+):
+    """
+    Visualize graph for Insertion or deletion metric based on which area under the curve is caluclated.
+    """
+    plt.ylim((0, 1))
+    plt.xlim((0, len(importance_lst)))
+    plt.plot(np.arange(len(importance_lst)), importance_lst)
+    plt.title(f"{metric_type}: {metric_result}")
+    plt.show()

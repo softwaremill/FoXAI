@@ -1,1 +1,1 @@
-from .metrics import deletion, insertion, visualize_metric
+from .metrics import deletion, insertion
