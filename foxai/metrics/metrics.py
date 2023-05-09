@@ -29,7 +29,7 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
     required_step:int = total_samples//steps_num
     return sorted_attrs[::required_step]
 
-def _metric_calculation(attrs:torch.tensor, transformed_img:torch.tensor, model:torch.nn.Module, chosen_class:int,steps_num=30, metric_type=Metrics.INSERTION)->Tuple[np.ndarray, List]:
+def _metric_calculation(attrs: torch.tensor, transformed_img: torch.tensor, model: torch.nn.Module, chosen_class: int, steps_num=30, metric_type=Metrics.INSERTION) -> Tuple[np.ndarray, List]:
     """Calculate metric (insertion or deletion) given importance map, image, model and chosen class. 
 
     Args:
