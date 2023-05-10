@@ -6,7 +6,7 @@ Based on https://github.com/idiap/fullgrad-saliency
 Note:
 FullGradient does not support inplace operations.
 ReLU in place operations are turned of in the model automatically.
-Howerer inplace addition, multiplication etc. is the model design
+However inplace addition, multiplication etc. is the model design
 choice and shlould be avoided in order to make the FullyGradient explainer work
 correctly.
 
