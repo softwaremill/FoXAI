@@ -41,7 +41,7 @@ _LOGGER: Optional[logging.Logger] = None
 _INPLACE_ERROR_MSG: Final[
     str
 ] = """
-Error possibly coused by in place operations.
+Error possibly caused by inplace operations.
 FullGradient does not support inplace operations.
 ReLU in place operations are turned of in the model automatically.
 Howerer inplace addition, multiplication etc. is the model design
