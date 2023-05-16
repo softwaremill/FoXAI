@@ -7,6 +7,9 @@ import cv2
 import numpy as np
 import torch
 import torchvision
+from models.ssd.ssd_object_detector import SSDObjectDetector
+from models.yolov5.model import WrapperYOLOv5ObjectDetectionModel
+from models.yolov5.yolo_object_detector import YOLOv5ObjectDetector, get_yolo_layer
 from PIL import Image
 from torchvision.models._meta import _COCO_CATEGORIES
 from torchvision.models.detection import SSD300_VGG16_Weights
@@ -14,16 +17,6 @@ from torchvision.models.detection import SSD300_VGG16_Weights
 from foxai.explainer.computer_vision.object_detection.gradcam import (
     LayerGradCAMObjectDetection,
     ObjectDetectionOutput,
-)
-from foxai.explainer.computer_vision.object_detection.models.ssd.ssd_object_detector import (
-    SSDObjectDetector,
-)
-from foxai.explainer.computer_vision.object_detection.models.yolov5.model import (
-    WrapperYOLOv5ObjectDetectionModel,
-)
-from foxai.explainer.computer_vision.object_detection.models.yolov5.yolo_object_detector import (
-    YOLOv5ObjectDetector,
-    get_yolo_layer,
 )
 from foxai.visualizer import object_detection_visualization
 
