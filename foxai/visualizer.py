@@ -200,7 +200,7 @@ def preprocess_object_detection_image(input_image: torch.Tensor) -> np.ndarray:
     """Process input image to display.
 
     Args:
-        input_image: Original image.
+        input_image: Original image of type float in range [0-1].
 
     Returns:
         Converted image as np.ndarray in (C x H x W).
@@ -208,7 +208,6 @@ def preprocess_object_detection_image(input_image: torch.Tensor) -> np.ndarray:
     return (
         input_image.squeeze(0)
         .mul(255)
-        .add_(0.5)
         .clamp_(0, 255)
         .permute(1, 2, 0)
         .detach()
