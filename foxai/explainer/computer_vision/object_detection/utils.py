@@ -15,6 +15,7 @@ def resize_image(
     new_shape: Tuple[int, int] = (640, 640),
     change_original_ratio: bool = False,
     scaleup: bool = True,
+    interpolation: int = cv2.INTER_LINEAR,
 ) -> np.ndarray:
     """Resize image to given shape.
 
@@ -24,6 +25,7 @@ def resize_image(
         change_original_ratio: If resized image should have different height to
             width ratio than original image. Defaults to False.
         scaleup: If scale up image. Defaults to True.
+        interpolation: OpenCV interpolation method. Defaults to `cv2.INTER_LINEAR`.
 
     Returns:
         Resized image.
@@ -45,6 +47,6 @@ def resize_image(
 
     # if current shape is different than desired shape call resize function
     if shape[::-1] != new_unpad:  # resize
-        image = cv2.resize(image, new_unpad, interpolation=cv2.INTER_LINEAR)
+        image = cv2.resize(image, new_unpad, interpolation=interpolation)
 
     return image
