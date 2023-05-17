@@ -116,7 +116,7 @@ class LayerBaseGradCAM(ABC):
         return self.forward(input_img)
 
 
-class LayerGradCAMClassification(LayerBaseGradCAM):
+class LayerGradCAMObjectDetection(LayerBaseGradCAM):
     """Layer GradCAM for object detection task."""
 
     def __init__(
@@ -436,7 +436,7 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         """
         model = modify_modules(model)
 
-        return LayerGradCAMClassification(model=model, target_layer=layer)
+        return LayerGradCAMObjectDetection(model=model, target_layer=layer)
 
     def calculate_features(
         self,
@@ -551,7 +551,7 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         return attributions
 
 
-class LayerGradCAMObjectDetection(LayerBaseGradCAM):
+class LayerGradCAMObjectDetectionExplainer(LayerBaseGradCAM):
     """Layer GradCAM for object detection task.
 
     Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.

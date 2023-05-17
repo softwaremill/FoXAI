@@ -14,6 +14,7 @@ from foxai.explainer.computer_vision.algorithm.deeplift_shap import (
 from foxai.explainer.computer_vision.algorithm.gradcam import (
     GuidedGradCAMCVExplainer,
     LayerGradCAMCVExplainer,
+    LayerGradCAMObjectDetectionExplainer,
 )
 from foxai.explainer.computer_vision.algorithm.gradient_shap import (
     GradientSHAPCVExplainer,

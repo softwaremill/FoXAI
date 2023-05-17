@@ -9,15 +9,19 @@ import torch
 from torchvision import transforms
 
 from foxai import explainer
-from foxai.context_manager import Explainers, ExplainerWithParams, FoXaiExplainer
-from foxai.explainer.computer_vision.image_classification.base_explainer import (
-    CVExplainerT,
+from foxai.context_manager import (
+    CVClassificationExplainers,
+    ExplainerWithParams,
+    FoXaiExplainer,
 )
+from foxai.explainer.base_explainer import CVExplainerT
 from foxai.logger import create_logger
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
 
-GetExplainerKwargsT = Callable[[Explainers, torch.nn.Module], Dict[str, Any]]
+GetExplainerKwargsT = Callable[
+    [CVClassificationExplainers, torch.nn.Module], Dict[str, Any]
+]
 
 _LOGGER: Optional[logging.Logger] = None
 
@@ -42,7 +46,7 @@ class TestExplainers:
     @pytest.fixture
     def explainer_function_kwargs(self) -> GetExplainerKwargsT:
         def get_function_kwargs(
-            explainer_name: Explainers, classifier: torch.nn.Module
+            explainer_name: CVClassificationExplainers, classifier: torch.nn.Module
         ) -> Dict[str, Any]:
             # create parameters for explainers, that require custom parameters
             function_kwargs: Dict[str, Any] = {}
@@ -68,7 +72,7 @@ class TestExplainers:
 
         return get_function_kwargs
 
-    @pytest.mark.parametrize("explainer_name", list(Explainers))
+    @pytest.mark.parametrize("explainer_name", list(CVClassificationExplainers))
     def test_explainers_cpu(
         self,
         classifier: SampleModel,
@@ -102,7 +106,7 @@ class TestExplainers:
         ) as xai_model:
             _, _ = xai_model(img_tensor)
 
-    @pytest.mark.parametrize("explainer_name", list(Explainers))
+    @pytest.mark.parametrize("explainer_name", list(CVClassificationExplainers))
     def test_explainers_gpu(
         self,
         classifier: SampleModel,
@@ -146,7 +150,7 @@ class TestExplainers:
 
 
 @patch(
-    "foxai.explainer.computer_vision.image_classification.conductance.LayerConductance.attribute"
+    "foxai.explainer.computer_vision.algorithm.conductance.LayerConductance.attribute"
 )
 def test_conductance_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -164,9 +168,7 @@ def test_conductance_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.deconv.Deconvolution.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.deconv.Deconvolution.attribute")
 def test_deconvolution_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -182,9 +184,7 @@ def test_deconvolution_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.deeplift_shap.DeepLiftShap.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.deeplift_shap.DeepLiftShap.attribute")
 def test_deepliftshap_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -201,7 +201,7 @@ def test_deepliftshap_raises_error_if_attributes_are_empty(
 
 
 @patch(
-    "foxai.explainer.computer_vision.image_classification.deeplift_shap.LayerDeepLiftShap.attribute"
+    "foxai.explainer.computer_vision.algorithm.deeplift_shap.LayerDeepLiftShap.attribute"
 )
 def test_layer_deepliftshap_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -218,9 +218,7 @@ def test_layer_deepliftshap_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.deeplift.DeepLift.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.deeplift.DeepLift.attribute")
 def test_deeplift_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -236,9 +234,7 @@ def test_deeplift_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.deeplift.LayerDeepLift.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.deeplift.LayerDeepLift.attribute")
 def test_layer_deeplift_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -254,9 +250,7 @@ def test_layer_deeplift_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.gradcam.GuidedGradCam.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.gradcam.GuidedGradCam.attribute")
 def test_gradcam_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -273,9 +267,7 @@ def test_gradcam_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.gradcam.LayerGradCam.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.gradcam.LayerBaseGradCAM.forward")
 def test_layer_gradcam_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -292,9 +284,7 @@ def test_layer_gradcam_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.gradient_shap.GradientShap.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.gradient_shap.GradientShap.attribute")
 def test_gradient_shap_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -311,7 +301,7 @@ def test_gradient_shap_raises_error_if_attributes_are_empty(
 
 
 @patch(
-    "foxai.explainer.computer_vision.image_classification.gradient_shap.LayerGradientShap.attribute"
+    "foxai.explainer.computer_vision.algorithm.gradient_shap.LayerGradientShap.attribute"
 )
 def test_layer_gradient_shap_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -329,7 +319,7 @@ def test_layer_gradient_shap_raises_error_if_attributes_are_empty(
 
 
 @patch(
-    "foxai.explainer.computer_vision.image_classification.input_x_gradient.InputXGradient.attribute"
+    "foxai.explainer.computer_vision.algorithm.input_x_gradient.InputXGradient.attribute"
 )
 def test_input_x_gradient_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -347,7 +337,7 @@ def test_input_x_gradient_raises_error_if_attributes_are_empty(
 
 
 @patch(
-    "foxai.explainer.computer_vision.image_classification.input_x_gradient.LayerGradientXActivation.attribute"
+    "foxai.explainer.computer_vision.algorithm.input_x_gradient.LayerGradientXActivation.attribute"
 )
 def test_layer_input_x_gradient_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -364,7 +354,7 @@ def test_layer_input_x_gradient_raises_error_if_attributes_are_empty(
         )
 
 
-@patch("foxai.explainer.computer_vision.image_classification.lrp.LRP.attribute")
+@patch("foxai.explainer.computer_vision.algorithm.lrp.LRP.attribute")
 def test_lrp_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -380,7 +370,7 @@ def test_lrp_raises_error_if_attributes_are_empty(
         )
 
 
-@patch("foxai.explainer.computer_vision.image_classification.lrp.LayerLRP.attribute")
+@patch("foxai.explainer.computer_vision.algorithm.lrp.LayerLRP.attribute")
 def test_layer_lrp_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -397,7 +387,7 @@ def test_layer_lrp_raises_error_if_attributes_are_empty(
 
 
 @patch(
-    "foxai.explainer.computer_vision.image_classification.integrated_gradients.IntegratedGradients.attribute"
+    "foxai.explainer.computer_vision.algorithm.integrated_gradients.IntegratedGradients.attribute"
 )
 def test_integrated_gradients_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -415,7 +405,7 @@ def test_integrated_gradients_raises_error_if_attributes_are_empty(
 
 
 @patch(
-    "foxai.explainer.computer_vision.image_classification.integrated_gradients.LayerIntegratedGradients.attribute"
+    "foxai.explainer.computer_vision.algorithm.integrated_gradients.LayerIntegratedGradients.attribute"
 )
 def test_layer_integrated_gradients_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -432,9 +422,7 @@ def test_layer_integrated_gradients_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.noise_tunnel.NoiseTunnel.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.noise_tunnel.NoiseTunnel.attribute")
 def test_noise_tunnel_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -450,9 +438,7 @@ def test_noise_tunnel_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.noise_tunnel.NoiseTunnel.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.noise_tunnel.NoiseTunnel.attribute")
 def test_layer_noise_tunnel_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -468,9 +454,7 @@ def test_layer_noise_tunnel_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.occlusion.Occlusion.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.occlusion.Occlusion.attribute")
 def test_occulusion_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -486,9 +470,7 @@ def test_occulusion_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.image_classification.saliency.Saliency.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.saliency.Saliency.attribute")
 def test_saliency_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
