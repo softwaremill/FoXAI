@@ -10,10 +10,9 @@ from torchvision.ops.boxes import box_convert, box_iou
 from foxai.explainer.computer_vision.object_detection.base_object_detector import (
     BaseObjectDetector,
 )
-from foxai.explainer.computer_vision.object_detection.models.yolov5.model import (
-    WrapperYOLOv5ObjectDetectionModel,
-)
 from foxai.explainer.computer_vision.object_detection.types import PredictionOutput
+
+from .model import WrapperYOLOv5ObjectDetectionModel
 
 
 class YOLOv5ObjectDetector(BaseObjectDetector):

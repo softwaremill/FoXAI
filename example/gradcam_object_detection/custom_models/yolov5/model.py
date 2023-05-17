@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 import torch
 from torch import nn
-from yolov5.yolo import Detect
+from yolov5.models.yolo import Detect
 
 from foxai.explainer.computer_vision.object_detection.types import DetectionOutput
 

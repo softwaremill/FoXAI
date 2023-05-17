@@ -1,48 +1,42 @@
 # pylint: disable = missing-module-docstring
-from foxai.explainer.computer_vision.image_classification.conductance import (
+from foxai.explainer.computer_vision.algorithm.conductance import (
     LayerConductanceCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.deconv import (
-    DeconvolutionCVExplainer,
-)
-from foxai.explainer.computer_vision.image_classification.deeplift import (
+from foxai.explainer.computer_vision.algorithm.deconv import DeconvolutionCVExplainer
+from foxai.explainer.computer_vision.algorithm.deeplift import (
     DeepLIFTCVExplainer,
     LayerDeepLIFTCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.deeplift_shap import (
+from foxai.explainer.computer_vision.algorithm.deeplift_shap import (
     DeepLIFTSHAPCVExplainer,
     LayerDeepLIFTSHAPCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.gradcam import (
+from foxai.explainer.computer_vision.algorithm.gradcam import (
     GuidedGradCAMCVExplainer,
     LayerGradCAMCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.gradient_shap import (
+from foxai.explainer.computer_vision.algorithm.gradient_shap import (
     GradientSHAPCVExplainer,
     LayerGradientSHAPCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.guided_backprop import (
+from foxai.explainer.computer_vision.algorithm.guided_backprop import (
     GuidedBackpropCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.input_x_gradient import (
+from foxai.explainer.computer_vision.algorithm.input_x_gradient import (
     InputXGradientCVExplainer,
     LayerInputXGradientCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.integrated_gradients import (
+from foxai.explainer.computer_vision.algorithm.integrated_gradients import (
     IntegratedGradientsCVExplainer,
     LayerIntegratedGradientsCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.lrp import (
+from foxai.explainer.computer_vision.algorithm.lrp import (
     LayerLRPCVExplainer,
     LRPCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.noise_tunnel import (
+from foxai.explainer.computer_vision.algorithm.noise_tunnel import (
     LayerNoiseTunnelCVExplainer,
     NoiseTunnelCVExplainer,
 )
-from foxai.explainer.computer_vision.image_classification.occlusion import (
-    OcclusionCVExplainer,
-)
-from foxai.explainer.computer_vision.image_classification.saliency import (
-    SaliencyCVExplainer,
-)
+from foxai.explainer.computer_vision.algorithm.occlusion import OcclusionCVExplainer
+from foxai.explainer.computer_vision.algorithm.saliency import SaliencyCVExplainer

@@ -11,9 +11,7 @@ from captum._utils.typing import TargetType
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
 from foxai.array_utils import validate_result
-from foxai.explainer.computer_vision.image_classification.base_explainer import (
-    Explainer,
-)
+from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
 
 

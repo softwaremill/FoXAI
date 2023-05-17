@@ -13,9 +13,7 @@ from captum.attr import LRP, LayerLRP
 from captum.attr._utils.lrp_rules import EpsilonRule, GammaRule
 
 from foxai.array_utils import validate_result
-from foxai.explainer.computer_vision.image_classification.base_explainer import (
-    Explainer,
-)
+from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     modify_modules,
