@@ -45,7 +45,7 @@ Error possibly caused by inplace operations.
 FullGradient does not support inplace operations.
 ReLU inplace operations are turned off in the model automatically.
 However inplace addition, multiplication etc. is the model design
-choice and shlould be avoided in order to make the FullyGradient explainer work
+choice and should be avoided in order to make the FullyGradient explainer work
 correctly.
 
 Example modification of model architecture to avoid inplace operations:
