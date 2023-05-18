@@ -44,7 +44,7 @@ _INPLACE_ERROR_MSG: Final[
 Error possibly caused by inplace operations.
 FullGradient does not support inplace operations.
 ReLU inplace operations are turned off in the model automatically.
-Howerer inplace addition, multiplication etc. is the model design
+However inplace addition, multiplication etc. is the model design
 choice and shlould be avoided in order to make the FullyGradient explainer work
 correctly.
 
