@@ -405,7 +405,7 @@ class FullGrad:
         return cam
 
     # pylint: disable = no-staticmethod-decorator
-    _eval_mode = staticmethod(_eval_mode)
+    # _eval_mode = staticmethod(_eval_mode)
 
 
 class BaseFullGradientCVExplainer(CVExplainer):
