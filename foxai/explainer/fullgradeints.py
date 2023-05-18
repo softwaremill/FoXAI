@@ -23,9 +23,10 @@ out = out_tmp + identity
 
 import logging
 from abc import abstractmethod
+from functools import wraps
 from math import isclose
 from sys import exit as terminate
-from typing import Final, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Final, List, Optional, Tuple, Union, cast
 
 import torch
 import torch.nn.functional as F
@@ -204,19 +205,44 @@ class FullGrad:
         self._device = torch.device("cuda" if cuda else "cpu")
         self.check_completeness()
 
+    @staticmethod
+    def _eval_mode(func: Callable[..., Any]):
+        """Switch model to the eval mode and back to initial mode after function execution."""
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            # switch all models to eval mode and save the previous state
+            was_training: bool = False
+            if self.model.training:
+                self.model.eval()
+                was_training = True
+
+            retval = func(self, *args, **kwargs)
+
+            # restore the original models states
+            if was_training:
+                self.model.train()
+
+            return retval
+
+        return wrapper
+
+    @_eval_mode
     def check_completeness(self) -> bool:
         """Check if completeness property is satisfied. If not, it usually means that
         some bias gradients are not computed (e.g.: implicit biases of non-linearities).
 
         Returns:
             whether the completnes condition is fulfielled
+
+        Raises:
+            RuntimeError: if the model can't run inference. Usually beocuse of inplace operations.
         """
 
         # Random input image
         sample_input: torch.Tensor = torch.randn(self.im_size).to(self._device)
 
         # Get raw outputs
-        self.model.eval()
         try:
             raw_output = self.model(sample_input)
         except RuntimeError as e:
@@ -246,6 +272,7 @@ class FullGrad:
 
         return True
 
+    @_eval_mode
     def full_gradient_decompose(
         self, image: torch.Tensor, target_class: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, List[torch.Tensor]]:
@@ -261,7 +288,6 @@ class FullGrad:
             list of contributions of bias terms in each layer in the model (each layer with the bias term)
         """
 
-        self.model.eval()
         image = image.requires_grad_()
         out = self.model(image)
 
@@ -321,6 +347,7 @@ class FullGrad:
         input_tensor = input_tensor / (temp.unsqueeze(1).unsqueeze(1) + eps)
         return input_tensor
 
+    @_eval_mode
     def compute_saliency(
         self,
         input_data: torch.Tensor,
@@ -340,7 +367,6 @@ class FullGrad:
         if isinstance(target, int):
             target = torch.tensor(data=[target] * input_data.shape[0]).to(self._device)
 
-        self.model.eval()
         input_grad, bias_grad = self.full_gradient_decompose(
             input_data, target_class=target
         )
@@ -367,6 +393,9 @@ class FullGrad:
                 cam += gradient.sum(1, keepdim=True)
 
         return cam
+
+    # pylint: disable = no-staticmethod-decorator
+    _eval_mode = staticmethod(_eval_mode)
 
 
 class BaseFullGradientCVExplainer(CVExplainer):
