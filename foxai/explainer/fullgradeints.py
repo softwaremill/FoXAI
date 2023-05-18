@@ -202,7 +202,7 @@ class FullGrad:
 
         cuda = next(self.model.parameters()).is_cuda
         self._device = torch.device("cuda" if cuda else "cpu")
-        _ = self.check_completeness()
+        self.check_completeness()
 
     def check_completeness(self) -> bool:
         """Check if completeness property is satisfied. If not, it usually means that
@@ -370,7 +370,7 @@ class FullGrad:
 
 
 class BaseFullGradientCVExplainer(CVExplainer):
-    """Base FullGradCAM algorithm explainer."""
+    """Base FullGradient algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
@@ -408,17 +408,18 @@ class BaseFullGradientCVExplainer(CVExplainer):
                 Default: None
 
         Returns:
-            Element-wise product of (upsampled) GradCAM
-            and/or Guided Backprop attributions.
-            If a single tensor is provided as inputs, a single tensor is
-            returned. If a tuple is provided for inputs, a tuple of
-            corresponding sized tensors is returned.
-            Attributions will be the same size as the provided inputs,
-            with each value providing the attribution of the
-            corresponding input index.
-            If the GradCAM attributions cannot be upsampled to the shape
-            of a given input tensor, None is returned in the corresponding
-            index position.
+            The silency map for the Full Gradient explainer.
+            Sf(x) = ψ(∇xf(x) ⊙ x) + Σl∈L Σc∈cl ψ(fb(x)c)
+            ,where:
+                Sf(x) is a silency map of function f (neural net), given input x
+                ∇xf(x) is a derivative of f(x) with respect to input x
+                L is number of layer in the neural network
+                c run across channels cl of a layer l in a neural network
+                fb(x)c = ∇bf(x, b) ⊙ b, so fb(x) is a derivative of f(x), with respect to bias,
+                    elementwise multiplied with biases (hadmard product). For each channel c.
+                    Notation f(x, b) is just to note explicit dependence on b.
+                ψ is a post processing function (for example ReLu, to only display
+                    positive attributes of the silency map).
         """
 
         image_size: Tuple[int, ...] = input_data.shape
@@ -457,6 +458,6 @@ class FullGradientCVExplainer(BaseFullGradientCVExplainer):
         Returns:
             Explainer object.
         """
-        fullgradcam = FullGrad(model=model, image_size=image_size)
+        fullgradients = FullGrad(model=model, image_size=image_size)
 
-        return fullgradcam
+        return fullgradients
