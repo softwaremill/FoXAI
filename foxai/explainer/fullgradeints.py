@@ -26,7 +26,7 @@ from abc import abstractmethod
 from functools import wraps
 from math import isclose
 from sys import exit as terminate
-from typing import Any, Callable, Final, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Final, List, Optional, Tuple, TypeVar, Union, cast
 
 import torch
 import torch.nn.functional as F
@@ -37,7 +37,11 @@ from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import CVExplainer
 from foxai.logger import create_logger
 
+Submodule = TypeVar("Submodule", bound=torch.nn.Module)
+"""Subclass of the torch.nn.Module"""
+
 _LOGGER: Optional[logging.Logger] = None
+"""Global logger instance."""
 
 _INPLACE_ERROR_MSG: Final[
     str
@@ -71,7 +75,7 @@ def log() -> logging.Logger:
 class FullGradExtractor:
     """Extract gradient tensors needed for FullGrad computation using pytorch hooks."""
 
-    def __init__(self, model, im_size: Tuple[int, int, int] = (3, 224, 224)):
+    def __init__(self, model: Submodule, im_size: Tuple[int, int, int] = (3, 224, 224)):
         self.model = model
         self.im_size: Tuple[int, int, int] = im_size
 
@@ -82,7 +86,7 @@ class FullGradExtractor:
         # Iterate through layers
         for module in self.model.modules():
             if hasattr(module, "inplace"):
-                module.inplace = False
+                module.inplace = False  # type: ignore
 
             if isinstance(
                 module, (torch.nn.Conv2d, torch.nn.Linear, torch.nn.BatchNorm2d)
@@ -113,7 +117,7 @@ class FullGradExtractor:
                     f", however {module} layer found in model definition."
                 )
 
-    def _extract_layer_bias(self, module) -> Optional[torch.Tensor]:
+    def _extract_layer_bias(self, module: Submodule) -> Optional[torch.Tensor]:
         """Extract bias of each layer
 
         For batchnorm, the overall "bias" is different from batchnorm bias parameter.
@@ -143,8 +147,13 @@ class FullGradExtractor:
             return b.data
         elif module.bias is None:
             return None
-        else:
+        elif isinstance(module.bias, torch.Tensor):
             return module.bias.data
+
+        log().warning(
+            "Possible error. Bias present, but of type Module, not torch.Tensor."
+        )
+        return None
 
     @property
     def biases(self) -> List[torch.Tensor]:
@@ -152,11 +161,12 @@ class FullGradExtractor:
         return self._biases
 
     def _extract_layer_grads(  # pylint: disable = unused-argument
-        self, module, in_grad: _grad_t, out_grad: _grad_t
+        self, module: Submodule, in_grad: _grad_t, out_grad: _grad_t
     ) -> None:
         """Collect gradient outputs from each layer, that contains bias term.
 
         Args:
+            module: the pytorch layer
             in_grad: input gradients
             out_grad: output gradients
         """
@@ -193,8 +203,8 @@ class FullGrad:
     Compute FullGrad saliency map and full gradient decomposition
     """
 
-    def __init__(self, model, image_size=(3, 224, 224)):
-        self.model: torch.nn.Module = model
+    def __init__(self, model: Submodule, image_size=(3, 224, 224)):
+        self.model: Submodule = model
         self.im_size: Tuple[int, int, int, int] = (1,) + image_size
         self.model_ext: FullGradExtractor = FullGradExtractor(
             model=self.model, im_size=image_size
