@@ -215,8 +215,7 @@ class FullGrad:
         self._device = torch.device("cuda" if cuda else "cpu")
         self.check_completeness()
 
-    @staticmethod
-    def _eval_mode(func: Callable[..., Any]):
+    def _eval_mode(func: Callable[..., Any]):  # type: ignore
         """Switch model to the eval mode and back to initial mode after function execution."""
 
         @wraps(func)
@@ -405,7 +404,7 @@ class FullGrad:
         return cam
 
     # pylint: disable = no-staticmethod-decorator
-    # _eval_mode = staticmethod(_eval_mode)
+    _eval_mode = staticmethod(_eval_mode)
 
 
 class BaseFullGradientCVExplainer(CVExplainer):
