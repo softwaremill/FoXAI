@@ -145,12 +145,12 @@ The recommended version of CUDA is `10.2` as it is supported since version
 with the current version of `torch`:
 https://pytorch.org/get-started/previous-versions/.
 
-As our starting Docker image we were using the one provided by Nvidia: ``nvidia/cuda:10.2-devel-ubuntu18.04``. 
+As our starting Docker image we were using the one provided by Nvidia: ``nvidia/cuda:10.2-devel-ubuntu18.04``.
 
-If you wish an easy to use docker image we advise to use our ``Dockerfile``. 
+If you wish an easy to use docker image we advise to use our ``Dockerfile``.
 
 ## pyenv
-Optional step, but probably one of the easiest way to actually get Python version with all the needed aditional tools (e.g. pip). 
+Optional step, but probably one of the easiest way to actually get Python version with all the needed aditional tools (e.g. pip).
 
 `pyenv` is a tool used to manage multiple versions of Python. To install
 this package follow the instructions on the project repository page:
@@ -184,10 +184,10 @@ To separate runtime environments for different services and repositories, it is
 recommended to use a virtual Python environment. You can configure `Poetry` to
 create a new virtual environment in the project directory of every repository. To
 install `Poetry` follow the instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
-`1.2.1`. To install a specific version You have to provide desired package
+`1.4.2`. To install a specific version You have to provide desired package
 version:
 ```bash
-curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
+curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 -
 ```
 Add poetry to PATH:
 ```bash

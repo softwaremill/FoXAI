@@ -7,12 +7,12 @@ ARG BUILD_PYTHON_DEPS=" \
         libffi-dev \
         libgdbm-dev \
         libncurses5-dev \
-        libncursesw5-dev \ 
+        libncursesw5-dev \
         libnss3-dev \
         libreadline-dev \
-        libsqlite3-dev \ 
+        libsqlite3-dev \
         libssl-dev \
-        xz-utils \ 
+        xz-utils \
         zlib1g-dev \
         liblzma-dev \
         "
@@ -43,7 +43,7 @@ COPY pyproject.toml .
 COPY README.md .
 COPY mypy.ini .
 # setup poetry, install deps and build wheel
-RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 - \
+RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 - \
     && export PATH="/root/.local/bin:$PATH" \
     && echo 'export PATH="/root/.local/bin:$PATH"' >> ~/.bashrc \
     && poetry config virtualenvs.create true \
