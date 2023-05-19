@@ -404,6 +404,7 @@ class FullGrad:
         return cam
 
     # pylint: disable = no-staticmethod-decorator
+    # type: ignore
     _eval_mode = staticmethod(_eval_mode)
 
 
