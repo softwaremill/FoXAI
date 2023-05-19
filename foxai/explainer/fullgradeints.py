@@ -72,6 +72,28 @@ def log() -> logging.Logger:
     return _LOGGER
 
 
+def _eval_mode(func: Callable[..., Any]):
+    """Switch model to the eval mode and back to initial mode after function execution."""
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # switch all models to eval mode and save the previous state
+        was_training: bool = False
+        if self.model.training:
+            self.model.eval()
+            was_training = True
+
+        retval = func(self, *args, **kwargs)
+
+        # restore the original models states
+        if was_training:
+            self.model.train()
+
+        return retval
+
+    return wrapper
+
+
 class FullGradExtractor:
     """Extract gradient tensors needed for FullGrad computation using pytorch hooks."""
 
@@ -214,27 +236,6 @@ class FullGrad:
         cuda = next(self.model.parameters()).is_cuda
         self._device = torch.device("cuda" if cuda else "cpu")
         self.check_completeness()
-
-    def _eval_mode(func: Callable[..., Any]):  # type: ignore
-        """Switch model to the eval mode and back to initial mode after function execution."""
-
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            # switch all models to eval mode and save the previous state
-            was_training: bool = False
-            if self.model.training:
-                self.model.eval()
-                was_training = True
-
-            retval = func(self, *args, **kwargs)
-
-            # restore the original models states
-            if was_training:
-                self.model.train()
-
-            return retval
-
-        return wrapper
 
     @_eval_mode
     def check_completeness(self) -> bool:
@@ -402,10 +403,6 @@ class FullGrad:
                 cam += gradient.sum(1, keepdim=True)
 
         return cam
-
-    # pylint: disable = no-staticmethod-decorator
-    # type: ignore
-    _eval_mode = staticmethod(_eval_mode)
 
 
 class BaseFullGradientCVExplainer(CVExplainer):
