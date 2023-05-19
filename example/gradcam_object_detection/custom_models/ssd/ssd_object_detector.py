@@ -1,6 +1,6 @@
 """File contains SSD ObjectDetector class."""
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn.functional as F
@@ -45,17 +45,18 @@ class SSDObjectDetector(BaseObjectDetector):
             per each detection.
         """
         # get the original image sizes
-        images = [image[0]]
+        images = list(image)
         original_image_sizes: List[Tuple[int, int]] = []
         for img in images:
-            val = img.shape[-2:]
+            img_shape_hw = img.shape[-2:]
             assert (
-                len(val) == 2
+                len(img_shape_hw) == 2
             ), f"expecting the last two dimensions of the Tensor to be H and W instead got {img.shape[-2:]}"
-            original_image_sizes.append((val[0], val[1]))
+            original_image_sizes.append((img_shape_hw[0], img_shape_hw[1]))
 
         # transform the input
         image_list: ImageList
+        targets: Optional[List[Dict[str, torch.Tensor]]]
         image_list, targets = self.model.transform(images, None)
 
         # Check for degenerate boxes
@@ -72,17 +73,19 @@ class SSDObjectDetector(BaseObjectDetector):
                     )
 
         # get the features from the backbone
-        features = self.model.backbone(image_list.tensors)
+        features: Union[Dict[str, torch.Tensor], torch.Tensor] = self.model.backbone(
+            image_list.tensors
+        )
         if isinstance(features, torch.Tensor):
             features = OrderedDict([("0", features)])
 
-        features = list(features.values())
+        features_list = list(features.values())
 
         # compute the ssd heads outputs using the features
-        head_outputs = self.model.head(features)
+        head_outputs = self.model.head(features_list)
 
         # create the set of anchors
-        anchors = self.model.anchor_generator(image_list, features)
+        anchors = self.model.anchor_generator(image_list, features_list)
 
         detections: List[Dict[str, torch.Tensor]] = []
         detections, logits = self.postprocess_detections(
@@ -97,7 +100,7 @@ class SSDObjectDetector(BaseObjectDetector):
         detection_class_names = [str(val.item()) for val in detections[0]["labels"]]
         if self.class_names:
             detection_class_names = [
-                self.class_names[val.item()] for val in detections[0]["labels"]
+                str(self.class_names[val.item()]) for val in detections[0]["labels"]
             ]
 
         # change order of bounding boxes
@@ -137,17 +140,17 @@ class SSDObjectDetector(BaseObjectDetector):
     ) -> Tuple[List[Dict[str, torch.Tensor]], List[torch.Tensor]]:
         bbox_regression = head_outputs["bbox_regression"]
         logits = head_outputs["cls_logits"]
-        pred_scores = F.softmax(head_outputs["cls_logits"], dim=-1)
-        pred_class = torch.argmax(pred_scores[0], dim=1)
+        confidence_scores = F.softmax(head_outputs["cls_logits"], dim=-1)
+        pred_class = torch.argmax(confidence_scores[0], dim=1)
         pred_class = pred_class[None, :, None]
 
-        num_classes = pred_scores.size(-1)
-        device = pred_scores.device
+        num_classes = confidence_scores.size(-1)
+        device = confidence_scores.device
 
         detections: List[Dict[str, torch.Tensor]] = []
 
         for boxes, scores, anchors, image_shape in zip(
-            bbox_regression, pred_scores, image_anchors, image_shapes
+            bbox_regression, confidence_scores, image_anchors, image_shapes
         ):
             boxes = self.model.box_coder.decode_single(boxes, anchors)
             boxes = box_ops.clip_boxes_to_image(boxes, image_shape)

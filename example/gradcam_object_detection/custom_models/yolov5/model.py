@@ -21,7 +21,7 @@ class WrapperDetect(nn.Module):
         self.model = model
         self.register_buffer(
             "anchors", torch.tensor(anchors).float().view(self.model.nl, -1, 2)
-        )  # shape(nl,na,2)
+        )
 
     @property
     def f(self):
@@ -48,7 +48,9 @@ class WrapperDetect(nn.Module):
         logits_: List[torch.Tensor] = []
         for i in range(self.model.nl):
             x[i] = self.m[i](x[i])  # conv
-            bs, _, ny, nx = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
+            bs, _, ny, nx = x[i].shape
+
+            # x(bs,255,20,20) to x(bs,3,20,20,85)
             x[i] = (
                 x[i]
                 .view(bs, self.model.na, self.model.no, ny, nx)
@@ -87,8 +89,10 @@ class WrapperDetect(nn.Module):
     def _make_grid(
         self, nx: int = 20, ny: int = 20, i: int = 0
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        d = self.model.anchors[i].device
-        yv, xv = torch.meshgrid([torch.arange(ny).to(d), torch.arange(nx).to(d)])
+        device = self.model.anchors[i].device
+        yv, xv = torch.meshgrid(
+            [torch.arange(ny).to(device), torch.arange(nx).to(device)]
+        )
         grid = torch.stack((xv, yv), 2).expand((1, self.model.na, ny, nx, 2)).float()
         anchor_grid = (
             (self.model.anchors[i].clone() * self.model.stride[i])
@@ -115,13 +119,13 @@ class WrapperYOLOv5ObjectDetectionModel(nn.Module):
         self.ch = self.yaml.get("ch", None)
         self.device = device
 
-        m = model.model[-1]  # Detect()
+        m = model.model[-1]  # call Detect() class __call__ method
         if isinstance(m, Detect):
             s = 256  # 2x min stride
             m.inplace = self.inplace
             m.stride = torch.tensor(
                 [s / x.shape[-2] for x in self.forward(torch.zeros(1, self.ch, s, s))]
-            )  # forward
+            )
             m.anchors /= m.stride.view(-1, 1, 1)
             self.stride = m.stride
 

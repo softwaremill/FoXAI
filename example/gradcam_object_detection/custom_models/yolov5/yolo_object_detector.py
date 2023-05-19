@@ -34,10 +34,9 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         super().__init__()
         self.device = model.device
 
-        # in this case model on __call__ or on forward function has to return tuple of 3 variables:
+        # in this case model on __call__ or on forward function has to return tuple of 2 variables:
         # 1st would be prediction tensor of shape [bs, x, number_of_classes + 5]
         # 2nd would be logits tensor of shape [bs, x, number_of_classes]
-        # 3rd is discarded in this class
         # where x is number of hidden sizes of target layer
         self.img_size = img_size
         self.mode = mode
@@ -53,7 +52,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
         else:
             self.model.eval()
 
-        # preventing cold start
+        # model warmup
         img = torch.zeros((1, 3, *self.img_size), device=self.device)
         self.model(img)
 
@@ -188,8 +187,12 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
             class number, class name and confidence; second value is list of tensors
             with logits per each detection.
         """
+        prediction: torch.Tensor
+        logits: torch.Tensor
         prediction, logits = self.model(image)
-        prediction, logits = self.non_max_suppression(
+        prediction_list: List[torch.Tensor]
+        logits_list: List[torch.Tensor]
+        prediction_list, logits_list = self.non_max_suppression(
             prediction=prediction,
             logits=logits,
             number_of_classes=len(self.names),
@@ -197,14 +200,14 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
             iou_threshold=self.iou_thresh,
             agnostic=self.agnostic,
         )
-        boxes: List[List[np.ndarray]] = []
-        class_names: List[List[str]] = []
-        classes: List[List[int]] = []
-        confidences: List[List[float]] = []
+        boxes: List[List[np.ndarray]]
+        class_names: List[List[str]]
+        classes: List[List[int]]
+        confidences: List[List[float]]
         boxes, class_names, classes, confidences = [  # type: ignore
             [[] for _ in range(image.shape[0])] for _ in range(4)
         ]
-        for i, det in enumerate(prediction):  # detections per image
+        for i, det in enumerate(prediction_list):  # detections per image
             if len(det):
                 for *xyxy, conf, cls in det:
                     bbox_raw: List[torch.Tensor] = [
@@ -213,7 +216,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
                         xyxy[3],
                         xyxy[2],
                     ]
-                    # TODO: line below is used to test detectio on resized image when
+                    # TODO: line below is used to test detection on resized image when
                     # width:height ratio was changed bboxes have negative coordinates
                     bbox: np.ndarray = np.array(
                         [np.abs(int(b.item())) for b in bbox_raw]
@@ -238,7 +241,7 @@ class YOLOv5ObjectDetector(BaseObjectDetector):
                     boxes[0], classes[0], class_names[0], confidences[0]
                 )
             ],
-            logits,
+            logits_list,
         )
 
 
@@ -265,12 +268,12 @@ def get_yolo_layer(model: BaseObjectDetector, layer_name: str) -> torch.nn.Modul
 
     for h in hierarchy[1:]:
         if not isinstance(target_layer, torch.nn.Module):
-            raise RuntimeError("Selected layer is not present in network.")
+            raise RuntimeError("Selected layer is not torch.nn.Module class.")
 
         if target_layer._modules is not None:  # pylint: disable = (protected-access)
             target_layer = target_layer._modules[h]  # pylint: disable = W0212
         else:
-            raise RuntimeError("Selected layer is not present in network.")
+            raise RuntimeError("Selected torch.nn.Module does not have child modules.")
 
     if target_layer is not None:
         return target_layer
