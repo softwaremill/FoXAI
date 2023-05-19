@@ -538,9 +538,9 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
-        guided_cam = self.create_explainer(model=model, layer=layer)
-        if isinstance(guided_cam, LayerBaseGradCAM):
-            attributions = guided_cam(input_data)
+        gradcam = self.create_explainer(model=model, layer=layer)
+        if isinstance(gradcam, LayerBaseGradCAM):
+            attributions = gradcam(input_data)
 
         if not isinstance(attributions, torch.Tensor):
             raise RuntimeError(
