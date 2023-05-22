@@ -3,7 +3,10 @@
 import pytest
 import torch
 
-from foxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
+from foxai.explainer.computer_vision.model_utils import (
+    get_last_conv_model_layer,
+    modify_modules,
+)
 from tests.sample_model import CNN, AutoEncoder
 
 

@@ -11,11 +11,11 @@ from captum._utils.typing import TargetType
 from captum.attr import GuidedBackprop
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import CVExplainer
-from foxai.explainer.model_utils import modify_modules
+from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.computer_vision.model_utils import modify_modules
 
 
-class BaseGuidedBackpropCVExplainer(CVExplainer):
+class BaseGuidedBackpropCVExplainer(Explainer):
     """Base Guided Backpropagation algorithm explainer."""
 
     @abstractmethod

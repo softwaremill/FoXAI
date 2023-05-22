@@ -1,23 +1,26 @@
-"""File with Integrated Gradients algorithm explainer classes.
+"""File with DeepLIFT algorithm explainer classes.
 
-Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/integrated_gradients.py
-and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_integrated_gradients.py.
+Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/deep_lift.py
+and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_deep_lift.py.
 """
 
 from abc import abstractmethod
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
 from captum._utils.typing import TargetType
-from captum.attr import IntegratedGradients, LayerIntegratedGradients
+from captum.attr import DeepLift, LayerDeepLift
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import CVExplainer
-from foxai.explainer.model_utils import get_last_conv_model_layer
+from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.computer_vision.model_utils import (
+    get_last_conv_model_layer,
+    modify_modules,
+)
 
 
-class BaseIntegratedGradientsCVExplainer(CVExplainer):
-    """Base Integrated Gradients algorithm explainer."""
+class BaseDeepLIFTCVExplainer(Explainer):
+    """Base DeepLIFT algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
@@ -25,7 +28,7 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
         model: torch.nn.Module,
         multiply_by_inputs: bool = True,
         **kwargs,
-    ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
+    ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Args:
@@ -34,20 +37,18 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
             multiply_by_inputs: Indicates whether to factor
                 model inputs' multiplier in the final attribution scores.
                 In the literature this is also known as local vs global
-                attribution. If inputs' multiplier isn't factored in,
+                attribution. If inputs' multiplier isn't factored in
                 then that type of attribution method is also called local
                 attribution. If it is, then that type of attribution
                 method is called global.
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of integrated gradients, if `multiply_by_inputs`
-                is set to True, final sensitivity scores are being multiplied by
-                (inputs - baselines).
-
-                In case of layer integrated gradients, if `multiply_by_inputs`
-                is set to True, final sensitivity scores are being multiplied by
-                layer activations for inputs - layer activations for baselines.
+                In case of DeepLift, if `multiply_by_inputs`
+                is set to True, final sensitivity scores
+                are being multiplied by (inputs - baselines).
+                This flag applies only if `custom_attribution_func` is
+                set to None.
 
         Returns:
             Explainer object.
@@ -60,19 +61,19 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
         pred_label_idx: TargetType = None,
         baselines: Union[None, int, float, torch.Tensor] = None,
         additional_forward_args: Any = None,
-        n_steps: int = 50,
-        method: str = "gausslegendre",
-        internal_batch_size: Union[None, int] = None,
+        custom_attribution_func: Union[
+            None, Callable[..., Tuple[torch.Tensor, ...]]
+        ] = None,
         attribute_to_layer_input: bool = False,
         **kwargs,
     ) -> torch.Tensor:
-        """Generate model's attributes with Integrated Gradients algorithm explainer.
+        """Generate model's attributes with DeepLIFT algorithm explainer.
 
         Args:
             model: The forward function of the model or any
                 modification of it.
-            input_data: Input for which layer integrated
-                gradients are computed. If forward_func takes a single
+            input_data: Input for which
+                attributions are computed. If forward_func takes a single
                 tensor as input, a single input tensor should be provided.
             pred_label_idx: Output indices for
                 which gradients are computed (for classification cases,
@@ -99,9 +100,11 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
                     target for the corresponding example.
 
                 Default: None
-            baselines:
-                Baselines define the starting point from which integral
-                is computed and can be provided as:
+            baselines: Baselines define reference samples that are compared with
+                the inputs. In order to assign attribution scores DeepLift
+                computes the differences between the inputs/outputs and
+                corresponding references.
+                Baselines can be provided as:
 
                 - a single tensor, if inputs is a single tensor, with
                     exactly the same dimensions as inputs or the first
@@ -118,38 +121,31 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
                 requires additional arguments other than the inputs for
                 which attributions should not be computed, this argument
                 can be provided. It must be either a single additional
-                argument of a Tensor or arbitrary (non-tuple) type or a
-                tuple containing multiple additional arguments including
-                tensors or any arbitrary python types. These arguments
-                are provided to forward_func in order following the
-                arguments in inputs.
-
-                For a tensor, the first dimension of the tensor must
-                correspond to the number of examples. It will be
-                repeated for each of `n_steps` along the integrated
-                path. For all other types, the given argument is used
-                for all forward evaluations.
-
+                argument of a Tensor or arbitrary (non-tuple) type or a tuple
+                containing multiple additional arguments including tensors
+                or any arbitrary python types. These arguments are provided to
+                forward_func in order, following the arguments in inputs.
                 Note that attributions are not computed with respect
                 to these arguments.
                 Default: None
-            n_steps: The number of steps used by the approximation
-                method. Default: 50.
-            method: Method for approximating the integral,
-                one of `riemann_right`, `riemann_left`, `riemann_middle`,
-                `riemann_trapezoid` or `gausslegendre`.
-                Default: `gausslegendre` if no method is provided.
-            internal_batch_size: Divides total #steps * #examples
-                data points into chunks of size at most internal_batch_size,
-                which are computed (forward / backward passes)
-                sequentially. internal_batch_size must be at least equal to
-                #examples.
+            custom_attribution_func: A custom function for
+                computing final attribution scores. This function can take
+                at least one and at most three arguments with the
+                following signature:
 
-                For DataParallel models, each batch is split among the
-                available devices, so evaluations on each available
-                device contain internal_batch_size / num_devices examples.
-                If internal_batch_size is None, then all evaluations are
-                processed in one batch.
+                - custom_attribution_func(multipliers)
+
+                - custom_attribution_func(multipliers, inputs)
+
+                - custom_attribution_func(multipliers, inputs, baselines)
+
+                In case this function is not provided, we use the default
+                logic defined as: multipliers * (inputs - baselines)
+                It is assumed that all input arguments, `multipliers`,
+                `inputs` and `baselines` are provided in tuples of same
+                length. `custom_attribution_func` returns a tuple of
+                attribution tensors that have the same length as the
+                `inputs`.
                 Default: None
             attribute_to_layer_input: Indicates whether to
                 compute the attribution with respect to the layer input
@@ -157,7 +153,6 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
                 then the attributions will be computed with respect to
                 layer input, otherwise it will be computed with respect
                 to layer output.
-
                 Note that currently it is assumed that either the input
                 or the output of internal layer, depending on whether we
                 attribute to the input or output, is a single tensor.
@@ -165,32 +160,20 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
                 Default: False
 
         Returns:
-            Integrated gradients with respect to `layer`'s inputs
-            or outputs. Attributions will always be the same size and
-            dimensionality as the input or output of the given layer,
-            depending on whether we attribute to the inputs or outputs
-            of the layer which is decided by the input flag
-            `attribute_to_layer_input`.
-
-            For a single layer, attributions are returned in a tuple if
-            the layer inputs / outputs contain multiple tensors,
-            otherwise a single tensor is returned.
-
-            For multiple layers, attributions will always be
-            returned as a list. Each element in this list will be
-            equivalent to that of a single layer output, i.e. in the
-            case that one layer, in the given layers, inputs / outputs
-            multiple tensors: the corresponding output element will be
-            a tuple of tensors. The ordering of the outputs will be
-            the same order as the layers given in the constructor.
+            Attribution score computed based on DeepLift rescale rule with respect
+            to each input feature. Attributions will always be
+            the same size as the provided inputs, with each value
+            providing the attribution of the corresponding input index.
+            If a single tensor is provided as inputs, a single tensor is
+            returned. If a tuple is provided for inputs, a tuple of
+            corresponding sized tensors is returned.
 
         Raises:
             RuntimeError: if attribution has shape (0).
         """
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-        integrated_gradients = self.create_explainer(model=model, layer=layer)
+        deeplift = self.create_explainer(model=model, layer=layer)
 
-        # defining baseline distribution of images
         if baselines is None:
             baselines = torch.randn(
                 input_data.shape,
@@ -198,42 +181,39 @@ class BaseIntegratedGradientsCVExplainer(CVExplainer):
                 device=input_data.device,
             )
 
-        if isinstance(integrated_gradients, LayerIntegratedGradients):
-            attributions = integrated_gradients.attribute(
+        if isinstance(deeplift, LayerDeepLift):
+            attributions = deeplift.attribute(
                 input_data,
                 target=pred_label_idx,
-                n_steps=n_steps,
                 baselines=baselines,
                 return_convergence_delta=False,
                 additional_forward_args=additional_forward_args,
-                method=method,
-                internal_batch_size=internal_batch_size,
+                custom_attribution_func=custom_attribution_func,
                 attribute_to_layer_input=attribute_to_layer_input,
             )
         else:
-            attributions = integrated_gradients.attribute(
+            attributions = deeplift.attribute(
                 input_data,
                 target=pred_label_idx,
                 baselines=baselines,
-                n_steps=n_steps,
                 return_convergence_delta=False,
                 additional_forward_args=additional_forward_args,
-                method=method,
-                internal_batch_size=internal_batch_size,
+                custom_attribution_func=custom_attribution_func,
             )
         validate_result(attributions=attributions)
         return attributions
 
 
-class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
-    """Integrated Gradients algorithm explainer."""
+class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """DeepLIFTC algorithm explainer."""
 
     def create_explainer(
         self,
         model: torch.nn.Module,
         multiply_by_inputs: bool = True,
+        eps: float = 1e-10,
         **kwargs,
-    ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
+    ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Args:
@@ -242,29 +222,38 @@ class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
             multiply_by_inputs: Indicates whether to factor
                 model inputs' multiplier in the final attribution scores.
                 In the literature this is also known as local vs global
-                attribution. If inputs' multiplier isn't factored in,
+                attribution. If inputs' multiplier isn't factored in
                 then that type of attribution method is also called local
                 attribution. If it is, then that type of attribution
                 method is called global.
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of integrated gradients, if `multiply_by_inputs`
-                is set to True, final sensitivity scores are being multiplied by
-                (inputs - baselines).
+                In case of DeepLift, if `multiply_by_inputs`
+                is set to True, final sensitivity scores
+                are being multiplied by (inputs - baselines).
+                This flag applies only if `custom_attribution_func` is
+                set to None.
+            eps: A value at which to consider output/input change
+                significant when computing the gradients for non-linear layers.
+                This is useful to adjust, depending on your model's bit depth,
+                to avoid numerical issues during the gradient computation.
+                Default: 1e-10
 
         Returns:
             Explainer object.
         """
+        model = modify_modules(model)
 
-        return IntegratedGradients(
-            forward_func=model,
+        return DeepLift(
+            model=model,
             multiply_by_inputs=multiply_by_inputs,
+            eps=eps,
         )
 
 
-class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
-    """Layer Integrated Gradients algorithm explainer."""
+class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
+    """Layer DeepLIFT algorithm explainer."""
 
     def create_explainer(
         self,
@@ -272,7 +261,7 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         multiply_by_inputs: bool = True,
         layer: Optional[torch.nn.Module] = None,
         **kwargs,
-    ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
+    ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.
 
         Uses parameter `layer` from `kwargs`. If not provided function will call
@@ -292,16 +281,18 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
             multiply_by_inputs: Indicates whether to factor
                 model inputs' multiplier in the final attribution scores.
                 In the literature this is also known as local vs global
-                attribution. If inputs' multiplier isn't factored in,
+                attribution. If inputs' multiplier isn't factored in
                 then that type of attribution method is also called local
                 attribution. If it is, then that type of attribution
                 method is called global.
                 More detailed can be found here:
                 https://arxiv.org/abs/1711.06104
 
-                In case of layer integrated gradients, if `multiply_by_inputs`
-                is set to True, final sensitivity scores are being multiplied by
-                layer activations for inputs - layer activations for baselines.
+                In case of DeepLift, if `multiply_by_inputs`
+                is set to True, final sensitivity scores
+                are being multiplied by (inputs - baselines).
+                This flag applies only if `custom_attribution_func` is
+                set to None.
 
         Returns:
             Explainer object.
@@ -312,8 +303,10 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
-        return LayerIntegratedGradients(
-            forward_func=model,
-            multiply_by_inputs=multiply_by_inputs,
+        model = modify_modules(model)
+
+        return LayerDeepLift(
+            model=model,
             layer=layer,
+            multiply_by_inputs=multiply_by_inputs,
         )

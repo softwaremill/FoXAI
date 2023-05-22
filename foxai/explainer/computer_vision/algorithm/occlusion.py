@@ -10,10 +10,10 @@ from captum._utils.typing import TargetType
 from captum.attr import Occlusion
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import CVExplainer
+from foxai.explainer.base_explainer import Explainer
 
 
-class OcclusionCVExplainer(CVExplainer):
+class OcclusionCVExplainer(Explainer):
     """Occlusion algorithm explainer."""
 
     def calculate_features(

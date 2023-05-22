@@ -6,12 +6,12 @@ import matplotlib
 import numpy as np
 import pytorch_lightning as pl
 import torch
+import wandb
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-import wandb
 from foxai.array_utils import convert_standardized_float_to_uint8, standardize_array
-from foxai.context_manager import FoXaiExplainer, ExplainerWithParams
+from foxai.context_manager import ExplainerWithParams, FoXaiExplainer
 from foxai.visualizer import mean_channels_visualization
 
 AttributeMapType = Dict[str, List[np.ndarray]]
@@ -118,7 +118,7 @@ class WandBCallback(pl.callbacks.Callback):
             )
             figures_dict[explainer_name].append(figure)
             standardized_attr = standardize_array(
-                explainer_attributes.detach().cpu().numpy()
+                explainer_attributes.detach().cpu().numpy().astype(float)
             )
 
             attributes_dict[explainer_name].append(

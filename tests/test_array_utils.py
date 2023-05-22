@@ -26,7 +26,7 @@ def test_standardize_array() -> None:
             [0.51, 0.503, 0.52, 1.0],
             [0, 0.51, 0.503, 0.52],
         ],
-        dtype=np.float,
+        dtype=float,
     )
 
     result = standardize_array(array=array)
@@ -40,7 +40,7 @@ def test_convert_standardized_float_to_uint8() -> None:
             [0.51, 0.503, 0.52, 1.0],
             [0, 0.51, 0.503, 0.52],
         ],
-        dtype=np.float,
+        dtype=float,
     )
 
     expected_array = np.array(

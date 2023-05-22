@@ -4,25 +4,172 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/guided_
 and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/grad_cam.py.
 """
 
-from abc import abstractmethod
-from typing import Any, Optional, Union
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Union
 
 import torch
+import torch.nn.functional as F
 from captum._utils.typing import TargetType
-from captum.attr import GuidedGradCam, LayerGradCam
+from captum.attr import GuidedGradCam
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import CVExplainer
-from foxai.explainer.model_utils import get_last_conv_model_layer, modify_modules
+from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.computer_vision.model_utils import (
+    get_last_conv_model_layer,
+    modify_modules,
+)
+from foxai.explainer.computer_vision.object_detection.base_object_detector import (
+    BaseObjectDetector,
+)
+from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
 
 
-class BaseGradCAMCVExplainer(CVExplainer):
+class LayerBaseGradCAM(ABC):
+    """Layer GradCAM for object detection task."""
+
+    def __init__(
+        self,
+        target_layer: torch.nn.Module,
+    ):
+        self._gradients: Dict[str, torch.Tensor] = {}
+        self._activations: Dict[str, torch.Tensor] = {}
+        self.target_layer = target_layer
+
+        def backward_hook(
+            module,  # pylint: disable = (unused-argument)
+            grad_input,  # pylint: disable = (unused-argument)
+            grad_output,
+        ):
+            self._gradients["value"] = grad_output[0]
+
+        def forward_hook(
+            module,  # pylint: disable = (unused-argument)
+            input,  # pylint: disable = (unused-argument,redefined-builtin)
+            output,
+        ):
+            self._activations["value"] = output
+
+        self.target_layer.register_forward_hook(forward_hook)
+        self.target_layer.register_backward_hook(backward_hook)
+
+    @property
+    def activations(self) -> torch.Tensor:
+        return self._activations["value"]
+
+    @property
+    def gradients(self) -> torch.Tensor:
+        return self._gradients["value"]
+
+    @abstractmethod
+    def forward(
+        self,
+        input_img: torch.Tensor,
+    ) -> Union[torch.Tensor, ObjectDetectionOutput]:
+        """Forward pass of GradCAM aglorithm.
+
+        Args:
+            input_img: Input image with shape of (B, C, H, W).
+
+        Returns:
+            ObjectDetectionOutput object for object detection and tensor with saliency
+            map for classification.
+        """
+
+    def get_saliency_map(
+        self,
+        height: int,
+        width: int,
+        gradients: torch.Tensor,
+        activations: torch.Tensor,
+    ) -> torch.Tensor:
+        """Generate saliency map.
+
+        Args:
+            height: Original image height.
+            width: Original image width.
+            gradients: Layer gradients.
+            activations: Layer activations.
+
+        Returns:
+            Saliency map.
+        """
+        b, k, _, _ = gradients.size()
+        alpha = gradients.view(b, k, -1).mean(2)
+        weights = alpha.view(b, k, 1, 1)
+        saliency_map = (weights * activations).sum(1, keepdim=True)
+        saliency_map = F.relu(saliency_map)
+        saliency_map = F.upsample(
+            saliency_map, size=(height, width), mode="bilinear", align_corners=False
+        )
+        saliency_map_min, saliency_map_max = saliency_map.min(), saliency_map.max()
+        saliency_map = (
+            (saliency_map - saliency_map_min)
+            .div(saliency_map_max - saliency_map_min)
+            .data
+        )
+        return saliency_map
+
+    def __call__(
+        self,
+        input_img: torch.Tensor,
+    ) -> Union[torch.Tensor, ObjectDetectionOutput]:
+        return self.forward(input_img)
+
+
+class LayerGradCAMObjectDetection(LayerBaseGradCAM):
+    """Layer GradCAM for object detection task."""
+
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        target_layer: torch.nn.Module,
+    ):
+        super().__init__(target_layer=target_layer)
+        self.model = model
+
+    def forward(
+        self,
+        input_img: torch.Tensor,
+    ) -> torch.Tensor:
+        """Forward pass of GradCAM aglorithm.
+
+        Args:
+            input_img: Input image with shape of (B, C, H, W).
+
+        Returns:
+            Tensor with saliency map.
+        """
+        saliency_maps: List[torch.Tensor] = []
+        _, _, height, width = input_img.size()
+
+        result_list = self.model.forward(input_img)
+        for result in result_list:
+            score = result.max()
+
+            # clear gradients
+            self.model.zero_grad()
+
+            # calculate gradients
+            score.backward(retain_graph=True)
+
+            saliency_maps.append(
+                self.get_saliency_map(
+                    height=height,
+                    width=width,
+                    gradients=self.gradients,
+                    activations=self.activations,
+                )
+            )
+        return torch.cat(saliency_maps)
+
+
+class BaseGradCAMCVExplainer(Explainer):
     """Base GradCAM algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
         self, model: torch.nn.Module, layer: torch.nn.Module, **kwargs
-    ) -> Union[GuidedGradCam, LayerGradCam]:
+    ) -> Union[GuidedGradCam, LayerBaseGradCAM]:
         """Create explainer object.
 
         Args:
@@ -129,7 +276,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
         model: torch.nn.Module,
         layer: torch.nn.Module,
         **kwargs,
-    ) -> Union[GuidedGradCam, LayerGradCam]:
+    ) -> Union[GuidedGradCam, LayerBaseGradCAM]:
         """Create explainer object.
 
         Args:
@@ -271,7 +418,7 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         model: torch.nn.Module,
         layer: torch.nn.Module,
         **kwargs,
-    ) -> Union[GuidedGradCam, LayerGradCam]:
+    ) -> Union[GuidedGradCam, LayerBaseGradCAM]:
         """Create explainer object.
 
         Args:
@@ -289,16 +436,16 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         """
         model = modify_modules(model)
 
-        return LayerGradCam(forward_func=model, layer=layer)
+        return LayerGradCAMObjectDetection(model=model, target_layer=layer)
 
     def calculate_features(
         self,
         model: torch.nn.Module,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
-        additional_forward_args: Any = None,
-        attribute_to_layer_input: bool = False,
-        relu_attributions: bool = False,
+        pred_label_idx: TargetType = None,  # pylint: disable = (unused-argument)
+        additional_forward_args: Any = None,  # pylint: disable = (unused-argument)
+        attribute_to_layer_input: bool = False,  # pylint: disable = (unused-argument)
+        relu_attributions: bool = False,  # pylint: disable = (unused-argument)
         **kwargs,
     ) -> torch.Tensor:
         """Generate features image with GradCAM algorithm explainer.
@@ -391,14 +538,66 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
-        guided_cam = self.create_explainer(model=model, layer=layer)
-        if isinstance(guided_cam, LayerGradCam):
-            attributions = guided_cam.attribute(
-                input_data,
-                target=pred_label_idx,
-                additional_forward_args=additional_forward_args,
-                attribute_to_layer_input=attribute_to_layer_input,
-                relu_attributions=relu_attributions,
+        gradcam = self.create_explainer(model=model, layer=layer)
+        if isinstance(gradcam, LayerBaseGradCAM):
+            attributions = gradcam(input_data)
+
+        if not isinstance(attributions, torch.Tensor):
+            raise RuntimeError(
+                f"Saliency map is `{type(attributions)}`, but expected type is `torch.Tensor`."
             )
+
         validate_result(attributions=attributions)
         return attributions
+
+
+class LayerGradCAMObjectDetectionExplainer(LayerBaseGradCAM):
+    """Layer GradCAM for object detection task.
+
+    Code based on https://github.com/pooya-mohammadi/yolov5-gradcam.
+    """
+
+    def __init__(
+        self,
+        model: BaseObjectDetector,
+        target_layer: torch.nn.Module,
+    ):
+        super().__init__(target_layer=target_layer)
+        self.model = model
+
+    def forward(
+        self,
+        input_img: torch.Tensor,
+    ) -> ObjectDetectionOutput:
+        """Forward pass of GradCAM aglorithm.
+
+        Args:
+            input_img: Input image with shape of (B, C, H, W).
+
+        Returns:
+            ObjectDetectionOutput object.
+        """
+        saliency_maps: List[torch.Tensor] = []
+        _, _, height, width = input_img.size()
+        predictions, logits = self.model.forward(input_img)
+        for logit, cls in zip(logits[0], [p.class_number for p in predictions]):
+            score = logit[cls]
+            # clear gradients
+            self.model.zero_grad()
+
+            # calculate gradients
+            score.backward(retain_graph=True)
+
+            saliency_maps.append(
+                self.get_saliency_map(
+                    height=height,
+                    width=width,
+                    gradients=self.gradients,
+                    activations=self.activations,
+                )
+            )
+        return ObjectDetectionOutput(
+            saliency_maps=saliency_maps,
+            logits=logits,
+            predictions=predictions,
+        )

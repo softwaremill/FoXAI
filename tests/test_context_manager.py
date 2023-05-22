@@ -6,7 +6,11 @@ import pytest
 import torch
 from torchvision import transforms
 
-from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
+from foxai.context_manager import (
+    CVClassificationExplainers,
+    ExplainerWithParams,
+    FoXaiExplainer,
+)
 from foxai.explainer import InputXGradientCVExplainer
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
@@ -42,7 +46,11 @@ class TestFoXaiExplainer:
 
         with FoXaiExplainer(
             model=classifier,
-            explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+            explainers=[
+                ExplainerWithParams(
+                    CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER
+                )
+            ],
         ) as xai_model:
             _, _ = xai_model(img_tensor)
 
@@ -91,9 +99,9 @@ class TestFoXaiExplainer:
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
         explainers: List[ExplainerWithParams] = [
-            ExplainerWithParams(Explainers.CV_GRADIENT_SHAP_EXPLAINER),
-            ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER),
-            ExplainerWithParams(Explainers.CV_OCCLUSION_EXPLAINER),
+            ExplainerWithParams(CVClassificationExplainers.CV_GRADIENT_SHAP_EXPLAINER),
+            ExplainerWithParams(CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER),
+            ExplainerWithParams(CVClassificationExplainers.CV_OCCLUSION_EXPLAINER),
         ]
         with FoXaiExplainer(
             model=classifier,
@@ -125,7 +133,11 @@ class TestFoXaiExplainer:
 
         with FoXaiExplainer(
             model=classifier,
-            explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+            explainers=[
+                ExplainerWithParams(
+                    CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER
+                )
+            ],
         ) as xai_model:
             foxai_inference_output, _ = xai_model(img_tensor)
 
@@ -151,7 +163,11 @@ class TestFoXaiExplainer:
         with torch.no_grad():
             with FoXaiExplainer(
                 model=classifier,
-                explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+                explainers=[
+                    ExplainerWithParams(
+                        CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER
+                    )
+                ],
             ) as xai_model:
                 assert torch.is_grad_enabled()
                 _, _ = xai_model(img_tensor)
@@ -167,12 +183,12 @@ class TestFoXaiExplainer:
             model=classifier,
             explainers=[
                 ExplainerWithParams(
-                    explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER,
+                    explainer_name=CVClassificationExplainers.CV_GRADIENT_SHAP_EXPLAINER,
                     n_samples=100,
                     stdevs=0.0005,
                 ),
                 ExplainerWithParams(
-                    explainer_name=Explainers.CV_OCCLUSION_EXPLAINER,
+                    explainer_name=CVClassificationExplainers.CV_OCCLUSION_EXPLAINER,
                     stride_value=5,
                     window_value=5,
                 ),
@@ -214,12 +230,18 @@ class TestFoXaiExplainer:
         )
         with FoXaiExplainer(
             model=classifier,
-            explainers=[ExplainerWithParams(Explainers.CV_INPUT_X_GRADIENT_EXPLAINER)],
+            explainers=[
+                ExplainerWithParams(
+                    CVClassificationExplainers.CV_INPUT_X_GRADIENT_EXPLAINER
+                )
+            ],
         ) as xai_model:
             _, foxai_attributes_dict = xai_model(img_tensor)
 
         assert torch.equal(
-            foxai_attributes_dict[Explainers.CV_INPUT_X_GRADIENT_EXPLAINER.name],
+            foxai_attributes_dict[
+                CVClassificationExplainers.CV_INPUT_X_GRADIENT_EXPLAINER.name
+            ],
             explainer_attributes,
         )
 
@@ -237,7 +259,11 @@ class TestFoXaiExplainer:
         with torch.no_grad():
             with FoXaiExplainer(
                 model=classifier,
-                explainers=[ExplainerWithParams(Explainers.CV_NOISE_TUNNEL_EXPLAINER)],
+                explainers=[
+                    ExplainerWithParams(
+                        CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER
+                    )
+                ],
             ) as _:
                 assert not classifier.training
 

@@ -10,11 +10,11 @@ from captum._utils.typing import TargetType
 from captum.attr import LayerConductance
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import CVExplainer
-from foxai.explainer.model_utils import get_last_conv_model_layer
+from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
 
 
-class LayerConductanceCVExplainer(CVExplainer):
+class LayerConductanceCVExplainer(Explainer):
     """Layer Conductance algorithm explainer."""
 
     # pylint: disable = unused-argument
