@@ -26,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> FoXAI
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FoXAI
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -58,7 +62,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">foxai.cli.experiment_update</li>
       <li class="wy-breadcrumbs-aside">
@@ -79,12 +83,16 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">wandb</span>
 <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
 <span class="kn">from</span> <span class="nn">torchvision.io</span> <span class="kn">import</span> <span class="n">ImageReadMode</span><span class="p">,</span> <span class="n">read_image</span>
 
-<span class="kn">import</span> <span class="nn">wandb</span>
 <span class="kn">from</span> <span class="nn">foxai.cli.config_model</span> <span class="kn">import</span> <span class="n">ConfigDataModel</span><span class="p">,</span> <span class="n">MethodDataModel</span>
-<span class="kn">from</span> <span class="nn">foxai.context_manager</span> <span class="kn">import</span> <span class="n">FoXaiExplainer</span><span class="p">,</span> <span class="n">Explainers</span><span class="p">,</span> <span class="n">ExplainerWithParams</span>
+<span class="kn">from</span> <span class="nn">foxai.context_manager</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CVClassificationExplainers</span><span class="p">,</span>
+    <span class="n">ExplainerWithParams</span><span class="p">,</span>
+    <span class="n">FoXaiExplainer</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="download_upload_metadata"><a class="viewcode-back" href="../../../foxai.cli.html#foxai.cli.experiment_update.download_upload_metadata">[docs]</a><span class="k">def</span> <span class="nf">download_upload_metadata</span><span class="p">(</span><span class="n">api_run</span><span class="p">:</span> <span class="n">wandb</span><span class="o">.</span><span class="n">apis</span><span class="o">.</span><span class="n">public</span><span class="o">.</span><span class="n">Run</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -190,7 +198,9 @@
     <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;explainers&quot;</span><span class="p">]:</span>
         <span class="n">explainer_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;explainer_with_params&quot;</span><span class="p">]</span>
         <span class="n">explainer</span><span class="p">:</span> <span class="n">ExplainerWithParams</span> <span class="o">=</span> <span class="n">ExplainerWithParams</span><span class="p">(</span>
-            <span class="n">explainer_name</span><span class="o">=</span><span class="n">Explainers</span><span class="p">[</span><span class="n">explainer_config</span><span class="p">[</span><span class="s2">&quot;explainer_name&quot;</span><span class="p">]],</span>
+            <span class="n">explainer_name</span><span class="o">=</span><span class="n">CVClassificationExplainers</span><span class="p">[</span>
+                <span class="n">explainer_config</span><span class="p">[</span><span class="s2">&quot;explainer_name&quot;</span><span class="p">]</span>
+            <span class="p">],</span>
             <span class="n">kwargs</span><span class="o">=</span><span class="n">explainer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kwargs&quot;</span><span class="p">,</span> <span class="p">{}),</span>
         <span class="p">)</span>
         <span class="n">method_config_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>

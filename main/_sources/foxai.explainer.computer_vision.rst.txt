@@ -1,0 +1,30 @@
+foxai.explainer.computer\_vision package
+========================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   foxai.explainer.computer_vision.algorithm
+   foxai.explainer.computer_vision.object_detection
+
+Submodules
+----------
+
+foxai.explainer.computer\_vision.model\_utils module
+----------------------------------------------------
+
+.. automodule:: foxai.explainer.computer_vision.model_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: foxai.explainer.computer_vision
+   :members:
+   :undoc-members:
+   :show-inheritance:

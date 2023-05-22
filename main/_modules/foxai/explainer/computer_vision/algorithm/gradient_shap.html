@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>foxai.explainer.gradient_shap &mdash; FoXAI  documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <title>foxai.explainer.computer_vision.algorithm.gradient_shap &mdash; FoXAI  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -26,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> FoXAI
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            FoXAI
           </a>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -38,11 +42,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../install.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">foxai</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules.html">foxai</a></li>
 </ul>
 
         </div>
@@ -51,16 +55,16 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">FoXAI</a>
+          <a href="../../../../../index.html">FoXAI</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">foxai.explainer.gradient_shap</li>
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">foxai.explainer.computer_vision.algorithm.gradient_shap</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -69,7 +73,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for foxai.explainer.gradient_shap</h1><div class="highlight"><pre>
+  <h1>Source code for foxai.explainer.computer_vision.algorithm.gradient_shap</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;File with Gradient SHAP algorithm explainer classes.</span>
 
 <span class="sd">Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/gradient_shap.py</span>
@@ -84,14 +88,14 @@
 <span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">GradientShap</span><span class="p">,</span> <span class="n">LayerGradientShap</span>
 
 <span class="kn">from</span> <span class="nn">foxai.array_utils</span> <span class="kn">import</span> <span class="n">validate_result</span>
-<span class="kn">from</span> <span class="nn">foxai.explainer.base_explainer</span> <span class="kn">import</span> <span class="n">CVExplainer</span>
-<span class="kn">from</span> <span class="nn">foxai.explainer.model_utils</span> <span class="kn">import</span> <span class="n">get_last_conv_model_layer</span>
+<span class="kn">from</span> <span class="nn">foxai.explainer.base_explainer</span> <span class="kn">import</span> <span class="n">Explainer</span>
+<span class="kn">from</span> <span class="nn">foxai.explainer.computer_vision.model_utils</span> <span class="kn">import</span> <span class="n">get_last_conv_model_layer</span>
 
 
-<div class="viewcode-block" id="BaseGradientSHAPCVExplainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.gradient_shap.BaseGradientSHAPCVExplainer">[docs]</a><span class="k">class</span> <span class="nc">BaseGradientSHAPCVExplainer</span><span class="p">(</span><span class="n">CVExplainer</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseGradientSHAPCVExplainer"><a class="viewcode-back" href="../../../../../foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.BaseGradientSHAPCVExplainer">[docs]</a><span class="k">class</span> <span class="nc">BaseGradientSHAPCVExplainer</span><span class="p">(</span><span class="n">Explainer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base Gradient SHAP algorithm explainer.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BaseGradientSHAPCVExplainer.create_explainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.gradient_shap.BaseGradientSHAPCVExplainer.create_explainer">[docs]</a>    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="BaseGradientSHAPCVExplainer.create_explainer"><a class="viewcode-back" href="../../../../../foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.BaseGradientSHAPCVExplainer.create_explainer">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">create_explainer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
@@ -121,7 +125,7 @@
 <span class="sd">            Explainer object.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="BaseGradientSHAPCVExplainer.calculate_features"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.gradient_shap.BaseGradientSHAPCVExplainer.calculate_features">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_features</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseGradientSHAPCVExplainer.calculate_features"><a class="viewcode-back" href="../../../../../foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.BaseGradientSHAPCVExplainer.calculate_features">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_features</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">input_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -268,10 +272,10 @@
         <span class="k">return</span> <span class="n">attributions</span></div></div>
 
 
-<div class="viewcode-block" id="GradientSHAPCVExplainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.gradient_shap.GradientSHAPCVExplainer">[docs]</a><span class="k">class</span> <span class="nc">GradientSHAPCVExplainer</span><span class="p">(</span><span class="n">BaseGradientSHAPCVExplainer</span><span class="p">):</span>
+<div class="viewcode-block" id="GradientSHAPCVExplainer"><a class="viewcode-back" href="../../../../../foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.GradientSHAPCVExplainer">[docs]</a><span class="k">class</span> <span class="nc">GradientSHAPCVExplainer</span><span class="p">(</span><span class="n">BaseGradientSHAPCVExplainer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gradient SHAP algorithm explainer.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="GradientSHAPCVExplainer.create_explainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.gradient_shap.GradientSHAPCVExplainer.create_explainer">[docs]</a>    <span class="k">def</span> <span class="nf">create_explainer</span><span class="p">(</span>
+<div class="viewcode-block" id="GradientSHAPCVExplainer.create_explainer"><a class="viewcode-back" href="../../../../../foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.GradientSHAPCVExplainer.create_explainer">[docs]</a>    <span class="k">def</span> <span class="nf">create_explainer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">multiply_by_inputs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -306,10 +310,10 @@
         <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="LayerGradientSHAPCVExplainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.gradient_shap.LayerGradientSHAPCVExplainer">[docs]</a><span class="k">class</span> <span class="nc">LayerGradientSHAPCVExplainer</span><span class="p">(</span><span class="n">BaseGradientSHAPCVExplainer</span><span class="p">):</span>
+<div class="viewcode-block" id="LayerGradientSHAPCVExplainer"><a class="viewcode-back" href="../../../../../foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.LayerGradientSHAPCVExplainer">[docs]</a><span class="k">class</span> <span class="nc">LayerGradientSHAPCVExplainer</span><span class="p">(</span><span class="n">BaseGradientSHAPCVExplainer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Layer Gradient SHAP algorithm explainer.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="LayerGradientSHAPCVExplainer.create_explainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.gradient_shap.LayerGradientSHAPCVExplainer.create_explainer">[docs]</a>    <span class="k">def</span> <span class="nf">create_explainer</span><span class="p">(</span>
+<div class="viewcode-block" id="LayerGradientSHAPCVExplainer.create_explainer"><a class="viewcode-back" href="../../../../../foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.LayerGradientSHAPCVExplainer.create_explainer">[docs]</a>    <span class="k">def</span> <span class="nf">create_explainer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">multiply_by_inputs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>

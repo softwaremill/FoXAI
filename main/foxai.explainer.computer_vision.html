@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>foxai.explainer.computer_vision package &mdash; FoXAI  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="foxai.explainer.computer_vision.algorithm package" href="foxai.explainer.computer_vision.algorithm.html" />
+    <link rel="prev" title="foxai.explainer package" href="foxai.explainer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            FoXAI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">foxai</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="foxai.html">foxai package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="foxai.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html">foxai.callbacks package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.cli.html">foxai.cli package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="foxai.explainer.html">foxai.explainer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.array_utils">foxai.array_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.context_manager">foxai.context_manager module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.logger">foxai.logger module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.visualizer">foxai.visualizer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FoXAI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">foxai</a></li>
+          <li class="breadcrumb-item"><a href="foxai.html">foxai package</a></li>
+          <li class="breadcrumb-item"><a href="foxai.explainer.html">foxai.explainer package</a></li>
+      <li class="breadcrumb-item active">foxai.explainer.computer_vision package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/foxai.explainer.computer_vision.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="foxai-explainer-computer-vision-package">
+<h1>foxai.explainer.computer_vision package<a class="headerlink" href="#foxai-explainer-computer-vision-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html">foxai.explainer.computer_vision.algorithm package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.conductance">foxai.explainer.computer_vision.algorithm.conductance module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.conductance.LayerConductanceCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerConductanceCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.conductance.LayerConductanceCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">LayerConductanceCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.conductance.LayerConductanceCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerConductanceCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.deconv">foxai.explainer.computer_vision.algorithm.deconv module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deconv.BaseDeconvolutionCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseDeconvolutionCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deconv.BaseDeconvolutionCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseDeconvolutionCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deconv.BaseDeconvolutionCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseDeconvolutionCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deconv.DeconvolutionCVExplainer"><code class="docutils literal notranslate"><span class="pre">DeconvolutionCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deconv.DeconvolutionCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">DeconvolutionCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.deeplift">foxai.explainer.computer_vision.algorithm.deeplift module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift.BaseDeepLIFTCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift.BaseDeepLIFTCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift.BaseDeepLIFTCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift.DeepLIFTCVExplainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift.DeepLIFTCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift.LayerDeepLIFTCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift.LayerDeepLIFTCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.deeplift_shap">foxai.explainer.computer_vision.algorithm.deeplift_shap module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift_shap.BaseDeepLIFTSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift_shap.BaseDeepLIFTSHAPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTSHAPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift_shap.BaseDeepLIFTSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseDeepLIFTSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift_shap.DeepLIFTSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift_shap.DeepLIFTSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">DeepLIFTSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift_shap.LayerDeepLIFTSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.deeplift_shap.LayerDeepLIFTSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerDeepLIFTSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.gradcam">foxai.explainer.computer_vision.algorithm.gradcam module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.BaseGradCAMCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseGradCAMCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.BaseGradCAMCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseGradCAMCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.BaseGradCAMCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseGradCAMCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.GuidedGradCAMCVExplainer"><code class="docutils literal notranslate"><span class="pre">GuidedGradCAMCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.GuidedGradCAMCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">GuidedGradCAMCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.GuidedGradCAMCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">GuidedGradCAMCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerBaseGradCAM"><code class="docutils literal notranslate"><span class="pre">LayerBaseGradCAM</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerBaseGradCAM.activations"><code class="docutils literal notranslate"><span class="pre">LayerBaseGradCAM.activations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerBaseGradCAM.forward"><code class="docutils literal notranslate"><span class="pre">LayerBaseGradCAM.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerBaseGradCAM.get_saliency_map"><code class="docutils literal notranslate"><span class="pre">LayerBaseGradCAM.get_saliency_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerBaseGradCAM.gradients"><code class="docutils literal notranslate"><span class="pre">LayerBaseGradCAM.gradients</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerGradCAMCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerGradCAMCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerGradCAMCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerGradCAMObjectDetection"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMObjectDetection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerGradCAMObjectDetection.forward"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMObjectDetection.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerGradCAMObjectDetectionExplainer"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMObjectDetectionExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradcam.LayerGradCAMObjectDetectionExplainer.forward"><code class="docutils literal notranslate"><span class="pre">LayerGradCAMObjectDetectionExplainer.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.gradient_shap">foxai.explainer.computer_vision.algorithm.gradient_shap module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.BaseGradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseGradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.BaseGradientSHAPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseGradientSHAPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.BaseGradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseGradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.GradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">GradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.GradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">GradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.LayerGradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerGradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.gradient_shap.LayerGradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerGradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.guided_backprop">foxai.explainer.computer_vision.algorithm.guided_backprop module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.guided_backprop.BaseGuidedBackpropCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseGuidedBackpropCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.guided_backprop.BaseGuidedBackpropCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseGuidedBackpropCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.guided_backprop.BaseGuidedBackpropCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseGuidedBackpropCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.guided_backprop.GuidedBackpropCVExplainer"><code class="docutils literal notranslate"><span class="pre">GuidedBackpropCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.guided_backprop.GuidedBackpropCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">GuidedBackpropCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.input_x_gradient">foxai.explainer.computer_vision.algorithm.input_x_gradient module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.input_x_gradient.BaseInputXGradientSHAPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseInputXGradientSHAPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.input_x_gradient.BaseInputXGradientSHAPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseInputXGradientSHAPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.input_x_gradient.BaseInputXGradientSHAPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseInputXGradientSHAPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.input_x_gradient.InputXGradientCVExplainer"><code class="docutils literal notranslate"><span class="pre">InputXGradientCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.input_x_gradient.InputXGradientCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">InputXGradientCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.input_x_gradient.LayerInputXGradientCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerInputXGradientCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.input_x_gradient.LayerInputXGradientCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerInputXGradientCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.integrated_gradients">foxai.explainer.computer_vision.algorithm.integrated_gradients module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.integrated_gradients.BaseIntegratedGradientsCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseIntegratedGradientsCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.integrated_gradients.BaseIntegratedGradientsCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseIntegratedGradientsCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.integrated_gradients.BaseIntegratedGradientsCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseIntegratedGradientsCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.integrated_gradients.IntegratedGradientsCVExplainer"><code class="docutils literal notranslate"><span class="pre">IntegratedGradientsCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.integrated_gradients.IntegratedGradientsCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">IntegratedGradientsCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.integrated_gradients.LayerIntegratedGradientsCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerIntegratedGradientsCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.integrated_gradients.LayerIntegratedGradientsCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerIntegratedGradientsCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.lrp">foxai.explainer.computer_vision.algorithm.lrp module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.BaseLRPCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.BaseLRPCVExplainer.add_rules"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer.add_rules()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.BaseLRPCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.BaseLRPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseLRPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.LRPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LRPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.LRPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LRPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.LayerLRPCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerLRPCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.lrp.LayerLRPCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerLRPCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.noise_tunnel">foxai.explainer.computer_vision.algorithm.noise_tunnel module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.noise_tunnel.BaseNoiseTunnelCVExplainer"><code class="docutils literal notranslate"><span class="pre">BaseNoiseTunnelCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.noise_tunnel.BaseNoiseTunnelCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">BaseNoiseTunnelCVExplainer.calculate_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.noise_tunnel.BaseNoiseTunnelCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">BaseNoiseTunnelCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.noise_tunnel.LayerNoiseTunnelCVExplainer"><code class="docutils literal notranslate"><span class="pre">LayerNoiseTunnelCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.noise_tunnel.LayerNoiseTunnelCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">LayerNoiseTunnelCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.noise_tunnel.NoiseTunnelCVExplainer"><code class="docutils literal notranslate"><span class="pre">NoiseTunnelCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.noise_tunnel.NoiseTunnelCVExplainer.create_explainer"><code class="docutils literal notranslate"><span class="pre">NoiseTunnelCVExplainer.create_explainer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.occlusion">foxai.explainer.computer_vision.algorithm.occlusion module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.occlusion.OcclusionCVExplainer"><code class="docutils literal notranslate"><span class="pre">OcclusionCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.occlusion.OcclusionCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">OcclusionCVExplainer.calculate_features()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm.saliency">foxai.explainer.computer_vision.algorithm.saliency module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.saliency.SaliencyCVExplainer"><code class="docutils literal notranslate"><span class="pre">SaliencyCVExplainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#foxai.explainer.computer_vision.algorithm.saliency.SaliencyCVExplainer.calculate_features"><code class="docutils literal notranslate"><span class="pre">SaliencyCVExplainer.calculate_features()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.algorithm.html#module-foxai.explainer.computer_vision.algorithm">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html">foxai.explainer.computer_vision.object_detection package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#module-foxai.explainer.computer_vision.object_detection.base_object_detector">foxai.explainer.computer_vision.object_detection.base_object_detector module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.base_object_detector.BaseObjectDetector"><code class="docutils literal notranslate"><span class="pre">BaseObjectDetector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.base_object_detector.BaseObjectDetector.forward"><code class="docutils literal notranslate"><span class="pre">BaseObjectDetector.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.base_object_detector.BaseObjectDetector.preprocessing"><code class="docutils literal notranslate"><span class="pre">BaseObjectDetector.preprocessing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.base_object_detector.BaseObjectDetector.training"><code class="docutils literal notranslate"><span class="pre">BaseObjectDetector.training</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#module-foxai.explainer.computer_vision.object_detection.types">foxai.explainer.computer_vision.object_detection.types module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.ObjectDetectionOutput"><code class="docutils literal notranslate"><span class="pre">ObjectDetectionOutput</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.ObjectDetectionOutput.logits"><code class="docutils literal notranslate"><span class="pre">ObjectDetectionOutput.logits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.ObjectDetectionOutput.predictions"><code class="docutils literal notranslate"><span class="pre">ObjectDetectionOutput.predictions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.ObjectDetectionOutput.saliency_maps"><code class="docutils literal notranslate"><span class="pre">ObjectDetectionOutput.saliency_maps</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.PredictionOutput"><code class="docutils literal notranslate"><span class="pre">PredictionOutput</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.PredictionOutput.bbox"><code class="docutils literal notranslate"><span class="pre">PredictionOutput.bbox</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.PredictionOutput.class_name"><code class="docutils literal notranslate"><span class="pre">PredictionOutput.class_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.PredictionOutput.class_number"><code class="docutils literal notranslate"><span class="pre">PredictionOutput.class_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.types.PredictionOutput.confidence"><code class="docutils literal notranslate"><span class="pre">PredictionOutput.confidence</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#module-foxai.explainer.computer_vision.object_detection.utils">foxai.explainer.computer_vision.object_detection.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#foxai.explainer.computer_vision.object_detection.utils.resize_image"><code class="docutils literal notranslate"><span class="pre">resize_image()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.explainer.computer_vision.object_detection.html#module-foxai.explainer.computer_vision.object_detection">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-foxai.explainer.computer_vision.model_utils">
+<span id="foxai-explainer-computer-vision-model-utils-module"></span><h2>foxai.explainer.computer_vision.model_utils module<a class="headerlink" href="#module-foxai.explainer.computer_vision.model_utils" title="Permalink to this heading"></a></h2>
+<p>File contains functions to modifiy DNN models.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.explainer.computer_vision.model_utils.get_last_conv_model_layer">
+<span class="sig-prename descclassname"><span class="pre">foxai.explainer.computer_vision.model_utils.</span></span><span class="sig-name descname"><span class="pre">get_last_conv_model_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Module</span></span></span><a class="reference internal" href="_modules/foxai/explainer/computer_vision/model_utils.html#get_last_conv_model_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.explainer.computer_vision.model_utils.get_last_conv_model_layer" title="Permalink to this definition"></a></dt>
+<dd><p>Get the last convolutional layer from the torch model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> – torch.nn.Module</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The last convolutional layer of the model.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError if the model does not contain convolutional layers.</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.explainer.computer_vision.model_utils.modify_modules">
+<span class="sig-prename descclassname"><span class="pre">foxai.explainer.computer_vision.model_utils.</span></span><span class="sig-name descname"><span class="pre">modify_modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Module</span></span></span><a class="reference internal" href="_modules/foxai/explainer/computer_vision/model_utils.html#modify_modules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.explainer.computer_vision.model_utils.modify_modules" title="Permalink to this definition"></a></dt>
+<dd><p>Modify modules of given model.</p>
+<p>Function iterates over all modules and sets property <cite>inplace</cite>
+to <cite>False</cite> for every <cite>torch.nn.ReLU</cite> activation function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> – Neural network object to be modified.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Modified neural network object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-foxai.explainer.computer_vision">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-foxai.explainer.computer_vision" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="foxai.explainer.html" class="btn btn-neutral float-left" title="foxai.explainer package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="foxai.explainer.computer_vision.algorithm.html" class="btn btn-neutral float-right" title="foxai.explainer.computer_vision.algorithm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ReasonField Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

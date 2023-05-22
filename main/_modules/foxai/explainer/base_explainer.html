@@ -26,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> FoXAI
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FoXAI
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -58,7 +62,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">foxai.explainer.base_explainer</li>
       <li class="wy-breadcrumbs-aside">
@@ -78,11 +82,11 @@
 <span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TargetType</span>
 
 
-<div class="viewcode-block" id="CVExplainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.base_explainer.CVExplainer">[docs]</a><span class="k">class</span> <span class="nc">CVExplainer</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="Explainer"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.base_explainer.Explainer">[docs]</a><span class="k">class</span> <span class="nc">Explainer</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract explainer class.&quot;&quot;&quot;</span>
 
     <span class="c1"># TODO: add support in explainer for multiple input models</span>
-<div class="viewcode-block" id="CVExplainer.calculate_features"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.base_explainer.CVExplainer.calculate_features">[docs]</a>    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="Explainer.calculate_features"><a class="viewcode-back" href="../../../foxai.explainer.html#foxai.explainer.base_explainer.Explainer.calculate_features">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">calculate_features</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
@@ -111,7 +115,7 @@
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span></div>
 
 
-<span class="n">CVExplainerT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;CVExplainerT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">CVExplainer</span><span class="p">)</span>
+<span class="n">CVExplainerT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;CVExplainerT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Explainer</span><span class="p">)</span>
 <span class="sd">&quot;&quot;&quot;CVExplainer subclass type.&quot;&quot;&quot;</span>
 </pre></div>
 

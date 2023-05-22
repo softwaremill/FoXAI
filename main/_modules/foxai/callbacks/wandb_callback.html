@@ -26,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> FoXAI
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FoXAI
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -58,7 +62,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">foxai.callbacks.wandb_callback</li>
       <li class="wy-breadcrumbs-aside">
@@ -78,12 +82,12 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">wandb</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning.loggers</span> <span class="kn">import</span> <span class="n">WandbLogger</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 
-<span class="kn">import</span> <span class="nn">wandb</span>
 <span class="kn">from</span> <span class="nn">foxai.array_utils</span> <span class="kn">import</span> <span class="n">convert_standardized_float_to_uint8</span><span class="p">,</span> <span class="n">standardize_array</span>
-<span class="kn">from</span> <span class="nn">foxai.context_manager</span> <span class="kn">import</span> <span class="n">FoXaiExplainer</span><span class="p">,</span> <span class="n">ExplainerWithParams</span>
+<span class="kn">from</span> <span class="nn">foxai.context_manager</span> <span class="kn">import</span> <span class="n">ExplainerWithParams</span><span class="p">,</span> <span class="n">FoXaiExplainer</span>
 <span class="kn">from</span> <span class="nn">foxai.visualizer</span> <span class="kn">import</span> <span class="n">mean_channels_visualization</span>
 
 <span class="n">AttributeMapType</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span>
@@ -190,7 +194,7 @@
             <span class="p">)</span>
             <span class="n">figures_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
             <span class="n">standardized_attr</span> <span class="o">=</span> <span class="n">standardize_array</span><span class="p">(</span>
-                <span class="n">explainer_attributes</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                <span class="n">explainer_attributes</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
             <span class="p">)</span>
 
             <span class="n">attributes_dict</span><span class="p">[</span><span class="n">explainer_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
