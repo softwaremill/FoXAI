@@ -1,0 +1,37 @@
+foxai.explainer.computer\_vision.object\_detection package
+==========================================================
+
+Submodules
+----------
+
+foxai.explainer.computer\_vision.object\_detection.base\_object\_detector module
+--------------------------------------------------------------------------------
+
+.. automodule:: foxai.explainer.computer_vision.object_detection.base_object_detector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+foxai.explainer.computer\_vision.object\_detection.types module
+---------------------------------------------------------------
+
+.. automodule:: foxai.explainer.computer_vision.object_detection.types
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+foxai.explainer.computer\_vision.object\_detection.utils module
+---------------------------------------------------------------
+
+.. automodule:: foxai.explainer.computer_vision.object_detection.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: foxai.explainer.computer_vision.object_detection
+   :members:
+   :undoc-members:
+   :show-inheritance:

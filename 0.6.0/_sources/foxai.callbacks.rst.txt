@@ -1,0 +1,21 @@
+foxai.callbacks package
+=======================
+
+Submodules
+----------
+
+foxai.callbacks.wandb\_callback module
+--------------------------------------
+
+.. automodule:: foxai.callbacks.wandb_callback
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: foxai.callbacks
+   :members:
+   :undoc-members:
+   :show-inheritance:

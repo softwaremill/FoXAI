@@ -1,0 +1,29 @@
+foxai.cli package
+=================
+
+Submodules
+----------
+
+foxai.cli.config\_model module
+------------------------------
+
+.. automodule:: foxai.cli.config_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+foxai.cli.experiment\_update module
+-----------------------------------
+
+.. automodule:: foxai.cli.experiment_update
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: foxai.cli
+   :members:
+   :undoc-members:
+   :show-inheritance:
