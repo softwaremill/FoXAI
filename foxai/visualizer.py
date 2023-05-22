@@ -4,6 +4,9 @@ import matplotlib
 import numpy as np
 import torch
 from matplotlib.pyplot import Figure
+from typing import List
+import matplotlib.pyplot as plt
+
 
 from foxai.array_utils import (
     convert_standardized_float_to_uint8,

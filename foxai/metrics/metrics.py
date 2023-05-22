@@ -1,7 +1,6 @@
 import torch
 from torchvision.transforms.functional import gaussian_blur
 import numpy as np
-import matplotlib.pyplot as plt
 
 from foxai.visualizer import _preprocess_img_and_attributes
 from typing import List, Tuple
@@ -33,8 +32,8 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
 
 
 def _metric_calculation(
-    attrs: torch.tensor,
-    transformed_img: torch.tensor,
+    attrs: torch.Tensor,
+    transformed_img: torch.Tensor,
     model: torch.nn.Module,
     chosen_class: int,
     steps_num=30,
@@ -74,14 +73,13 @@ def _metric_calculation(
 
     importance_lst: List[np.ndarray] = []
 
-    cuda = next(model.parameters()).is_cuda
-    device = torch.device("cuda" if cuda else "cpu")
+    device = model.device
 
-    removed_img_part: torch.tensor = torch.zeros(transformed_img.shape).to(device)
+    removed_img_part: torch.Tensor = torch.zeros(transformed_img.shape).to(device)
     removed_img_part[:] = transformed_img.mean()
 
     if metric_type == Metrics.INSERTION:
-        removed_img_part: torch.tensor = gaussian_blur(transformed_img, (101, 101))
+        removed_img_part: torch.Tensor = gaussian_blur(transformed_img, (101, 101))
 
     for val in stepped_attrs:
         attributes_map: np.ndarray = np.expand_dims(
@@ -99,18 +97,18 @@ def _metric_calculation(
         )
 
         if metric_type == Metrics.DELETION:
-            perturbed_img: torch.tensor = (
+            perturbed_img: torch.Tensor = (
                 transformed_img * attributes_map + removed_img_part * attributes_map_inv
             )
         else:
-            perturbed_img: torch.tensor = (
+            perturbed_img: torch.Tensor = (
                 removed_img_part * attributes_map + transformed_img * attributes_map_inv
             )
 
         perturbed_img = perturbed_img.to(device)
 
         output = model(perturbed_img.unsqueeze(dim=0))
-        softmax_output: torch.tensor = torch.nn.functional.softmax(output)[0]
+        softmax_output: torch.Tensor = torch.nn.functional.softmax(output)[0]
         importance_lst.append(softmax_output[chosen_class].detach().numpy())
 
     metric: np.ndarray = np.round(np.trapz(importance_lst) / len(importance_lst), 4)
@@ -119,8 +117,8 @@ def _metric_calculation(
 
 
 def deletion(
-    attrs: torch.tensor,
-    transformed_img: torch.tensor,
+    attrs: torch.Tensor,
+    transformed_img: torch.Tensor,
     model: torch.nn.Module,
     chosen_class: int,
 ) -> Tuple[np.ndarray, List]:
@@ -145,7 +143,7 @@ def deletion(
 
 
 def insertion(
-    attrs: torch.tensor,
+    attrs: torch.Tensor,
     transformed_img: torch.Tensor,
     model: torch.nn.Module,
     chosen_class: int,
