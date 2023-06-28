@@ -73,7 +73,8 @@ def _metric_calculation(
 
     importance_lst: List[np.ndarray] = []
 
-    device = model.device
+    cuda = next(model.parameters()).is_cuda
+    device = torch.device("cuda" if cuda else "cpu")
 
     removed_img_part: torch.Tensor = torch.zeros(transformed_img.shape).to(device)
     removed_img_part[:] = transformed_img.mean()
