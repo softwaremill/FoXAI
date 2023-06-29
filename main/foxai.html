@@ -55,6 +55,7 @@
 <li class="toctree-l4"><a class="reference internal" href="foxai.callbacks.html">foxai.callbacks package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="foxai.cli.html">foxai.cli package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="foxai.explainer.html">foxai.explainer package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.metrics.html">foxai.metrics package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
@@ -90,6 +91,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#foxai.visualizer.object_detection_visualization"><code class="docutils literal notranslate"><span class="pre">object_detection_visualization()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#foxai.visualizer.preprocess_object_detection_image"><code class="docutils literal notranslate"><span class="pre">preprocess_object_detection_image()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#foxai.visualizer.single_channel_visualization"><code class="docutils literal notranslate"><span class="pre">single_channel_visualization()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foxai.visualizer.visualize_metric"><code class="docutils literal notranslate"><span class="pre">visualize_metric()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-foxai">Module contents</a></li>
@@ -194,6 +196,21 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="foxai.explainer.html#module-foxai.explainer">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="foxai.metrics.html">foxai.metrics package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foxai.metrics.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.metrics.html#module-foxai.metrics.metrics">foxai.metrics.metrics module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="foxai.metrics.html#foxai.metrics.metrics.Metrics"><code class="docutils literal notranslate"><span class="pre">Metrics</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="foxai.metrics.html#foxai.metrics.metrics.Metrics.DELETION"><code class="docutils literal notranslate"><span class="pre">Metrics.DELETION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="foxai.metrics.html#foxai.metrics.metrics.Metrics.INSERTION"><code class="docutils literal notranslate"><span class="pre">Metrics.INSERTION</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.metrics.html#foxai.metrics.metrics.deletion"><code class="docutils literal notranslate"><span class="pre">deletion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.metrics.html#foxai.metrics.metrics.insertion"><code class="docutils literal notranslate"><span class="pre">insertion()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="foxai.metrics.html#module-foxai.metrics">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -705,6 +722,12 @@ Defaults to True.</p></li>
     of color channels of attributes.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="foxai.visualizer.visualize_metric">
+<span class="sig-prename descclassname"><span class="pre">foxai.visualizer.</span></span><span class="sig-name descname"><span class="pre">visualize_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">importance_lst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Deletion'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foxai/visualizer.html#visualize_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.visualizer.visualize_metric" title="Permalink to this definition"></a></dt>
+<dd><p>Visualize graph for Insertion or deletion metric based on which area under the curve is caluclated.</p>
 </dd></dl>
 
 </section>

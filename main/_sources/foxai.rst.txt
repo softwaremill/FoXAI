@@ -10,6 +10,7 @@ Subpackages
    foxai.callbacks
    foxai.cli
    foxai.explainer
+   foxai.metrics
 
 Submodules
 ----------

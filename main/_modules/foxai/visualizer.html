@@ -82,6 +82,9 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torchvision</span>
 <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">import</span> <span class="n">Figure</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
 
 <span class="kn">from</span> <span class="nn">foxai.array_utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_standardized_float_to_uint8</span><span class="p">,</span>
@@ -270,6 +273,21 @@
         <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
         <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
     <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="visualize_metric"><a class="viewcode-back" href="../../foxai.html#foxai.visualizer.visualize_metric">[docs]</a><span class="k">def</span> <span class="nf">visualize_metric</span><span class="p">(</span>
+    <span class="n">importance_lst</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">metric_result</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">metric_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Deletion&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Visualize graph for Insertion or deletion metric based on which area under the curve is caluclated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">importance_lst</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">importance_lst</span><span class="p">)),</span> <span class="n">importance_lst</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metric_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">metric_result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="preprocess_object_detection_image"><a class="viewcode-back" href="../../foxai.html#foxai.visualizer.preprocess_object_detection_image">[docs]</a><span class="k">def</span> <span class="nf">preprocess_object_detection_image</span><span class="p">(</span><span class="n">input_image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
