@@ -29,7 +29,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ${BUILD_PYTHON_DEPS} \
         ${BUILD_OPT_DEPS} \
-        ffmpeg libsm6 libxext6\
+        ffmpeg libsm6 libxext6 wget\
     && localedef -f UTF-8 -i en_US en_US.UTF-8 \
     && useradd -m -s /bin/bash ubuntu \
     && echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \

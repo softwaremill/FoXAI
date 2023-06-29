@@ -80,21 +80,23 @@ def _metric_calculation(
     removed_img_part[:] = transformed_img.mean()
 
     if metric_type == Metrics.INSERTION:
-        removed_img_part: torch.Tensor = gaussian_blur(transformed_img, (101, 101))
+        removed_img_part = gaussian_blur(transformed_img, (101, 101))
 
     for val in stepped_attrs:
-        attributes_map: np.ndarray = np.expand_dims(
+        attributes_map_np: np.ndarray = np.expand_dims(
             np.where(preprocessed_attrs <= val, 1, 0), axis=-1
         )
-        attributes_map = attributes_map.repeat(3, axis=-1)
-        attributes_map = torch.from_numpy(attributes_map).permute(2, 1, 0).to(device)
+        attributes_map_np = attributes_map_np.repeat(3, axis=-1)
+        attributes_map: torch.Tensor = (
+            torch.from_numpy(attributes_map_np).permute(2, 1, 0).to(device)
+        )
 
-        attributes_map_inv: np.ndarray = np.expand_dims(
+        attributes_map_inv_np: np.ndarray = np.expand_dims(
             np.where(preprocessed_attrs <= val, 0, 1), axis=-1
         )
-        attributes_map_inv = attributes_map_inv.repeat(3, axis=-1)
-        attributes_map_inv = (
-            torch.from_numpy(attributes_map_inv).permute(2, 1, 0).to(device)
+        attributes_map_inv_np = attributes_map_inv_np.repeat(3, axis=-1)
+        attributes_map_inv: torch.Tensor = (
+            torch.from_numpy(attributes_map_inv_np).permute(2, 1, 0).to(device)
         )
 
         if metric_type == Metrics.DELETION:
@@ -102,7 +104,7 @@ def _metric_calculation(
                 transformed_img * attributes_map + removed_img_part * attributes_map_inv
             )
         else:
-            perturbed_img: torch.Tensor = (
+            perturbed_img = (
                 removed_img_part * attributes_map + transformed_img * attributes_map_inv
             )
 
