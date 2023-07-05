@@ -1,13 +1,13 @@
 import logging
 import math
 import time
-from typing_extensions import Final
 from typing import Any, Iterator, Optional, Tuple, Union
 
 import cv2
 import numpy as np
 import torch
 import torchvision
+from typing_extensions import Final
 
 from foxai.logger import create_logger
 

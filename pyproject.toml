@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "foxai"
-version = "0.5.5"
+version = "0.6.0"
 description = "Model Interpretability for PyTorch."
 authors = ["ReasonField Lab Team"]
 maintainers = [

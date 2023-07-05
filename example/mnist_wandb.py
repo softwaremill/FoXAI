@@ -4,6 +4,7 @@
 import os
 
 import torch
+import wandb
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.loggers import WandbLogger
 from torch.nn import functional as F
@@ -12,7 +13,6 @@ from torchmetrics import Accuracy
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-import wandb
 from foxai.callbacks.wandb_callback import WandBCallback
 from foxai.context_manager import Explainers, ExplainerWithParams
 

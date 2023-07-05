@@ -7,12 +7,12 @@ import hydra
 import pandas as pd
 import pytorch_lightning as pl
 import torch
+import wandb
 from omegaconf import DictConfig
 from torchvision.io import ImageReadMode, read_image
 
-import wandb
 from foxai.cli.config_model import ConfigDataModel, MethodDataModel
-from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
+from foxai.context_manager import Explainers, ExplainerWithParams, FoXaiExplainer
 
 
 def download_upload_metadata(api_run: wandb.apis.public.Run) -> Dict[str, Any]:

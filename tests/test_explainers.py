@@ -9,7 +9,7 @@ import torch
 from torchvision import transforms
 
 from foxai import explainer
-from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
+from foxai.context_manager import Explainers, ExplainerWithParams, FoXaiExplainer
 from foxai.explainer.base_explainer import CVExplainerT
 from foxai.logger import create_logger
 from tests.pickachu_image import pikachu_image

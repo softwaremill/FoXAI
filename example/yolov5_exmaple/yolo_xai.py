@@ -37,8 +37,6 @@ import torchvision
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from PIL import Image
 
-from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
-from foxai.explainer.base_explainer import CVExplainer
 from example.yolov5_exmaple.yolo_utils import (  # scale_boxes,
     MAXIMUM_BBOX_WIDTH_HEIGHT,
     MAXIMUM_NUMBER_OF_BOXES_TO_NMS,
@@ -48,6 +46,8 @@ from example.yolov5_exmaple.yolo_utils import (  # scale_boxes,
     non_max_suppression,
     xywh2xyxy,
 )
+from foxai.context_manager import Explainers, ExplainerWithParams, FoXaiExplainer
+from foxai.explainer.base_explainer import CVExplainer
 
 TARGET: Final[int] = 0
 """ The target class to be explained with XAI.

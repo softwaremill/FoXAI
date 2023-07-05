@@ -6,7 +6,7 @@ import pytest
 import torch
 from torchvision import transforms
 
-from foxai.context_manager import FoXaiExplainer, Explainers, ExplainerWithParams
+from foxai.context_manager import Explainers, ExplainerWithParams, FoXaiExplainer
 from foxai.explainer import InputXGradientCVExplainer
 from tests.pickachu_image import pikachu_image
 from tests.sample_model import SampleModel
