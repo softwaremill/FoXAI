@@ -304,6 +304,8 @@ class FullGrad:
         if target_class is None:
             target_class = out.data.max(1, keepdim=True)[1]
 
+        target_class = target_class.to(out.device)
+
         # Select the output unit corresponding to the target class
         # -1 compensates for negation in nll_loss function
         output_scalar = -1.0 * F.nll_loss(out, target_class.flatten(), reduction="sum")
