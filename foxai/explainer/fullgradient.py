@@ -139,6 +139,12 @@ class FullGradExtractor:
                     f", however {module} layer found in model definition."
                 )
 
+    def release(self):
+        # Iterate through layers
+        for module in self.model.modules():
+            # disable full_backward_hook to use normal backward_hooks
+            module._is_full_backward_hook = None  # pylint: disable = (protected-access)
+
     def _extract_layer_bias(self, module: Submodule) -> Optional[torch.Tensor]:
         """Extract bias of each layer
 
@@ -236,6 +242,9 @@ class FullGrad:
         cuda = next(self.model.parameters()).is_cuda
         self._device = torch.device("cuda" if cuda else "cpu")
         self.check_completeness()
+
+    def __del__(self):
+        self.model_ext.release()
 
     @_eval_mode
     def check_completeness(self) -> bool:
