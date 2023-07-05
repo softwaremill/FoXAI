@@ -109,7 +109,7 @@ class BaseDeconvolutionCVExplainer(Explainer):
 
 
 class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
-    """Base Deconvolution algorithm explainer."""
+    """Deconvolution algorithm explainer."""
 
     def create_explainer(
         self,

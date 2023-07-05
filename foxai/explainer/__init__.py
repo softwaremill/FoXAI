@@ -41,3 +41,4 @@ from foxai.explainer.computer_vision.algorithm.noise_tunnel import (
 )
 from foxai.explainer.computer_vision.algorithm.occlusion import OcclusionCVExplainer
 from foxai.explainer.computer_vision.algorithm.saliency import SaliencyCVExplainer
+from foxai.explainer.fullgradient import FullGradientCVExplainer

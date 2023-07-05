@@ -22,7 +22,7 @@ Then setup development environment by installing ``Poetry`` and project dependen
 
 .. code-block:: bash
 
-   $ curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
+   $ curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 -
    $ poetry config virtualenvs.create true
    $ poetry config virtualenvs.in-project true
    $ poetry install
