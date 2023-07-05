@@ -18,7 +18,7 @@ Example:
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Generic, List, Optional, Tuple, cast
+from typing import Any, Dict, Generic, List, Optional, Tuple, Union, cast
 
 import torch
 
@@ -37,6 +37,7 @@ from foxai.explainer import (
     LayerDeepLIFTCVExplainer,
     LayerDeepLIFTSHAPCVExplainer,
     LayerGradCAMCVExplainer,
+    LayerGradCAMObjectDetectionExplainer,
     LayerGradientSHAPCVExplainer,
     LayerInputXGradientCVExplainer,
     LayerIntegratedGradientsCVExplainer,
@@ -62,8 +63,8 @@ def log() -> logging.Logger:
     return _LOGGER
 
 
-class Explainers(Enum):
-    """Enum of supported explainers types."""
+class CVClassificationExplainers(Enum):
+    """Enum of supported computer vision classification explainers types."""
 
     CV_OCCLUSION_EXPLAINER: str = OcclusionCVExplainer.__name__
     CV_INTEGRATED_GRADIENTS_EXPLAINER: str = IntegratedGradientsCVExplainer.__name__
@@ -91,14 +92,26 @@ class Explainers(Enum):
     CV_GUIDED_BACKPOPAGATION_EXPLAINER: str = GuidedBackpropCVExplainer.__name__
 
 
+class CVObjectDetectionExplainers(Enum):
+    """Enum of supported computer vision object detection explainers types."""
+
+    CV_LAYER_GRADCAM_OBJECT_DETECTION_EXPLAINER: str = (
+        LayerGradCAMObjectDetectionExplainer.__name__
+    )
+
+
 @dataclass
 class ExplainerWithParams:
     """Holder for explainer name (class name) and it's params"""
 
-    explainer_name: Explainers
+    explainer_name: Union[CVClassificationExplainers, CVObjectDetectionExplainers]
     kwargs: Dict[str, Any] = field(default_factory=dict)
 
-    def __init__(self, explainer_name: Explainers, **kwargs) -> None:
+    def __init__(
+        self,
+        explainer_name: Union[CVClassificationExplainers, CVObjectDetectionExplainers],
+        **kwargs
+    ) -> None:
         self.explainer_name = explainer_name
         if kwargs:
             self.kwargs = kwargs

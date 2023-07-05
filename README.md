@@ -26,7 +26,7 @@ add support for text, tabular and multimodal data problems in the future.
 # Installation
 
 Installation requirements:
-* `Python` >= 3.7 & < 4.0
+* `Python` >=3.7.2,<3.11
 
 **Important**: For any problems regarding installation we advise to refer first to our [FAQ](FAQ.md).
 
@@ -34,7 +34,7 @@ Installation requirements:
 
 To use the torch library with GPU acceleration, you need to install
 a dedicated version of torch with support for the installed version of CUDA
-drivers in the version supported by the library, at the moment `torch==1.12.1`.
+drivers in the version supported by the library, at the moment `torch>=1.12.1,<2.0.0`.
 A list of `torch` wheels with CUDA support can be found at
 [https://download.pytorch.org/whl/torch/](https://download.pytorch.org/whl/torch/).
 
@@ -72,7 +72,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 import wandb
 from foxai.callbacks.wandb_callback import WandBCallback
-from foxai.context_manager import Explainers, ExplainerWithParams
+from foxai.context_manager import CVClassificationExplainers, ExplainerWithParams
 
     ...
     wandb.login()
@@ -81,10 +81,10 @@ from foxai.context_manager import Explainers, ExplainerWithParams
         wandb_logger=wandb_logger,
         explainers=[
             ExplainerWithParams(
-                explainer_name=Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER
+                explainer_name=CVClassificationExplainers.CV_INTEGRATED_GRADIENTS_EXPLAINER
             ),
             ExplainerWithParams(
-                explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER
+                explainer_name=CVClassificationExplainers.CV_GRADIENT_SHAP_EXPLAINER
             ),
         ],
         idx_to_label={index: index for index in range(0, 10)},
@@ -215,7 +215,7 @@ the project directory.
 ## Pre-commit hooks setup
 
 To improve the development experience, please make sure to install
-our [pre-commit][https://pre-commit.com/] hooks as the very first step after
+our [pre-commit](https://pre-commit.com/) hooks as the very first step after
 cloning the repository:
 
 ```bash

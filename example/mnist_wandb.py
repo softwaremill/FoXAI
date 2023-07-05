@@ -14,7 +14,7 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 
 from foxai.callbacks.wandb_callback import WandBCallback
-from foxai.context_manager import Explainers, ExplainerWithParams
+from foxai.context_manager import CVClassificationExplainers, ExplainerWithParams
 
 
 class LitMNIST(  # pylint: disable = (abstract-method, too-many-ancestors, too-many-instance-attributes)
@@ -153,9 +153,11 @@ def main() -> None:  # pylint: disable = (duplicate-code)
         wandb_logger=wandb_logger,
         explainers=[
             ExplainerWithParams(
-                explainer_name=Explainers.CV_INTEGRATED_GRADIENTS_EXPLAINER
+                explainer_name=CVClassificationExplainers.CV_INTEGRATED_GRADIENTS_EXPLAINER
             ),
-            ExplainerWithParams(explainer_name=Explainers.CV_GRADIENT_SHAP_EXPLAINER),
+            ExplainerWithParams(
+                explainer_name=CVClassificationExplainers.CV_GRADIENT_SHAP_EXPLAINER
+            ),
         ],
         idx_to_label={index: index for index in range(0, 10)},
     )

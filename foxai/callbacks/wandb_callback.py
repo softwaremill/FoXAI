@@ -118,7 +118,7 @@ class WandBCallback(pl.callbacks.Callback):
             )
             figures_dict[explainer_name].append(figure)
             standardized_attr = standardize_array(
-                explainer_attributes.detach().cpu().numpy()
+                explainer_attributes.detach().cpu().numpy().astype(float)
             )
 
             attributes_dict[explainer_name].append(

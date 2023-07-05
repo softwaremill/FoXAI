@@ -12,7 +12,11 @@ from omegaconf import DictConfig
 from torchvision.io import ImageReadMode, read_image
 
 from foxai.cli.config_model import ConfigDataModel, MethodDataModel
-from foxai.context_manager import Explainers, ExplainerWithParams, FoXaiExplainer
+from foxai.context_manager import (
+    CVClassificationExplainers,
+    ExplainerWithParams,
+    FoXaiExplainer,
+)
 
 
 def download_upload_metadata(api_run: wandb.apis.public.Run) -> Dict[str, Any]:
@@ -118,7 +122,9 @@ def load_config(config: DictConfig) -> ConfigDataModel:
     for entry in config["explainers"]:
         explainer_config: Dict[str, Any] = entry["explainer_with_params"]
         explainer: ExplainerWithParams = ExplainerWithParams(
-            explainer_name=Explainers[explainer_config["explainer_name"]],
+            explainer_name=CVClassificationExplainers[
+                explainer_config["explainer_name"]
+            ],
             kwargs=explainer_config.get("kwargs", {}),
         )
         method_config_list.append(
