@@ -2,13 +2,11 @@ from typing import List, Tuple
 
 import cv2
 import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision
 from matplotlib.pyplot import Figure
-from typing import List
-import matplotlib.pyplot as plt
-
 
 from foxai.array_utils import (
     convert_standardized_float_to_uint8,
@@ -70,8 +68,8 @@ def _preprocess_img_and_attributes(
         - transpoze image matrix from (C x H x W) to (H x W x C)
 
     Args:
-        attributions: Features.
-        transformed_img: Image in shape (C x H x W) or (H x W).
+        attributes_matrix: Features.
+        transformed_img_np: Image in shape (C x H x W) or (H x W).
         only_positive_attr: Whether to display only positive or all attributes.
             Defaults to True.
 
