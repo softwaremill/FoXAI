@@ -1,10 +1,11 @@
+from enum import Enum
+from typing import List, Tuple
+
+import numpy as np
 import torch
 from torchvision.transforms.functional import gaussian_blur
-import numpy as np
 
 from foxai.visualizer import _preprocess_img_and_attributes
-from typing import List, Tuple
-from enum import Enum
 
 
 class Metrics(Enum):
@@ -20,7 +21,8 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
     """Get elements from array according to the number of wanted steps.
 
     Args:
-        sorted_attrs: Numpy array of floats correponding to importance map values sorted in ascending or descending order.
+        sorted_attrs: Numpy array of floats correponding to importance map values
+            sorted in ascending or descending order.
         stepns_num: wanted number of steps
 
     Returns:
@@ -80,7 +82,7 @@ def _metric_calculation(
     removed_img_part[:] = transformed_img.mean()
 
     if metric_type == Metrics.INSERTION:
-        removed_img_part = gaussian_blur(transformed_img, (101, 101))
+        removed_img_part = gaussian_blur(transformed_img, (101, 101)).to(device)
 
     for val in stepped_attrs:
         attributes_map_np: np.ndarray = np.expand_dims(
@@ -112,7 +114,7 @@ def _metric_calculation(
 
         output = model(perturbed_img.unsqueeze(dim=0))
         softmax_output: torch.Tensor = torch.nn.functional.softmax(output)[0]
-        importance_lst.append(softmax_output[chosen_class].detach().numpy())
+        importance_lst.append(softmax_output[chosen_class].detach().cpu().numpy())
 
     metric: np.ndarray = np.round(np.trapz(importance_lst) / len(importance_lst), 4)
 
