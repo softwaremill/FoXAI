@@ -77,7 +77,7 @@ class TestExplainers:
         self,
         classifier: SampleModel,
         explainer_function_kwargs: GetExplainerKwargsT,
-        explainer_name: str,
+        explainer_name: CVClassificationExplainers,
     ):
         """Test all available explainers on a simple classifier model using cpu."""
         classifier.train()
@@ -111,7 +111,7 @@ class TestExplainers:
         self,
         classifier: SampleModel,
         explainer_function_kwargs: GetExplainerKwargsT,
-        explainer_name: str,
+        explainer_name: CVClassificationExplainers,
     ):
         """Test all available explainers on a simple classifier model using gpu."""
 
@@ -147,6 +147,100 @@ class TestExplainers:
             ],
         ) as xai_model:
             _, _ = xai_model(img_tensor)
+
+    @pytest.mark.parametrize("explainer_name", list(CVClassificationExplainers))
+    @pytest.mark.parametrize("batch_size", [4])
+    def test_explainers_cpu_for_batch_data(
+        self,
+        batch_size: int,
+        classifier: SampleModel,
+        explainer_function_kwargs: GetExplainerKwargsT,
+        explainer_name: CVClassificationExplainers,
+    ):
+        """Test all available explainers on a simple classifier model using cpu for batch input data."""
+        classifier.train()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        batch_img_tensor: torch.Tensor = torch.vstack(
+            [transform(pikachu_image).unsqueeze(0) for _ in range(0, batch_size)]
+        )
+
+        function_kwargs: Dict[str, Any] = explainer_function_kwargs(
+            explainer_name=explainer_name, classifier=classifier
+        )
+
+        with FoXaiExplainer(
+            model=classifier,
+            explainers=[
+                ExplainerWithParams(
+                    explainer_name=explainer_name,
+                    **function_kwargs,
+                ),
+            ],
+        ) as xai_model:
+            _, explanations = xai_model(batch_img_tensor)
+
+        assert len(explanations[explainer_name.name].shape) == len(
+            batch_img_tensor.shape
+        )
+        assert explanations[explainer_name.name].shape[0] == batch_img_tensor.shape[0]
+
+    @pytest.mark.parametrize("explainer_name", list(CVClassificationExplainers))
+    @pytest.mark.parametrize("batch_size", [4])
+    def test_explainers_gpu_for_batch_data(
+        self,
+        batch_size: int,
+        classifier: SampleModel,
+        explainer_function_kwargs: GetExplainerKwargsT,
+        explainer_name: CVClassificationExplainers,
+    ):
+        """Test all available explainers on a simple classifier model using gpu for batch input data."""
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if device != torch.device("cuda"):
+            log().warning("GPU not detected. Skiping GPU test.")
+            return
+        else:
+            log().info("GPU detected. Runing GPU tests...")
+
+        classifier.train().to(device)
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        batch_img_tensor: torch.Tensor = torch.vstack(
+            [transform(pikachu_image).unsqueeze(0) for _ in range(0, batch_size)]
+        ).to(device=device)
+
+        function_kwargs: Dict[str, Any] = explainer_function_kwargs(
+            explainer_name=explainer_name, classifier=classifier
+        )
+
+        with FoXaiExplainer(
+            model=classifier,
+            explainers=[
+                ExplainerWithParams(
+                    explainer_name=explainer_name,
+                    **function_kwargs,
+                ),
+            ],
+        ) as xai_model:
+            _, explanations = xai_model(batch_img_tensor)
+
+        assert len(explanations[explainer_name.name].shape) == len(
+            batch_img_tensor.shape
+        )
+        assert explanations[explainer_name.name].shape[0] == batch_img_tensor.shape[0]
 
 
 @patch(
