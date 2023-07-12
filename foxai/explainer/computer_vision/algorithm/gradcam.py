@@ -137,7 +137,6 @@ class LayerBaseGradCAM:
         self,
         input_img: torch.Tensor,
     ) -> Union[torch.Tensor, ObjectDetectionOutput]:
-        print(f"__call__.input_img.shape: {input_img.shape}")
         return self.forward(input_img)
 
 
