@@ -8,7 +8,7 @@ from foxai.array_utils import (
     resize_attributes,
     retain_only_positive,
     standardize_array,
-    transpose_array,
+    transpose_color_in_array,
 )
 
 
@@ -69,7 +69,7 @@ def test_convert_standardized_float_to_uint8_should_raise_exception_when_incorre
         _ = convert_standardized_float_to_uint8(array=array)
 
 
-def test_transpose_array_should_add_additional_dimensions() -> None:
+def test_transpose_color_in_array_should_add_additional_dimensions() -> None:
     array = np.array(
         [
             [
@@ -139,13 +139,13 @@ def test_transpose_array_should_add_additional_dimensions() -> None:
     assert array.shape == (1, 6, 6)
     assert expected_array.shape == (6, 6, 1)
 
-    array = transpose_array(array=array)
+    array = transpose_color_in_array(array=array)
 
     assert array.shape == expected_array.shape
     np.testing.assert_array_equal(array, expected_array)
 
 
-def test_transpose_array_should_not_additional_dimensions() -> None:
+def test_transpose_color_in_array_should_not_additional_dimensions() -> None:
     array = np.array(
         [
             [
@@ -231,13 +231,13 @@ def test_transpose_array_should_not_additional_dimensions() -> None:
     assert array.shape == (3, 6, 6)
     assert expected_array.shape == (6, 6, 3)
 
-    array = transpose_array(array=array)
+    array = transpose_color_in_array(array=array)
 
     assert array.shape == expected_array.shape
     np.testing.assert_array_equal(array, expected_array)
 
 
-def test_transpose_array_with_batch_size_should_work() -> None:
+def test_transpose_color_in_array_with_batch_size_should_work() -> None:
     """Test if function transposes data with shapes (B x C x H x W)"""
     array = np.array(
         [
@@ -328,26 +328,26 @@ def test_transpose_array_with_batch_size_should_work() -> None:
     assert array.shape == (1, 3, 6, 6)
     assert expected_array.shape == (1, 6, 6, 3)
 
-    array = transpose_array(array=array)
+    array = transpose_color_in_array(array=array)
 
     assert array.shape == expected_array.shape
     np.testing.assert_array_equal(array, expected_array)
 
 
-def test_transpose_array_with_should_raise_exception_for_2d_data() -> None:
+def test_transpose_color_in_array_with_should_raise_exception_for_2d_data() -> None:
     """Test if function raises RuntimeError when data has less than 3 dimensions."""
     array = np.zeros((6, 6))
 
     with pytest.raises(RuntimeError):
-        _ = transpose_array(array=array)
+        _ = transpose_color_in_array(array=array)
 
 
-def test_transpose_array_with_should_raise_exception_for_5d_data() -> None:
+def test_transpose_color_in_array_with_should_raise_exception_for_5d_data() -> None:
     """Test if function raises RuntimeError when data has more than 4 dimensions."""
     array = np.zeros((1, 1, 6, 6, 3))
 
     with pytest.raises(RuntimeError):
-        _ = transpose_array(array=array)
+        _ = transpose_color_in_array(array=array)
 
 
 def test_resize_attributes() -> None:

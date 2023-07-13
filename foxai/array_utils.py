@@ -118,8 +118,10 @@ def resize_attributes(
     return single_channel_attributes
 
 
-def transpose_array(array: np.ndarray) -> np.ndarray:
-    """Transpoze array from (C x H x W) to (H x W x C) shape or from
+def transpose_color_in_array(array: np.ndarray) -> np.ndarray:
+    """Transpose color from the first to the last dimension of an array.
+
+    More technically transpose array from (C x H x W) to (H x W x C) shape or from
     (B x C x H x W) to (B x H x W x C).
 
     B stands for batch size, C stands for color, H stands for height and W
@@ -137,7 +139,7 @@ def transpose_array(array: np.ndarray) -> np.ndarray:
         return np.transpose(array, (0, 2, 3, 1))
     else:
         raise RuntimeError(
-            f"Wrong shape of array to transpose. Expected 3 or 4 dimension but got: {len(array.shape)} dimensions."
+            f"Wrong shape of array to transpose. Expected 3 or 4 dimensions but got: {len(array.shape)} dimensions."
         )
 
 
