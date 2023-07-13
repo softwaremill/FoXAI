@@ -78,7 +78,7 @@ class LayerBaseGradCAM:
         saliency_maps: List[torch.Tensor] = []
         _, _, height, width = input_img.size()
 
-        result_list = self.model.forward(input_img)
+        result_list: List[torch.Tensor] = self.model.forward(input_img)
 
         result = torch.vstack(tensors=tuple(result_list))
         score = result.max()

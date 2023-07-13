@@ -1,10 +1,11 @@
+from enum import Enum
+from typing import List, Tuple
+
+import numpy as np
 import torch
 from torchvision.transforms.functional import gaussian_blur
-import numpy as np
 
 from foxai.visualizer import _preprocess_img_and_attributes
-from typing import List, Tuple
-from enum import Enum
 
 
 class Metrics(Enum):
@@ -20,7 +21,8 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
     """Get elements from array according to the number of wanted steps.
 
     Args:
-        sorted_attrs: Numpy array of floats correponding to importance map values sorted in ascending or descending order.
+        sorted_attrs: Numpy array of floats correponding to importance map values
+            sorted in ascending or descending order.
         stepns_num: wanted number of steps
 
     Returns:
