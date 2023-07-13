@@ -69,7 +69,7 @@ def test_convert_standardized_float_to_uint8_should_raise_exception_when_incorre
         _ = convert_standardized_float_to_uint8(array=array)
 
 
-def test_reshape_and_convert_matrix_should_add_additional_dimensions() -> None:
+def test_transpose_array_should_add_additional_dimensions() -> None:
     array = np.array(
         [
             [
@@ -145,7 +145,7 @@ def test_reshape_and_convert_matrix_should_add_additional_dimensions() -> None:
     np.testing.assert_array_equal(array, expected_array)
 
 
-def test_reshape_and_convert_matrix_should_not_additional_dimensions() -> None:
+def test_transpose_array_should_not_additional_dimensions() -> None:
     array = np.array(
         [
             [
@@ -235,6 +235,119 @@ def test_reshape_and_convert_matrix_should_not_additional_dimensions() -> None:
 
     assert array.shape == expected_array.shape
     np.testing.assert_array_equal(array, expected_array)
+
+
+def test_transpose_array_with_batch_size_should_work() -> None:
+    """Test if function transposes data with shapes (B x C x H x W)"""
+    array = np.array(
+        [
+            [
+                [
+                    [1, 2, 3, 4, 5, 6],
+                    [7, 8, 9, 10, 11, 12],
+                    [13, 14, 15, 16, 17, 18],
+                    [19, 20, 21, 22, 23, 24],
+                    [25, 26, 27, 28, 29, 30],
+                    [31, 32, 33, 34, 35, 36],
+                ],
+                [
+                    [37, 38, 39, 40, 41, 42],
+                    [43, 44, 45, 46, 47, 48],
+                    [49, 50, 51, 52, 53, 54],
+                    [55, 56, 57, 58, 59, 60],
+                    [61, 62, 63, 64, 65, 66],
+                    [67, 68, 69, 70, 71, 72],
+                ],
+                [
+                    [73, 74, 75, 76, 77, 78],
+                    [79, 80, 81, 82, 83, 84],
+                    [85, 86, 87, 88, 89, 90],
+                    [91, 92, 93, 94, 95, 96],
+                    [97, 98, 99, 100, 101, 102],
+                    [103, 104, 105, 106, 107, 108],
+                ],
+            ]
+        ],
+    )
+
+    expected_array = np.array(
+        [
+            [
+                [
+                    [1, 37, 73],
+                    [2, 38, 74],
+                    [3, 39, 75],
+                    [4, 40, 76],
+                    [5, 41, 77],
+                    [6, 42, 78],
+                ],
+                [
+                    [7, 43, 79],
+                    [8, 44, 80],
+                    [9, 45, 81],
+                    [10, 46, 82],
+                    [11, 47, 83],
+                    [12, 48, 84],
+                ],
+                [
+                    [13, 49, 85],
+                    [14, 50, 86],
+                    [15, 51, 87],
+                    [16, 52, 88],
+                    [17, 53, 89],
+                    [18, 54, 90],
+                ],
+                [
+                    [19, 55, 91],
+                    [20, 56, 92],
+                    [21, 57, 93],
+                    [22, 58, 94],
+                    [23, 59, 95],
+                    [24, 60, 96],
+                ],
+                [
+                    [25, 61, 97],
+                    [26, 62, 98],
+                    [27, 63, 99],
+                    [28, 64, 100],
+                    [29, 65, 101],
+                    [30, 66, 102],
+                ],
+                [
+                    [31, 67, 103],
+                    [32, 68, 104],
+                    [33, 69, 105],
+                    [34, 70, 106],
+                    [35, 71, 107],
+                    [36, 72, 108],
+                ],
+            ]
+        ]
+    )
+
+    assert array.shape == (1, 3, 6, 6)
+    assert expected_array.shape == (1, 6, 6, 3)
+
+    array = transpose_array(array=array)
+
+    assert array.shape == expected_array.shape
+    np.testing.assert_array_equal(array, expected_array)
+
+
+def test_transpose_array_with_should_raise_exception_for_2d_data() -> None:
+    """Test if function raises RuntimeError when data has less than 3 dimensions."""
+    array = np.zeros((6, 6))
+
+    with pytest.raises(RuntimeError):
+        _ = transpose_array(array=array)
+
+
+def test_transpose_array_with_should_raise_exception_for_5d_data() -> None:
+    """Test if function raises RuntimeError when data has more than 4 dimensions."""
+    array = np.zeros((1, 1, 6, 6, 3))
+
+    with pytest.raises(RuntimeError):
+        _ = transpose_array(array=array)
 
 
 def test_resize_attributes() -> None:
