@@ -120,14 +120,14 @@ def test_focus_should_calculate_correctly_for_negative_values():
             [
                 [0.5, 0.5, -1.0, -0.6],
                 [0.2, 0.2, 0.1, -0.4],
-                [0.4, 0.2, 0, 0],
-                [0.9, -0.9, 0.8, 0.2],
+                [0.5, 0.2, 0, 0],
+                [0.9, 0.9, -0.8, -0.2],
             ]
         ],
         dtype=torch.float64,
     )
     mosaic_labels = torch.Tensor([[3.0, 1.0], [4.0, 3.0]])
-    expected_focus = 0.6
+    expected_focus = 0.35
     actual_focus = focus(
         attributions=attributions, mosaic_labels=mosaic_labels, target_class=3
     )

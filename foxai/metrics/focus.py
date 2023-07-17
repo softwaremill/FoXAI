@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import torch
 
+from foxai.array_utils import retain_only_positive
+
 
 @dataclass
 class MosaicData:
@@ -108,7 +110,8 @@ def focus(
         where: img1, img2 belong to target class.
 
     Args:
-        attributions: Torch Tensor corresponding to importance map.
+        attributions: Torch Tensor corresponding to importance map. This is assumed to be only non-negative values,
+                      however if any negative values are provided they will be treated as 0.
         mosaic_labels: Torch Tensor of 2x2 dimension representing labels of each quadrant image.
         target_class: Target class to be used for focus calculation.
 
@@ -116,7 +119,8 @@ def focus(
         A float value representing calculated focus metric.
     """
     relevance_matrix = attributions.detach().cpu().numpy()
-    total_relevance = np.sum(relevance_matrix[np.where(relevance_matrix > 0)])
+    relevance_matrix = retain_only_positive(relevance_matrix)
+    total_relevance = np.sum(relevance_matrix)
     one_picture_width, one_picture_height = int(relevance_matrix.shape[1] / 2), int(
         relevance_matrix.shape[2] / 2
     )
