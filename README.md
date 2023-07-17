@@ -184,10 +184,10 @@ To separate runtime environments for different services and repositories, it is
 recommended to use a virtual Python environment. You can configure `Poetry` to
 create a new virtual environment in the project directory of every repository. To
 install `Poetry` follow the instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
-`1.2.1`. To install a specific version You have to provide desired package
+`1.4.2`. To install a specific version You have to provide desired package
 version:
 ```bash
-curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
+curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 -
 ```
 Add poetry to PATH:
 ```bash

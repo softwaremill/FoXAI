@@ -27,6 +27,7 @@ from foxai.explainer import (
     DeconvolutionCVExplainer,
     DeepLIFTCVExplainer,
     DeepLIFTSHAPCVExplainer,
+    FullGradientCVExplainer,
     GradientSHAPCVExplainer,
     GuidedBackpropCVExplainer,
     GuidedGradCAMCVExplainer,
@@ -70,6 +71,7 @@ class CVClassificationExplainers(Enum):
     CV_NOISE_TUNNEL_EXPLAINER: str = NoiseTunnelCVExplainer.__name__
     CV_GRADIENT_SHAP_EXPLAINER: str = GradientSHAPCVExplainer.__name__
     CV_LRP_EXPLAINER: str = LRPCVExplainer.__name__
+    CV_FULL_GRADIENTS_EXPLAINER: str = FullGradientCVExplainer.__name__
     CV_GUIDEDGRADCAM_EXPLAINER: str = GuidedGradCAMCVExplainer.__name__
     CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER: str = (
         LayerIntegratedGradientsCVExplainer.__name__
