@@ -41,7 +41,7 @@ def draw_image(
         ax = figure.subplots()
 
     # change image shape from (C X H X W) to (H X W X C) where C stands for colour, X is height and W is width dimension
-    sample_np = image.permute((1, 2, 0)).numpy().astype(float)
+    sample_np = image.permute((1, 2, 0)).detach().cpu().numpy().astype(float)
 
     ax.set_title(title)
     # disable visualizing X and Y axes
@@ -77,19 +77,19 @@ def generate_figure(
         Heatmap of single channel applied on original image.
     """
     if ax is None:
-        figure = Figure(figsize=figsize)
-        ax = figure.subplots()
+        ax = Figure(figsize=figsize).subplots()
     ax.imshow(transformed_img)
     heatmap_plot = ax.imshow(
         attributions, cmap=matplotlib.cm.jet, vmin=0, vmax=1, alpha=alpha
     )
 
-    ax.get_figure().colorbar(heatmap_plot, label="Pixel relevance")
+    figure = ax.get_figure()
+    ax.figure.colorbar(heatmap_plot, label="Pixel relevance")
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     ax.set_title(title)
 
-    return ax.get_figure()
+    return figure
 
 
 def _preprocess_img_and_attributes(
