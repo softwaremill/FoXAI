@@ -73,83 +73,7 @@ class TestExplainers:
         return get_function_kwargs
 
     @pytest.mark.parametrize("explainer_class", list(CVClassificationExplainers))
-    def test_explainers_cpu(
-        self,
-        classifier: SampleModel,
-        explainer_function_kwargs: GetExplainerKwargsT,
-        explainer_class: CVClassificationExplainers,
-    ):
-        """Test all available explainers on a simple classifier model using cpu."""
-        classifier.train()
-        transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Grayscale(),
-                transforms.Resize(size=224),
-                transforms.CenterCrop(size=224),
-            ]
-        )
-        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
-
-        function_kwargs: Dict[str, Any] = explainer_function_kwargs(
-            explainer_class=explainer_class, classifier=classifier
-        )
-
-        with FoXaiExplainer(
-            model=classifier,
-            explainers=[
-                ExplainerWithParams(
-                    explainer_name=explainer_class,
-                    **function_kwargs,
-                ),
-            ],
-        ) as xai_model:
-            _, _ = xai_model(img_tensor)
-
-    @pytest.mark.parametrize("explainer_class", list(CVClassificationExplainers))
-    def test_explainers_gpu(
-        self,
-        classifier: SampleModel,
-        explainer_function_kwargs: GetExplainerKwargsT,
-        explainer_class: CVClassificationExplainers,
-    ):
-        """Test all available explainers on a simple classifier model using gpu."""
-
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        if device != torch.device("cuda"):
-            log().warning("GPU not detected. Skiping GPU test.")
-            return
-        else:
-            log().info("GPU detected. Runing GPU tests...")
-
-        classifier.train().to(device)
-        transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Grayscale(),
-                transforms.Resize(size=224),
-                transforms.CenterCrop(size=224),
-            ]
-        )
-        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0).to(device)
-
-        function_kwargs: Dict[str, Any] = explainer_function_kwargs(
-            explainer_class=explainer_class, classifier=classifier
-        )
-
-        with FoXaiExplainer(
-            model=classifier,
-            explainers=[
-                ExplainerWithParams(
-                    explainer_name=explainer_class,
-                    **function_kwargs,
-                ),
-            ],
-        ) as xai_model:
-            _, _ = xai_model(img_tensor)
-
-    @pytest.mark.parametrize("explainer_class", list(CVClassificationExplainers))
-    @pytest.mark.parametrize("batch_size", [3, 4])
+    @pytest.mark.parametrize("batch_size", [1, 3, 4])
     def test_explainers_cpu_for_batch_data(
         self,
         batch_size: int,
@@ -192,7 +116,7 @@ class TestExplainers:
         assert explanations[explainer_class.name].shape[0] == batch_img_tensor.shape[0]
 
     @pytest.mark.parametrize("explainer_class", list(CVClassificationExplainers))
-    @pytest.mark.parametrize("batch_size", [3, 4])
+    @pytest.mark.parametrize("batch_size", [1, 3, 4])
     def test_explainers_gpu_for_batch_data(
         self,
         batch_size: int,
