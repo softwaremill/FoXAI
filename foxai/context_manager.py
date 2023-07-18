@@ -110,7 +110,7 @@ class ExplainerWithParams:
     def __init__(
         self,
         explainer_name: Union[CVClassificationExplainers, CVObjectDetectionExplainers],
-        **kwargs
+        **kwargs,
     ) -> None:
         self.explainer_name = explainer_name
         if kwargs:
@@ -175,13 +175,13 @@ class FoXaiExplainer(Generic[CVExplainerT]):
         self.prev_model_training_state: bool = self.model.training
 
         self.explainer_map: Dict[str, ExplainerClassWithParams] = {
-            explainer_with_params.explainer_name.name: ExplainerClassWithParams(
+            f"{explainer_with_params.explainer_name.name}_{index}": ExplainerClassWithParams(
                 explainer_class=getattr(
                     explainer, explainer_with_params.explainer_name.value
                 )(),
                 **explainer_with_params.kwargs,
             )
-            for explainer_with_params in explainers
+            for index, explainer_with_params in enumerate(explainers)
         }
 
         self.target: int = target
