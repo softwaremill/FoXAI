@@ -4,7 +4,7 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/guided_
 and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/grad_cam.py.
 """
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 import torch
@@ -24,13 +24,15 @@ from foxai.explainer.computer_vision.object_detection.base_object_detector impor
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
 
 
-class LayerBaseGradCAM(ABC):
+class LayerBaseGradCAM:
     """Layer GradCAM for object detection task."""
 
     def __init__(
         self,
+        model: torch.nn.Module,
         target_layer: torch.nn.Module,
     ):
+        self.model = model
         self._gradients: Dict[str, torch.Tensor] = {}
         self._activations: Dict[str, torch.Tensor] = {}
         self.target_layer = target_layer
@@ -60,7 +62,6 @@ class LayerBaseGradCAM(ABC):
     def gradients(self) -> torch.Tensor:
         return self._gradients["value"]
 
-    @abstractmethod
     def forward(
         self,
         input_img: torch.Tensor,
@@ -74,6 +75,29 @@ class LayerBaseGradCAM(ABC):
             ObjectDetectionOutput object for object detection and tensor with saliency
             map for classification.
         """
+        saliency_maps: List[torch.Tensor] = []
+        _, _, height, width = input_img.size()
+
+        result_list: List[torch.Tensor] = self.model.forward(input_img)
+
+        result = torch.vstack(tensors=tuple(result_list))
+        score = result.max()
+
+        # clear gradients
+        self.model.zero_grad()
+
+        # calculate gradients
+        score.backward(retain_graph=True)
+
+        saliency_maps.append(
+            self.get_saliency_map(
+                height=height,
+                width=width,
+                gradients=self.gradients,
+                activations=self.activations,
+            )
+        )
+        return torch.cat(saliency_maps)
 
     def get_saliency_map(
         self,
@@ -114,53 +138,6 @@ class LayerBaseGradCAM(ABC):
         input_img: torch.Tensor,
     ) -> Union[torch.Tensor, ObjectDetectionOutput]:
         return self.forward(input_img)
-
-
-class LayerGradCAMObjectDetection(LayerBaseGradCAM):
-    """Layer GradCAM for object detection task."""
-
-    def __init__(
-        self,
-        model: torch.nn.Module,
-        target_layer: torch.nn.Module,
-    ):
-        super().__init__(target_layer=target_layer)
-        self.model = model
-
-    def forward(
-        self,
-        input_img: torch.Tensor,
-    ) -> torch.Tensor:
-        """Forward pass of GradCAM aglorithm.
-
-        Args:
-            input_img: Input image with shape of (B, C, H, W).
-
-        Returns:
-            Tensor with saliency map.
-        """
-        saliency_maps: List[torch.Tensor] = []
-        _, _, height, width = input_img.size()
-
-        result_list = self.model.forward(input_img)
-        for result in result_list:
-            score = result.max()
-
-            # clear gradients
-            self.model.zero_grad()
-
-            # calculate gradients
-            score.backward(retain_graph=True)
-
-            saliency_maps.append(
-                self.get_saliency_map(
-                    height=height,
-                    width=width,
-                    gradients=self.gradients,
-                    activations=self.activations,
-                )
-            )
-        return torch.cat(saliency_maps)
 
 
 class BaseGradCAMCVExplainer(Explainer):
@@ -436,7 +413,7 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         """
         model = modify_modules(model)
 
-        return LayerGradCAMObjectDetection(model=model, target_layer=layer)
+        return LayerBaseGradCAM(model=model, target_layer=layer)
 
     def calculate_features(
         self,
@@ -562,8 +539,7 @@ class LayerGradCAMObjectDetectionExplainer(LayerBaseGradCAM):
         model: BaseObjectDetector,
         target_layer: torch.nn.Module,
     ):
-        super().__init__(target_layer=target_layer)
-        self.model = model
+        super().__init__(model=model, target_layer=target_layer)
 
     def forward(
         self,

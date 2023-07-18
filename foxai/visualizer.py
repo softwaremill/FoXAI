@@ -14,7 +14,7 @@ from foxai.array_utils import (
     resize_attributes,
     retain_only_positive,
     standardize_array,
-    transpose_array,
+    transpose_color_in_array,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
 
@@ -137,7 +137,7 @@ def _preprocess_img_and_attributes(
     standardized_img = standardize_array(transformed_img_np.astype(np.dtype(float)))
 
     # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
-    normalized_transformed_img = transpose_array(
+    normalized_transformed_img = transpose_color_in_array(
         convert_standardized_float_to_uint8(standardized_img),
     )
     return grayscale_attributes, normalized_transformed_img

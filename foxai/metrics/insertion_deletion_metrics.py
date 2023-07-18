@@ -21,9 +21,9 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
     """Get elements from array according to the number of wanted steps.
 
     Args:
-        sorted_attrs: Numpy array of floats corresponding to importance map values
-                      sorted in ascending or descending order.
-        steps_num: wanted number of steps
+        sorted_attrs: Numpy array of floats correponding to importance map values
+            sorted in ascending or descending order.
+        stepns_num: wanted number of steps
 
     Returns:
         Numpy array of sample values according to decided number of steps.
