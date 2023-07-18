@@ -1,9 +1,9 @@
 import random
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 import numpy as np
-import pandas as pd
 import torch
 
 from foxai.array_utils import retain_only_positive
@@ -62,7 +62,6 @@ def create_mosaics_from_images(
     images_with_labels: List[List[torch.Tensor]],
     mosaics_num: int,
     target_class: int,
-    pandas_random_state: Optional[int] = None,
 ) -> List[MosaicData]:
     """Create a list of mosaics from a list of images according to rules defined in https://arxiv.org/abs/2109.15035:
         - each mosaic contains two images from target class (c(img1) == c(img2) == target_class)
@@ -73,31 +72,24 @@ def create_mosaics_from_images(
                             where first element is an image and second is a label.
         mosaics_num: A number of mosaics to generate.
         target_class: Target class to be used for mosaics creation.
-        pandas_random_state: a random state to be passed to DataFrame.sample() method, use for repetitive results
 
     Returns:
         A list of MosaicData objects which contain 2x2 images mosaic and a 2x2 matrices of their labels.
     """
     mosaic_data_list = []
+
+    label_to_images = defaultdict(list)
+    for image_with_label in images_with_labels:
+        label_to_images[image_with_label[1].item()].append(image_with_label[0])
+
+    no_target_labels = set(label_to_images.keys()).difference({target_class})
+
     for _ in range(mosaics_num):
-        df = pd.DataFrame(images_with_labels, columns=["image", "label"])
-        df["label"] = df["label"].apply(lambda label: label.item())
-        img3_label, img4_label = random.sample(df["label"].unique().tolist(), 2)
-        img1, img2 = (
-            df[df["label"] == target_class]
-            .sample(2, random_state=pandas_random_state)["image"]
-            .tolist()
-        )
-        img3 = (
-            df[df["label"] == img3_label]
-            .sample(1, random_state=pandas_random_state)["image"]
-            .values[0]
-        )
-        img4 = (
-            df[df["label"] == img4_label]
-            .sample(1, random_state=pandas_random_state)["image"]
-            .values[0]
-        )
+
+        img3_label, img4_label = random.sample(no_target_labels, 2)
+        img3 = random.choice(label_to_images[img3_label])
+        img4 = random.choice(label_to_images[img4_label])
+        img1, img2 = random.sample(label_to_images[target_class], 2)
         mosaic_data_list.append(
             create_mosaic_picture(
                 [

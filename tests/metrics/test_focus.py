@@ -85,34 +85,33 @@ def test_create_mosaics_from_images_should_create_correct_list():
             mosaic_image=torch.Tensor(
                 [
                     [
-                        [13.0, 14.0, 5.0, 6.0],
-                        [15.0, 16.0, 7.0, 8.0],
-                        [13.0, 14.0, 9.0, 10.0],
-                        [15.0, 16.0, 11.0, 12.0],
+                        [9.0, 10.0, 5.0, 6.0],
+                        [11.0, 12.0, 7.0, 8.0],
+                        [1.0, 2.0, 13.0, 14.0],
+                        [3.0, 4.0, 15.0, 16.0],
                     ]
                 ]
             ),
-            mosaic_labels=torch.Tensor([[4.0, 2.0], [3.0, 3.0]]),
+            mosaic_labels=torch.Tensor([[3.0, 2.0], [1.0, 3.0]]),
         ),
         MosaicData(
             mosaic_image=torch.Tensor(
                 [
                     [
-                        [13.0, 14.0, 1.0, 2.0],
-                        [15.0, 16.0, 3.0, 4.0],
+                        [5.0, 6.0, 13.0, 14.0],
+                        [7.0, 8.0, 15.0, 16.0],
                         [13.0, 14.0, 9.0, 10.0],
                         [15.0, 16.0, 11.0, 12.0],
                     ]
                 ]
             ),
-            mosaic_labels=torch.Tensor([[3.0, 1.0], [4.0, 3.0]]),
+            mosaic_labels=torch.Tensor([[2.0, 3.0], [4.0, 3.0]]),
         ),
     ]
     actual_mosaic_data_list = create_mosaics_from_images(
         images_with_labels=images_with_labels,
         mosaics_num=2,
         target_class=3,
-        pandas_random_state=10,
     )
     assert torch.equal(
         expected_mosaic_data_list[0].mosaic_image,
