@@ -2,13 +2,13 @@ fail_fast: false
 default_stages: [commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-toml
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
         args: [ --profile, black, --filter-files ]
@@ -29,14 +29,14 @@ repos:
       - id: mypy
         name: mypy
         language: system
-        files: autoxai
+        files: foxai
         types: [ python ]
         entry: poetry run mypy
         args: ["--ignore-missing-imports"]
       - id: pytest
         name: pytest
         files: tests/
-        entry: poetry run pytest
+        entry: poetry run pytest tests/
         language: system
         pass_filenames: false
       - id: locks

@@ -1,4 +1,4 @@
-from autoxai import __version__
+from foxai import __version__
 
 
 def test_version():

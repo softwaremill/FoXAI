@@ -1,11 +1,11 @@
 Installation
 ============
 
-First we must make sure we have ``autoxai`` installed:
+First we must make sure we have ``foxai`` installed:
 
 .. code-block:: bash
 
-   $ python -m pip install autoxai
+   $ python -m pip install foxai
 
 
 Installation from source
@@ -15,14 +15,14 @@ You can build ``wheel`` with Python package yourself. To do so clone repository 
 
 .. code-block:: bash
 
-    $ git clone https://github.com/softwaremill/AutoXAI.git
-    $ cd AutoXAI/
+    $ git clone https://github.com/softwaremill/FoXAI.git
+    $ cd FoXAI/
 
 Then setup development environment by installing ``Poetry`` and project dependencies.
 
 .. code-block:: bash
 
-   $ curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
+   $ curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 -
    $ poetry config virtualenvs.create true
    $ poetry config virtualenvs.in-project true
    $ poetry install

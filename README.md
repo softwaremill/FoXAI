@@ -1,6 +1,6 @@
-# AutoXAI
+# FoXAI
 
-AutoXAI simplifies the application of e**X**plainable **AI** algorithms to explain the
+FoXAI simplifies the application of e**X**plainable **AI** algorithms to explain the
 performance of neural network models during training. The library acts as an
 aggregator of existing libraries with implementations of various XAI algorithms and
 seeks to facilitate and popularize their use in machine learning projects.
@@ -16,9 +16,8 @@ add support for text, tabular and multimodal data problems in the future.
 * [Development](#development)
     * [Requirements](#requirements)
     * [CUDA](#cuda)
-    * [Poetry](#poetry)
     * [pyenv](#pyenv)
-        * [Installation errors](#installation-errors)
+    * [Poetry](#poetry)
     * [pre-commit hooks](#pre-commit-hooks-setup)
     * [Note](#note)
         * [Artifacts directory structure](#artifacts-directory-structure)
@@ -27,25 +26,27 @@ add support for text, tabular and multimodal data problems in the future.
 # Installation
 
 Installation requirements:
-* `Python` >= 3.8 & < 3.11
+* `Python` >=3.7.2,<3.11
+
+**Important**: For any problems regarding installation we advise to refer first to our [FAQ](FAQ.md).
 
 ## GPU acceleration
 
-In order to use the torch library with GPU acceleration, you need to install
+To use the torch library with GPU acceleration, you need to install
 a dedicated version of torch with support for the installed version of CUDA
-drivers in the version supported by the library, at the moment `torch==1.12.1`.
-List of `torch` wheels with CUDA support can be found at
+drivers in the version supported by the library, at the moment `torch>=1.12.1,<2.0.0`.
+A list of `torch` wheels with CUDA support can be found at
 [https://download.pytorch.org/whl/torch/](https://download.pytorch.org/whl/torch/).
 
 ## Manual installation
 
-If you would like to install from source you can build `wheel` package using `poetry`.
+If you would like to install from the source you can build a `wheel` package using `poetry`.
 The assumption is that the `poetry` package is installed. You can find how to install
 `poetry` [here](#poetry). To build `wheel` package run:
 
 ```bash
-git clone https://github.com/softwaremill/AutoXAI.git
-cd AutoXAI/
+git clone https://github.com/softwaremill/FoXAI.git
+cd FoXAI/
 poetry install
 poetry build
 ```
@@ -53,12 +54,12 @@ poetry build
 As a result you will get `wheel` file inside `dist/` directory that you can install
 via `pip`:
 ```bash
-pip install dist/autoxai-0.3.1-py3-none-any.whl
+pip install dist/foxai-x.y.z-py3-none-any.whl
 ```
 
 # Getting started
 
-To use the AutoXAI library in your ML project, simply add an additional object of type
+To use the FoXAI library in your ML project, simply add an additional object of type
 `WandBCallback` to the `Trainer`'s callback list from the `pytorch-lightning` library.
 Currently, only the Weights and Biases tool for tracking experiments is supported.
 
@@ -70,9 +71,8 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 
 import wandb
-from autoxai.callbacks.wandb_callback import WandBCallback
-from autoxai.explainer.gradient_shap import GradientSHAPCVExplainer
-from autoxai.explainer.integrated_gradients import IntegratedGradientsCVExplainer
+from foxai.callbacks.wandb_callback import WandBCallback
+from foxai.context_manager import CVClassificationExplainers, ExplainerWithParams
 
     ...
     wandb.login()
@@ -80,8 +80,12 @@ from autoxai.explainer.integrated_gradients import IntegratedGradientsCVExplaine
     callback = WandBCallback(
         wandb_logger=wandb_logger,
         explainers=[
-            IntegratedGradientsCVExplainer(),
-            GradientSHAPCVExplainer(),
+            ExplainerWithParams(
+                explainer_name=CVClassificationExplainers.CV_INTEGRATED_GRADIENTS_EXPLAINER
+            ),
+            ExplainerWithParams(
+                explainer_name=CVClassificationExplainers.CV_GRADIENT_SHAP_EXPLAINER
+            ),
         ],
         idx_to_label={index: index for index in range(0, 10)},
     )
@@ -100,10 +104,32 @@ from autoxai.explainer.integrated_gradients import IntegratedGradientsCVExplaine
 
 A CLI tool is available to update the artifacts of an experiment tracked in
 Weights and Biases. Allows you to create XAI explanations and send them to
-W&B offline. To check options type:
+W&B offline. This tool is using `hydra` to handle the configuration of `yaml` files.
+To check options type:
 
 ```bash
-autoxai-wandb-updater --help
+foxai-wandb-updater --help
+```
+
+Typical usage with configuration in `config/config.yaml`:
+```bash
+foxai-wandb-updater --config-dir config/ --config-name config
+```
+
+Content of `config.yaml`:
+```bash
+username: <WANDB_USERANEM>
+experiment: <WANDB_EXPERIMENT>
+run_id: <WANDB_RUN_ID>
+classifier: # model class to explain
+  _target_: example.streamlit_app.mnist_model.LitMNIST
+  batch_size: 1
+  data_dir: "."
+explainers: # list of explainers to use
+ - explainer_with_params:
+    explainer_name: CV_GRADIENT_SHAP_EXPLAINER
+    kwargs:
+      n_steps: 1000
 ```
 
 # Development
@@ -114,25 +140,62 @@ The project was tested using Python version `3.8`.
 
 ## CUDA
 
-Recommended version of CUDA is `10.2` as it is supported since version
-`1.5.0` of `torch`. You can check compatilibity of Your CUDA version
-with current version of `torch`:
+The recommended version of CUDA is `10.2` as it is supported since version
+`1.5.0` of `torch`. You can check the compatibility of your CUDA version
+with the current version of `torch`:
 https://pytorch.org/get-started/previous-versions/.
+
+As our starting Docker image we were using the one provided by Nvidia: ``nvidia/cuda:10.2-devel-ubuntu18.04``.
+
+If you wish an easy to use docker image we advise to use our ``Dockerfile``.
+
+## pyenv
+Optional step, but probably one of the easiest way to actually get Python version with all the needed aditional tools (e.g. pip).
+
+`pyenv` is a tool used to manage multiple versions of Python. To install
+this package follow the instructions on the project repository page:
+https://github.com/pyenv/pyenv#installation. After installation You can
+install desired Python version, e.g. `3.8.16`:
+```bash
+pyenv install 3.8.16
+```
+
+The next step is required to be able to use a desired version of Python with
+`poetry`. To activate a specific version of Python interpreter execute the command:
+```bash
+pyenv local 3.8.16 # or `pyenv global 3.8.16`
+```
+
+Inside the repository with `poetry` You can select a specific version of Python
+interpreter with the command:
+```bash
+poetry env use 3.8.16
+```
+
+After changing the interpreter version You have to once again install all
+dependencies:
+```bash
+poetry install
+```
 
 ## Poetry
 
 To separate runtime environments for different services and repositories, it is
 recommended to use a virtual Python environment. You can configure `Poetry` to
-create new virtual environment in project directory of every repository. To
-install `Poetry` follow instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
-`1.2.1`. To install specific version You have to provide desired package
+create a new virtual environment in the project directory of every repository. To
+install `Poetry` follow the instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
+`1.4.2`. To install a specific version You have to provide desired package
 version:
 ```bash
-curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
+curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 -
+```
+Add poetry to PATH:
+```bash
+export PATH="/home/ubuntu/.local/bin:$PATH"
+echo 'export PATH="/home/ubuntu/.local/bin:$PATH"' >> ~/.bashrc
 ```
 
-After installation configure creation of virtual environments in directory
-of project.
+After installation, configure the creation of virtual environments in the directory of the project.
 ```bash
 poetry config virtualenvs.create true
 poetry config virtualenvs.in-project true
@@ -146,51 +209,13 @@ poetry install
 ```
 
 Once all the steps have been completed, the environment is ready to go.
-Virtual environment by default will be created with name `.venv` inside
-project directory.
-
-## pyenv
-
-`pyenv` is a tool used to manage multiple version of Python. To install
-this package follow instructions on project repository page:
-https://github.com/pyenv/pyenv#installation. After installation You can
-install desired Python version, e.g. `3.8.16`:
-```bash
-pyenv install 3.8.16
-```
-
-The next step is required to be able to use desired version of Python with
-`poetry`. To activate specific version of Python interpreter execute command:
-```bash
-pyenv local 3.8.16 # or `pyenv global 3.8.16`
-```
-
-Inside repository with `poetry` You can select specific version of Python
-interpreter with command:
-```bash
-poetry env use 3.8.16
-```
-
-After changing interpreter version You have to once again install all
-dependencies:
-```bash
-poetry install
-```
-
-### Installation errors
-
-If You encounter errors during dependencies installation You can disable
-parallel installer, remove current virtual environment and remove `artifacts`
-and `cache` directories from `poetry` root directory (by default is under
-`/home/<user>/.cache/pypoetry/`). To disable parallel installer run:
-```bash
-poetry config installer.parallel false
-```
+A virtual environment by default will be created with the name `.venv` inside
+the project directory.
 
 ## Pre-commit hooks setup
 
-In order to improve the development experience, please make sure to install
-our [pre-commit][https://pre-commit.com/] hooks as the very first step after
+To improve the development experience, please make sure to install
+our [pre-commit](https://pre-commit.com/) hooks as the very first step after
 cloning the repository:
 
 ```bash
@@ -200,37 +225,11 @@ poetry run pre-commit install
 ## Note
 ---
 At the moment only explainable algorithms for image classification are
-implemented to test design of the architecture. In future more algorithms
-and more computer vision tasks will be introduces. In the end module should
-work with all types of tasks (NLP, etc.).
-
-### Artifacts directory structure
-
-Module is designed to operate in two modes: offline and online. In offline
-mode user can explain already trained model against test data. In online
-mode user can attach callback to training framework to perform explanations
-of predictions during training at the end of each validation epochs.
-
-Module is using cache directory to store artifacts and configuration similar
-to `Tensorboard`. There are many levels of directory structure:
-```bash
-cache_directory/
-└── <date>
-    ├── <uuid>
-    │   ├── data
-    │   │   ├── <data>.pkl
-    |   |   └─── ...
-    │   ├── labels
-    │   │   └── idx_to_label.json.pkl
-    |   └── training
-    |       ├── <epoch>
-    |       |   └── model.pt
-    ...     ...
-```
+implemented. In the future more algorithms and more computer vision tasks will
+be introduced. In the end, the module should work with all types of tasks (NLP, etc.).
 
 ### Examples
 
-In `example/streamlit_app/` directory You can find sample application with
-simple GUI to present interactive explanations of given models.
-Scripts in `example/` directory contain samples of training models using
+In `example/notebooks/` directory You can find notebooks with example usage of this
+framework. Scripts in `example/` directory contain samples of training models using
 different callbacks.

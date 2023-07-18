@@ -1,79 +1,61 @@
 # pylint: disable = missing-class-docstring
-import matplotlib
+
+from typing import List
+
+import numpy as np
 import pytest
 import torch
+from matplotlib.pyplot import Figure
 
-from autoxai.explainer.base_explainer import (
-    CVExplainer,
-    determine_visualization_methods,
-)
+from foxai.visualizer import get_heatmap_bbox, single_channel_visualization
 
 
-class TestVisualizer:
-    """Test if wrapper on captum visualize
-    function works fine, for different attributes.
-    """
-
-    @pytest.fixture
-    def ones_image(self) -> torch.Tensor:
-        return torch.ones(size=(1, 1, 50, 50), dtype=torch.float32)
-
-    @pytest.fixture
-    def minus_ones_image(self) -> torch.Tensor:
-        return -torch.ones(size=(1, 1, 50, 50), dtype=torch.float32)
-
-    @pytest.fixture
-    def zeros_image(self) -> torch.Tensor:
-        return torch.zeros(size=(1, 1, 50, 50), dtype=torch.float32)
-
-    @pytest.fixture
-    def minus_and_plus_once_image(self) -> torch.Tensor:
-        image: torch.tensor = torch.ones(size=(1, 1, 50, 50), dtype=torch.float32)
-        image[:, :, 20:30, 20:30] = -1.0
-        return image
-
-    def test_no_negative_values(self, ones_image: torch.Tensor):
-        _: matplotlib.pyplot.Figure = CVExplainer.visualize(
-            attributions=ones_image,
-            transformed_img=ones_image,
+def test_single_channel_visualization_selected_channel_should_raise_exception() -> None:
+    """Test if function raises ValueError when passing selected_channel
+    not in range of color dimension of attributions matrix."""
+    selected_channel: int = 4
+    attributions: torch.Tensor = torch.zeros((3, 2, 2), dtype=torch.float)
+    transformed_img: torch.Tensor = torch.zeros((3, 2, 2), dtype=torch.float)
+    with pytest.raises(ValueError):
+        _ = single_channel_visualization(
+            attributions=attributions,
+            transformed_img=transformed_img,
+            selected_channel=selected_channel,
         )
 
-        visualization_methods = determine_visualization_methods(
-            attributions_np=ones_image.numpy()
-        )
-        assert len(visualization_methods) == 3
 
-    def test_no_positive_values(self, minus_ones_image: torch.Tensor):
-        _: matplotlib.pyplot.Figure = CVExplainer.visualize(
-            attributions=minus_ones_image,
-            transformed_img=minus_ones_image,
-        )
+def test_single_channel_visualization_selected_channel_should_pass() -> None:
+    """Test if function returns Figure object when passing selected_channel
+    in range of color dimension of attributions matrix."""
+    selected_channel: int = 0
+    attributions: torch.Tensor = torch.zeros((3, 2, 2), dtype=torch.float)
+    transformed_img: torch.Tensor = torch.zeros((3, 2, 2), dtype=torch.float)
+    result = single_channel_visualization(
+        attributions=attributions,
+        transformed_img=transformed_img,
+        selected_channel=selected_channel,
+    )
 
-        visualization_methods = determine_visualization_methods(
-            attributions_np=minus_ones_image.numpy()
-        )
-        assert len(visualization_methods) == 3
+    assert isinstance(result, Figure)
 
-    def test_zeros_image(self, zeros_image: torch.Tensor):
-        _: matplotlib.pyplot.Figure = CVExplainer.visualize(
-            attributions=zeros_image,
-            transformed_img=zeros_image,
-        )
 
-        visualization_methods = determine_visualization_methods(
-            attributions_np=zeros_image.numpy()
-        )
-        assert len(visualization_methods) == 1
+def test_get_heatmap_bbox_should_return_valid_mask():
+    heatmap: np.ndarray = np.ones((5, 5), dtype=np.uint8)
+    bbox: List[int] = [1, 1, 4, 4]
+    expected = np.asarray(
+        [
+            [0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0],
+            [0, 1, 1, 1, 0],
+            [0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0],
+        ],
+        dtype=np.uint8,
+    )
 
-    def test_iamge_with_positive_and_negative_attributes(
-        self, minus_and_plus_once_image: torch.tensor
-    ):
-        _: matplotlib.pyplot.Figure = CVExplainer.visualize(
-            attributions=minus_and_plus_once_image,
-            transformed_img=minus_and_plus_once_image,
-        )
+    result = get_heatmap_bbox(
+        heatmap=heatmap,
+        bbox=bbox,
+    )
 
-        visualization_methods = determine_visualization_methods(
-            attributions_np=minus_and_plus_once_image.numpy()
-        )
-        assert len(visualization_methods) == 4
+    np.testing.assert_almost_equal(expected, result)

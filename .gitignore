@@ -162,7 +162,13 @@ cython_debug/
 # VS Code
 .vscode/
 
+<<<<<<< HEAD
 # Swap files
 *.swp
 *.swo
 
+=======
+# pytorch checkpoints
+*.pt
+*.pth
+>>>>>>> develop
