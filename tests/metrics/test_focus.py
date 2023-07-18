@@ -10,7 +10,7 @@ from foxai.metrics.focus import (
 )
 
 
-def test_create_mosaic_picture_should_create_correct_mosaic_data():
+def test_create_mosaic_picture_should_create_correct_mosaic_data_when_shuffle():
     images_with_labels = [
         [torch.Tensor([[[1, 2], [3, 4]]]), torch.Tensor([1])],
         [torch.Tensor([[[5, 6], [7, 8]]]), torch.Tensor([2])],
@@ -32,6 +32,37 @@ def test_create_mosaic_picture_should_create_correct_mosaic_data():
         mosaic_labels=torch.tensor([[3.0, 4.0], [1.0, 2.0]]),
     )
     actual_mosaic_data = create_mosaic_picture(images_with_labels=images_with_labels)
+    assert torch.equal(
+        expected_mosaic_data.mosaic_image, actual_mosaic_data.mosaic_image
+    )
+    assert torch.equal(
+        expected_mosaic_data.mosaic_labels, actual_mosaic_data.mosaic_labels
+    )
+
+
+def test_create_mosaic_picture_should_create_correct_mosaic_data_when_not_shuffle():
+    images_with_labels = [
+        [torch.Tensor([[[1, 2], [3, 4]]]), torch.Tensor([1])],
+        [torch.Tensor([[[5, 6], [7, 8]]]), torch.Tensor([2])],
+        [torch.Tensor([[[9, 10], [11, 12]]]), torch.Tensor([3])],
+        [torch.Tensor([[[13, 14], [15, 16]]]), torch.Tensor([4])],
+    ]
+    expected_mosaic_data = MosaicData(
+        mosaic_image=torch.tensor(
+            [
+                [
+                    [1.0, 2.0, 9.0, 10.0],
+                    [3.0, 4.0, 11.0, 12.0],
+                    [5.0, 6.0, 13.0, 14.0],
+                    [7.0, 8.0, 15.0, 16.0],
+                ]
+            ]
+        ),
+        mosaic_labels=torch.tensor([[1.0, 3.0], [2.0, 4.0]]),
+    )
+    actual_mosaic_data = create_mosaic_picture(
+        images_with_labels=images_with_labels, shuffle=False
+    )
     assert torch.equal(
         expected_mosaic_data.mosaic_image, actual_mosaic_data.mosaic_image
     )

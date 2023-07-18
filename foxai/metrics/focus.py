@@ -22,12 +22,20 @@ class MosaicData:
     mosaic_labels: torch.Tensor
 
 
-def create_mosaic_picture(images_with_labels: List[List[torch.Tensor]]) -> MosaicData:
+def create_mosaic_picture(
+    images_with_labels: List[List[torch.Tensor]], shuffle: bool = True
+) -> MosaicData:
     """Create mosaic from a list of four pictures. Images are placed at random positions.
 
     Args:
         images_with_labels: List of images in a format of List[torch.Tensor],
                             where first element is an image and second is a label.
+        shuffle: Flag determining if input images should be shuffled before creating a mosaic.
+                 If set to False, images with be placed the following way:
+                    -1st image - upper left quadrant
+                    -2nd image - bottom left quadrant
+                    -3rd image - upper right quadrant
+                    -4th image - bottom right quadrant
 
     Returns:
         MosaicData object which contains 2x2 images mosaic and a 2x2 matrix of their labels.
@@ -39,7 +47,8 @@ def create_mosaic_picture(images_with_labels: List[List[torch.Tensor]]) -> Mosai
         raise AttributeError(
             f"Mosaic has to be created from 4 images. Passed number is {len(images_with_labels)}"
         )
-    random.shuffle(images_with_labels)
+    if shuffle:
+        random.shuffle(images_with_labels)
     images, labels = zip(*images_with_labels)
     size = len(images[0].size())
     mosaic_image = torch.cat(
