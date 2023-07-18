@@ -5,17 +5,22 @@ and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_
 """
 
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType, TargetType
 from captum.attr import DeepLiftShap, LayerDeepLiftShap
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.base_explainer import AttributionsType, Explainer
 from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     modify_modules,
+)
+from foxai.explainer.computer_vision.types import (
+    CustomAttributionFuncType,
+    LayerType,
+    ModelType,
 )
 
 
@@ -25,7 +30,7 @@ class BaseDeepLIFTSHAPCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
@@ -56,17 +61,16 @@ class BaseDeepLIFTSHAPCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
-        baselines: Union[None, int, float, torch.Tensor] = None,
+        baselines: BaselineType = None,
         additional_forward_args: Any = None,
-        custom_attribution_func: Union[
-            None, Callable[..., Tuple[torch.Tensor, ...]]
-        ] = None,
+        custom_attribution_func: Optional[CustomAttributionFuncType] = None,
         attribute_to_layer_input: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with DeepLIFT SHAP algorithm explainer.
 
         Under the hood this method is calling `DeepLiftShap.attribute` function and
@@ -162,6 +166,10 @@ class BaseDeepLIFTSHAPCVExplainer(Explainer):
                 outputs of internal layers are single tensors.
                 Support for multiple tensors will be added later.
                 Default: False
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             Attribution score computed based on DeepLift rescale rule with respect
@@ -175,7 +183,6 @@ class BaseDeepLIFTSHAPCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         deeplift = self.create_explainer(model=model, layer=layer)
 
         if baselines is None:
@@ -216,7 +223,7 @@ class DeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
@@ -258,9 +265,9 @@ class LayerDeepLIFTSHAPCVExplainer(BaseDeepLIFTSHAPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
-        layer: Optional[torch.nn.Module] = None,
+        layer: Optional[LayerType] = None,
         **kwargs,
     ) -> Union[DeepLiftShap, LayerDeepLiftShap]:
         """Create explainer object.

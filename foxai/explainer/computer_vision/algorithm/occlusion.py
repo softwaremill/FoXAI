@@ -6,11 +6,12 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/occlusi
 from typing import Any, Tuple, Union
 
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType, TargetType
 from captum.attr import Occlusion
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.base_explainer import AttributionsType, Explainer
+from foxai.explainer.computer_vision.types import ModelType
 
 
 class OcclusionCVExplainer(Explainer):
@@ -18,7 +19,7 @@ class OcclusionCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         sliding_window_shapes: Union[Tuple[int, ...], Tuple[Tuple[int, ...], ...]] = (
@@ -29,12 +30,12 @@ class OcclusionCVExplainer(Explainer):
         strides: Union[
             None, int, Tuple[int, ...], Tuple[Union[int, Tuple[int, ...]], ...]
         ] = None,
-        baselines: Union[None, int, float, torch.Tensor] = None,
+        baselines: BaselineType = None,
         additional_forward_args: Any = None,
         perturbations_per_eval: int = 1,
         show_progress: bool = False,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Occlusion algorithm explainer.
 
         Args:

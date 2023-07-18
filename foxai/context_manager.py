@@ -49,6 +49,7 @@ from foxai.explainer import (
     SaliencyCVExplainer,
 )
 from foxai.explainer.base_explainer import CVExplainerT
+from foxai.explainer.computer_vision.types import ModelType
 from foxai.logger import create_logger
 
 _LOGGER: Optional[logging.Logger] = None
@@ -135,7 +136,7 @@ class ExplainerClassWithParams(Generic[CVExplainerT]):
 
 
 class FoXaiExplainer(Generic[CVExplainerT]):
-    """Context menager for FoXAI explanation.
+    """Context manager for FoXAI explanation.
 
     Example:
         with FoXaiExplainer(
@@ -157,7 +158,7 @@ class FoXaiExplainer(Generic[CVExplainerT]):
 
     def __init__(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         explainers: List[ExplainerWithParams],
         target: int = 0,
     ) -> None:
@@ -171,7 +172,7 @@ class FoXaiExplainer(Generic[CVExplainerT]):
         if not explainers:
             raise ValueError("At leas one explainer should be defined.")
 
-        self.model: torch.nn.Module = model
+        self.model: ModelType = model
         self.prev_model_training_state: bool = self.model.training
 
         self.explainer_map: Dict[str, ExplainerClassWithParams] = {

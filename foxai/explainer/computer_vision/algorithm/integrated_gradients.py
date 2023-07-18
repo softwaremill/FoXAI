@@ -8,12 +8,13 @@ from abc import abstractmethod
 from typing import Any, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType, TargetType
 from captum.attr import IntegratedGradients, LayerIntegratedGradients
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.base_explainer import AttributionsType, Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
+from foxai.explainer.computer_vision.types import LayerType, ModelType
 
 
 class BaseIntegratedGradientsCVExplainer(Explainer):
@@ -22,7 +23,7 @@ class BaseIntegratedGradientsCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
@@ -55,17 +56,18 @@ class BaseIntegratedGradientsCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
-        baselines: Union[None, int, float, torch.Tensor] = None,
+        baselines: BaselineType = None,
         additional_forward_args: Any = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
-        internal_batch_size: Union[None, int] = None,
+        internal_batch_size: Optional[int] = None,
         attribute_to_layer_input: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Integrated Gradients algorithm explainer.
 
         Args:
@@ -163,6 +165,10 @@ class BaseIntegratedGradientsCVExplainer(Explainer):
                 attribute to the input or output, is a single tensor.
                 Support for multiple tensors will be added later.
                 Default: False
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             Integrated gradients with respect to `layer`'s inputs
@@ -187,7 +193,6 @@ class BaseIntegratedGradientsCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         integrated_gradients = self.create_explainer(model=model, layer=layer)
 
         # defining baseline distribution of images
@@ -230,7 +235,7 @@ class IntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
@@ -268,9 +273,9 @@ class LayerIntegratedGradientsCVExplainer(BaseIntegratedGradientsCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
-        layer: Optional[torch.nn.Module] = None,
+        layer: Optional[LayerType] = None,
         **kwargs,
     ) -> Union[IntegratedGradients, LayerIntegratedGradients]:
         """Create explainer object.

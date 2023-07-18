@@ -11,8 +11,9 @@ from captum._utils.typing import TargetType
 from captum.attr import GuidedBackprop
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.base_explainer import AttributionsType, Explainer
 from foxai.explainer.computer_vision.model_utils import modify_modules
+from foxai.explainer.computer_vision.types import ModelType
 
 
 class BaseGuidedBackpropCVExplainer(Explainer):
@@ -21,7 +22,7 @@ class BaseGuidedBackpropCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> GuidedBackprop:
         """Create explainer object.
@@ -32,12 +33,12 @@ class BaseGuidedBackpropCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         additional_forward_args: Any = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Guided Backpropagation algorithm explainer.
 
         Args:
@@ -116,7 +117,7 @@ class GuidedBackpropCVExplainer(BaseGuidedBackpropCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> GuidedBackprop:
         """Create explainer object.
