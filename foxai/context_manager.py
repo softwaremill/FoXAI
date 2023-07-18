@@ -49,8 +49,8 @@ from foxai.explainer import (
     SaliencyCVExplainer,
 )
 from foxai.explainer.base_explainer import CVExplainerT
-from foxai.explainer.computer_vision.types import ModelType
 from foxai.logger import create_logger
+from foxai.types import ModelType
 
 _LOGGER: Optional[logging.Logger] = None
 

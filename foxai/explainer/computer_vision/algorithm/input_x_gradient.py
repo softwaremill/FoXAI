@@ -12,9 +12,9 @@ from captum._utils.typing import TargetType
 from captum.attr import InputXGradient, LayerGradientXActivation
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import AttributionsType, Explainer
+from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
-from foxai.explainer.computer_vision.types import LayerType, ModelType
+from foxai.types import AttributionsType, LayerType, ModelType
 
 
 class BaseInputXGradientSHAPCVExplainer(Explainer):

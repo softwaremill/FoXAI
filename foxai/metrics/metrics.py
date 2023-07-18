@@ -5,8 +5,7 @@ import numpy as np
 import torch
 from torchvision.transforms.functional import gaussian_blur
 
-from foxai.explainer.base_explainer import AttributionsType
-from foxai.explainer.computer_vision.types import ModelType
+from foxai.types import AttributionsType, ModelType
 from foxai.visualizer import _preprocess_img_and_attributes
 
 

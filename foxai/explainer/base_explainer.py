@@ -5,9 +5,7 @@ from typing import TypeVar
 import torch
 from captum._utils.typing import TargetType
 
-from foxai.explainer.computer_vision.types import ModelType
-
-AttributionsType = torch.Tensor
+from foxai.types import AttributionsType, ModelType
 
 
 class Explainer(ABC):

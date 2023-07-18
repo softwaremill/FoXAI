@@ -13,7 +13,7 @@ from captum._utils.typing import TargetType
 from captum.attr import GuidedGradCam
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import AttributionsType, Explainer
+from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     modify_modules,
@@ -22,7 +22,7 @@ from foxai.explainer.computer_vision.object_detection.base_object_detector impor
     BaseObjectDetector,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
-from foxai.explainer.computer_vision.types import LayerType, ModelType
+from foxai.types import AttributionsType, LayerType, ModelType
 
 
 class LayerBaseGradCAM:

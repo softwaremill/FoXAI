@@ -10,8 +10,8 @@ from captum._utils.typing import BaselineType, TargetType
 from captum.attr import Occlusion
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import AttributionsType, Explainer
-from foxai.explainer.computer_vision.types import ModelType
+from foxai.explainer.base_explainer import Explainer
+from foxai.types import AttributionsType, ModelType
 
 
 class OcclusionCVExplainer(Explainer):

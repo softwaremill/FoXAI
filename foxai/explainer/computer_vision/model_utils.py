@@ -3,7 +3,7 @@ from typing import List
 
 import torch
 
-from foxai.explainer.computer_vision.types import LayerType, ModelType
+from foxai.types import LayerType, ModelType
 
 
 def modify_modules(model: ModelType) -> ModelType:

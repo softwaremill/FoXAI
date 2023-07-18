@@ -17,7 +17,7 @@ from foxai.context_manager import (
     ExplainerWithParams,
     FoXaiExplainer,
 )
-from foxai.explainer.computer_vision.types import ModelType
+from foxai.types import ModelType
 
 
 def download_upload_metadata(api_run: wandb.apis.public.Run) -> Dict[str, Any]:

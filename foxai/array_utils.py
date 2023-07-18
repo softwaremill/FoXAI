@@ -4,7 +4,7 @@ import sys
 import cv2
 import numpy as np
 
-from foxai.explainer.base_explainer import AttributionsType
+from foxai.types import AttributionsType
 
 
 def standardize_array(array: np.ndarray) -> np.ndarray:

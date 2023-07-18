@@ -7,3 +7,5 @@ StdevsType = Union[float, Tuple[float, ...]]
 
 LayerType = torch.nn.Module
 ModelType = torch.nn.Module
+
+AttributionsType = torch.Tensor

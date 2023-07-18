@@ -11,9 +11,9 @@ from captum._utils.typing import TargetType
 from captum.attr import GuidedBackprop
 
 from foxai.array_utils import validate_result
-from foxai.explainer.base_explainer import AttributionsType, Explainer
+from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import modify_modules
-from foxai.explainer.computer_vision.types import ModelType
+from foxai.types import AttributionsType, ModelType
 
 
 class BaseGuidedBackpropCVExplainer(Explainer):

@@ -35,8 +35,8 @@ from torch.utils.hooks import RemovableHandle
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
-from foxai.explainer.computer_vision.types import ModelType
 from foxai.logger import create_logger
+from foxai.types import ModelType
 
 _LOGGER: Optional[logging.Logger] = None
 """Global logger instance."""
