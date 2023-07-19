@@ -5,7 +5,7 @@ and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_
 """
 
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 from captum._utils.typing import TargetType
@@ -115,9 +115,12 @@ class BaseDeepLIFTSHAPCVExplainer(Explainer):
                     exactly the same dimensions as inputs or the first
                     dimension is one and the remaining dimensions match
                     with inputs.
-
-                - a single scalar, if inputs is a single tensor, which will
-                    be broadcasted for each input value in input tensor.
+                - a batch tensor, if inputs is a batch tensor, with
+                    each tensor of a batch with exactly the same dimensions as
+                    inputs and the first dimension is number of different baselines
+                    to compute and aggregate score. Typical usage of batch
+                    baselines is to provide random baselines and compute mean
+                    attributes from them.
 
                 In the cases when `baselines` is not provided, we internally
                 use zero scalar corresponding to each input tensor.
@@ -178,36 +181,51 @@ class BaseDeepLIFTSHAPCVExplainer(Explainer):
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         deeplift = self.create_explainer(model=model, layer=layer)
 
-        if baselines is None:
-            baselines = torch.randn(
-                (
-                    2 * input_data.shape[0],
-                    *input_data.shape[1:],
-                ),
-                requires_grad=True,
-                device=input_data.device,
-            )
+        attributions_list: List[torch.Tensor] = []
+        aggregate_attributes: bool = False
+        baselines_list: List[Union[None, torch.Tensor]] = [None]
 
-        if isinstance(deeplift, LayerDeepLiftShap):
-            attributions = deeplift.attribute(
-                input_data,
-                target=pred_label_idx,
-                baselines=baselines,
-                additional_forward_args=additional_forward_args,
-                return_convergence_delta=False,
-                custom_attribution_func=custom_attribution_func,
-                attribute_to_layer_input=attribute_to_layer_input,
-            )
-        else:
-            attributions = deeplift.attribute(
-                input_data,
-                target=pred_label_idx,
-                baselines=baselines,
-                additional_forward_args=additional_forward_args,
-                return_convergence_delta=False,
-                custom_attribution_func=custom_attribution_func,
-            )
-        validate_result(attributions=attributions)
+        if isinstance(baselines, torch.Tensor):
+            # if dimension of baselines is greater than batch data user have provided
+            # multiple baselines to aggregate results
+            if len(baselines.shape) == len(input_data.shape) + 1:
+                aggregate_attributes = True
+                baselines_list = list(baselines)
+            elif len(baselines.shape) == len(input_data.shape):
+                baselines_list = [baselines]
+
+        for baseline in baselines_list:
+            if isinstance(deeplift, LayerDeepLiftShap):
+                attributions = deeplift.attribute(
+                    input_data,
+                    target=pred_label_idx,
+                    baselines=baseline,
+                    additional_forward_args=additional_forward_args,
+                    return_convergence_delta=False,
+                    custom_attribution_func=custom_attribution_func,
+                    attribute_to_layer_input=attribute_to_layer_input,
+                )
+            else:
+                attributions = deeplift.attribute(
+                    input_data,
+                    target=pred_label_idx,
+                    baselines=baseline,
+                    additional_forward_args=additional_forward_args,
+                    return_convergence_delta=False,
+                    custom_attribution_func=custom_attribution_func,
+                )
+            validate_result(attributions=attributions)
+            # if aggregation of attributes is required make sure that dimension of
+            # stacked attributes have baseline number dimension
+            if aggregate_attributes:
+                attributions = attributions.unsqueeze(0)
+
+            attributions_list.append(attributions)
+
+        attributions = torch.vstack(attributions_list)
+        if aggregate_attributes:
+            attributions = torch.mean(attributions, dim=0)
+
         return attributions
 
 

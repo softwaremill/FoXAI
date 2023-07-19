@@ -5,7 +5,7 @@ and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_
 """
 
 from abc import abstractmethod
-from typing import Any, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from captum._utils.typing import TargetType
@@ -99,10 +99,15 @@ class BaseGradientSHAPCVExplainer(Explainer):
                 is computed and can be provided as:
 
                 - a single tensor, if inputs is a single tensor, with
-                    the first dimension equal to the number of examples
-                    in the baselines' distribution. The remaining dimensions
-                    must match with input tensor's dimension starting from
-                    the second dimension.
+                    exactly the same dimensions as inputs or the first
+                    dimension is one and the remaining dimensions match
+                    with inputs.
+                - a batch tensor, if inputs is a batch tensor, with
+                    each tensor of a batch with exactly the same dimensions as
+                    inputs and the first dimension is number of different baselines
+                    to compute and aggregate score. Typical usage of batch
+                    baselines is to provide random baselines and compute mean
+                    attributes from them.
 
                 It is recommended that the number of samples in the baselines'
                 tensors is larger than one.
@@ -160,39 +165,53 @@ class BaseGradientSHAPCVExplainer(Explainer):
         layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         gradient_shap = self.create_explainer(model=model, layer=layer)
 
-        # defining baseline distribution of images
-        if baselines is None:
-            baselines = torch.randn(
-                (
-                    2 * input_data.shape[0],
-                    *input_data.shape[1:],
-                ),
-                requires_grad=True,
-                device=input_data.device,
-            )
+        attributions_list: List[torch.Tensor] = []
+        aggregate_attributes: bool = False
+        baselines_list: List[Union[None, torch.Tensor]] = [None]
 
-        if isinstance(gradient_shap, LayerGradientShap):
-            attributions = gradient_shap.attribute(
-                input_data,
-                n_samples=n_samples,
-                stdevs=stdevs,
-                baselines=baselines,
-                target=pred_label_idx,
-                return_convergence_delta=False,
-                additional_forward_args=additional_forward_args,
-                attribute_to_layer_input=attribute_to_layer_input,
-            )
-        else:
-            attributions = gradient_shap.attribute(
-                input_data,
-                n_samples=n_samples,
-                stdevs=stdevs,
-                baselines=baselines,
-                target=pred_label_idx,
-                return_convergence_delta=False,
-                additional_forward_args=additional_forward_args,
-            )
-        validate_result(attributions=attributions)
+        if isinstance(baselines, torch.Tensor):
+            # if dimension of baselines is greater than batch data user have provided
+            # multiple baselines to aggregate results
+            if len(baselines.shape) == len(input_data.shape) + 1:
+                aggregate_attributes = True
+                baselines_list = list(baselines)
+            elif len(baselines.shape) == len(input_data.shape):
+                baselines_list = [baselines]
+
+        for baseline in baselines_list:
+            if isinstance(gradient_shap, LayerGradientShap):
+                attributions = gradient_shap.attribute(
+                    input_data,
+                    n_samples=n_samples,
+                    stdevs=stdevs,
+                    baselines=baseline,
+                    target=pred_label_idx,
+                    return_convergence_delta=False,
+                    additional_forward_args=additional_forward_args,
+                    attribute_to_layer_input=attribute_to_layer_input,
+                )
+            else:
+                attributions = gradient_shap.attribute(
+                    input_data,
+                    n_samples=n_samples,
+                    stdevs=stdevs,
+                    baselines=baseline,
+                    target=pred_label_idx,
+                    return_convergence_delta=False,
+                    additional_forward_args=additional_forward_args,
+                )
+            validate_result(attributions=attributions)
+            # if aggregation of attributes is required make sure that dimension of
+            # stacked attributes have baseline number dimension
+            if aggregate_attributes:
+                attributions = attributions.unsqueeze(0)
+
+            attributions_list.append(attributions)
+
+        attributions = torch.vstack(attributions_list)
+        if aggregate_attributes:
+            attributions = torch.mean(attributions, dim=0)
+
         return attributions
 
 

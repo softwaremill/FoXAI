@@ -3,7 +3,7 @@
 Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_conductance.py.
 """
 
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from captum._utils.typing import TargetType
@@ -94,9 +94,12 @@ class LayerConductanceCVExplainer(Explainer):
                     exactly the same dimensions as inputs or the first
                     dimension is one and the remaining dimensions match
                     with inputs.
-
-                - a single scalar, if inputs is a single tensor, which will
-                    be broadcasted for each input value in input tensor.
+                - a batch tensor, if inputs is a batch tensor, with
+                    each tensor of a batch with exactly the same dimensions as
+                    inputs and the first dimension is number of different baselines
+                    to compute and aggregate score. Typical usage of batch
+                    baselines is to provide random baselines and compute mean
+                    attributes from them.
 
                 In the cases when `baselines` is not provided, we internally
                 use zero scalar corresponding to each input tensor.
@@ -168,16 +171,42 @@ class LayerConductanceCVExplainer(Explainer):
             layer = get_last_conv_model_layer(model=model)
 
         conductance = self.create_explainer(model=model, layer=layer)
-        attributions = conductance.attribute(
-            input_data,
-            baselines=baselines,
-            target=pred_label_idx,
-            additional_forward_args=additional_forward_args,
-            n_steps=n_steps,
-            method=method,
-            internal_batch_size=internal_batch_size,
-            return_convergence_delta=False,
-            attribute_to_layer_input=attribute_to_layer_input,
-        )
-        validate_result(attributions=attributions)
+
+        attributions_list: List[torch.Tensor] = []
+        aggregate_attributes: bool = False
+        baselines_list: List[Union[None, torch.Tensor]] = [None]
+
+        if isinstance(baselines, torch.Tensor):
+            # if dimension of baselines is greater than batch data user have provided
+            # multiple baselines to aggregate results
+            if len(baselines.shape) == len(input_data.shape) + 1:
+                aggregate_attributes = True
+                baselines_list = list(baselines)
+            elif len(baselines.shape) == len(input_data.shape):
+                baselines_list = [baselines]
+
+        for baseline in baselines_list:
+            attributions = conductance.attribute(
+                input_data,
+                baselines=baseline,
+                target=pred_label_idx,
+                additional_forward_args=additional_forward_args,
+                n_steps=n_steps,
+                method=method,
+                internal_batch_size=internal_batch_size,
+                return_convergence_delta=False,
+                attribute_to_layer_input=attribute_to_layer_input,
+            )
+            validate_result(attributions=attributions)
+            # if aggregation of attributes is required make sure that dimension of
+            # stacked attributes have baseline number dimension
+            if aggregate_attributes:
+                attributions = attributions.unsqueeze(0)
+
+            attributions_list.append(attributions)
+
+        attributions = torch.vstack(attributions_list)
+        if aggregate_attributes:
+            attributions = torch.mean(attributions, dim=0)
+
         return attributions
