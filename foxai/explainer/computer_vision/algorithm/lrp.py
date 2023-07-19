@@ -18,6 +18,7 @@ from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     modify_modules,
 )
+from foxai.types import AttributionsType, LayerType, ModelType
 
 
 class BaseLRPCVExplainer(Explainer):
@@ -26,7 +27,7 @@ class BaseLRPCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
@@ -41,14 +42,15 @@ class BaseLRPCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
         verbose: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with LRP algorithm explainer.
 
         Args:
@@ -102,6 +104,10 @@ class BaseLRPCVExplainer(Explainer):
             verbose: Indicates whether information on application
                 of rules is printed during propagation.
                 Default: False
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             Features matrix.
@@ -109,8 +115,6 @@ class BaseLRPCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-
         lrp = self.create_explainer(model=model, layer=layer)
 
         if isinstance(lrp, LRP):
@@ -133,7 +137,7 @@ class BaseLRPCVExplainer(Explainer):
         validate_result(attributions=attributions)
         return attributions
 
-    def add_rules(self, model: torch.nn.Module) -> torch.nn.Module:
+    def add_rules(self, model: ModelType) -> ModelType:
         """Add rules for the LRP explainer,
         according to https://arxiv.org/pdf/1910.09840.pdf.
 
@@ -161,7 +165,7 @@ class LRPCVExplainer(BaseLRPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> Union[LRP, LayerLRP]:
         """Create explainer object.
@@ -183,8 +187,8 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
-        layer: Optional[torch.nn.Module] = None,
+        model: ModelType,
+        layer: Optional[LayerType] = None,
         **kwargs,
     ) -> Union[LRP, LayerLRP]:
         """Create explainer object.

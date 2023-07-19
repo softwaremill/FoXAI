@@ -11,6 +11,7 @@ from captum.attr import Saliency
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
+from foxai.types import AttributionsType, ModelType
 
 
 class SaliencyCVExplainer(Explainer):
@@ -18,13 +19,13 @@ class SaliencyCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         abs_value: bool = True,
         additional_forward_args: Any = None,
         **kwargs,  # pylint: disable = (unused-argument)
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Saliency algorithm explainer.
 
         Args:

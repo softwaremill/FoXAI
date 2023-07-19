@@ -3,8 +3,10 @@ from typing import List
 
 import torch
 
+from foxai.types import LayerType, ModelType
 
-def modify_modules(model: torch.nn.Module) -> torch.nn.Module:
+
+def modify_modules(model: ModelType) -> ModelType:
     """Modify modules of given model.
 
     Function iterates over all modules and sets property `inplace`
@@ -23,7 +25,7 @@ def modify_modules(model: torch.nn.Module) -> torch.nn.Module:
     return model
 
 
-def get_last_conv_model_layer(model: torch.nn.Module) -> torch.nn.Module:
+def get_last_conv_model_layer(model: ModelType) -> LayerType:
     """Get the last convolutional layer from the torch model.
 
     Args:
@@ -36,7 +38,7 @@ def get_last_conv_model_layer(model: torch.nn.Module) -> torch.nn.Module:
         ValueError if the model does not contain convolutional layers.
     """
 
-    conv_layers: List[torch.nn.Module] = []
+    conv_layers: List[LayerType] = []
     for module in model.modules():
         if isinstance(module, torch.nn.Conv2d):
             conv_layers.append(module)

@@ -6,12 +6,13 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/l
 from typing import Any, List, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType, TargetType
 from captum.attr import LayerConductance
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
+from foxai.types import AttributionsType, LayerType, ModelType
 
 
 class LayerConductanceCVExplainer(Explainer):
@@ -20,8 +21,8 @@ class LayerConductanceCVExplainer(Explainer):
     # pylint: disable = unused-argument
     def create_explainer(
         self,
-        model: torch.nn.Module,
-        layer: torch.nn.Module,
+        model: ModelType,
+        layer: LayerType,
     ) -> LayerConductance:
         """Create explainer object.
 
@@ -43,17 +44,18 @@ class LayerConductanceCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
-        baselines: Union[None, int, float, torch.Tensor] = None,
+        baselines: BaselineType = None,
         additional_forward_args: Any = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
-        internal_batch_size: Union[None, int] = None,
+        internal_batch_size: Optional[int] = None,
         attribute_to_layer_input: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Layer Conductance algorithm explainer.
 
         Args:
@@ -149,6 +151,10 @@ class LayerConductanceCVExplainer(Explainer):
                 attribute to the input or output, is a single tensor.
                 Support for multiple tensors will be added later.
                 Default: False
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             Conductance of each neuron in given layer input or
@@ -166,7 +172,6 @@ class LayerConductanceCVExplainer(Explainer):
             RuntimeError: if attribution has shape (0)
         """
 
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 

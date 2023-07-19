@@ -3,7 +3,8 @@ import sys
 
 import cv2
 import numpy as np
-import torch
+
+from foxai.types import AttributionsType
 
 
 def standardize_array(array: np.ndarray) -> np.ndarray:
@@ -143,7 +144,7 @@ def transpose_color_in_array(array: np.ndarray) -> np.ndarray:
         )
 
 
-def validate_result(attributions: torch.Tensor) -> None:
+def validate_result(attributions: AttributionsType) -> None:
     """Validate calculated attributes.
 
     Args:

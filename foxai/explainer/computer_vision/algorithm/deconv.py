@@ -13,6 +13,7 @@ from captum.attr import Deconvolution
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import modify_modules
+from foxai.types import AttributionsType, ModelType
 
 
 class BaseDeconvolutionCVExplainer(Explainer):
@@ -21,7 +22,7 @@ class BaseDeconvolutionCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
     ) -> Deconvolution:
         """Create explainer object.
 
@@ -35,18 +36,18 @@ class BaseDeconvolutionCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         additional_forward_args: Any = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Deconvolution algorithm explainer.
 
         Args:
             model: The forward function of the model or any
                 modification of it.
-            inputs: Input for which
+            input_data: Input for which
                 attributions are computed. If forward_func takes a single
                 tensor as input, a single input tensor should be provided.
             pred_label_idx: Output indices for
@@ -113,7 +114,7 @@ class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
     ) -> Deconvolution:
         """Create explainer object.
 
