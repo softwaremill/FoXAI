@@ -11,6 +11,7 @@ from captum.attr import Occlusion
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.computer_vision.model_utils import preprocess_baselines
 from foxai.types import AttributionsType, ModelType
 
 
@@ -159,17 +160,10 @@ class OcclusionCVExplainer(Explainer):
         occlusion = Occlusion(model)
 
         attributions_list: List[torch.Tensor] = []
-        aggregate_attributes: bool = False
-        baselines_list: List[Union[None, torch.Tensor]] = [None]
-
-        if isinstance(baselines, torch.Tensor):
-            # if dimension of baselines is greater than batch data user have provided
-            # multiple baselines to aggregate results
-            if len(baselines.shape) == len(input_data.shape) + 1:
-                aggregate_attributes = True
-                baselines_list = list(baselines)
-            elif len(baselines.shape) == len(input_data.shape):
-                baselines_list = [baselines]
+        baselines_list, aggregate_attributes = preprocess_baselines(
+            baselines=baselines,
+            input_data_shape=input_data.shape,
+        )
 
         for baseline in baselines_list:
             attributions = occlusion.attribute(
