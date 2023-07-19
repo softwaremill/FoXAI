@@ -5,6 +5,8 @@ from typing import TypeVar
 import torch
 from captum._utils.typing import TargetType
 
+from foxai.types import AttributionsType, ModelType
+
 
 class Explainer(ABC):
     """Abstract explainer class."""
@@ -13,11 +15,11 @@ class Explainer(ABC):
     @abstractmethod
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,  # TODO: add more generic way of passing model inputs # pylint: disable = (fixme)
         pred_label_idx: TargetType = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Calculate features of given explainer.
 
         Args:

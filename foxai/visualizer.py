@@ -107,8 +107,8 @@ def _preprocess_img_and_attributes(
         - transpoze image matrix from (C x H x W) to (H x W x C)
 
     Args:
-        attributions: Features.
-        transformed_img: Image in shape (C x H x W) or (H x W).
+        attributes_matrix: Features.
+        transformed_img_np: Image in shape (C x H x W) or (H x W).
         only_positive_attr: Whether to display only positive or all attributes.
             Defaults to True.
 

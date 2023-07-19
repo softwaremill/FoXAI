@@ -5,15 +5,16 @@ and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_
 """
 
 from abc import abstractmethod
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType, TargetType
 from captum.attr import GradientShap, LayerGradientShap
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
+from foxai.types import AttributionsType, LayerType, ModelType, StdevsType
 
 
 class BaseGradientSHAPCVExplainer(Explainer):
@@ -22,7 +23,7 @@ class BaseGradientSHAPCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[GradientShap, LayerGradientShap]:
@@ -51,16 +52,17 @@ class BaseGradientSHAPCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
-        baselines: Union[None, int, float, torch.Tensor] = None,
+        baselines: BaselineType = None,
         n_samples: int = 5,
-        stdevs: Union[float, Tuple[float, ...]] = 0.0,
+        stdevs: StdevsType = 0.0,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Gradient SHAP algorithm explainer.
 
         Args:
@@ -144,6 +146,10 @@ class BaseGradientSHAPCVExplainer(Explainer):
                 attribute to the input or output, is a single tensor.
                 Support for multiple tensors will be added later.
                 Default: False
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             Attribution score computed based on GradientSHAP with respect
@@ -157,7 +163,6 @@ class BaseGradientSHAPCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         gradient_shap = self.create_explainer(model=model, layer=layer)
 
         # defining baseline distribution of images
@@ -201,7 +206,7 @@ class GradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[GradientShap, LayerGradientShap]:
@@ -239,9 +244,9 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
-        layer: Optional[torch.nn.Module] = None,
+        layer: Optional[LayerType] = None,
         **kwargs,
     ) -> Union[GradientShap, LayerGradientShap]:
         """Create explainer object.
@@ -274,6 +279,10 @@ class LayerGradientSHAPCVExplainer(BaseGradientSHAPCVExplainer):
                 is set to True, the sensitivity scores for scaled inputs
                 are being multiplied by
                 layer activations for inputs - layer activations for baselines.
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             Explainer object.
