@@ -95,14 +95,14 @@ class LayerConductanceCVExplainer(Explainer):
                 Baselines define the starting point from which integral
                 is computed and can be provided as:
 
-                - a single tensor, if inputs is a single tensor, with
-                    exactly the same dimensions as inputs or the first
+                - a single tensor, if input_data is a single tensor, with
+                    exactly the same dimensions as input_data or the first
                     dimension is one and the remaining dimensions match
-                    with inputs.
-                - a batch tensor, if inputs is a batch tensor, with
+                    with input_data.
+                - a batch tensor, if input_data is a batch tensor, with
                     each tensor of a batch with exactly the same dimensions as
-                    inputs and the first dimension is number of different baselines
-                    to compute and aggregate score. Typical usage of batch
+                    input_data and the first dimension is number of different baselines
+                    to compute and their averaged score. Typical usage of batch
                     baselines is to provide random baselines and compute mean
                     attributes from them.
 

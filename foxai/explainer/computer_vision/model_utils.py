@@ -60,8 +60,8 @@ def preprocess_baselines(
     additional first dimension to compute averaged attributes across all baselines.
 
     Args:
-        baselines: Single tensor matching data sample batch dimensions or tensor
-            containing batch of baselines for each data sample batch.
+        baselines: Single tensor matching data sample dimensions or tensor
+            containing batch of baselines for each data sample.
         input_data_shape: Shape of data sample batch.
 
     Returns:
