@@ -194,7 +194,6 @@ class BaseIntegratedGradientsCVExplainer(Explainer):
             RuntimeError: if attribution has shape (0).
         """
         integrated_gradients = self.create_explainer(model=model, layer=layer)
-
         # defining baseline distribution of images
         if baselines is None:
             baselines = torch.randn(
