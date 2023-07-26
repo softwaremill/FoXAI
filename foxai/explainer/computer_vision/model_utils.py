@@ -53,7 +53,7 @@ def get_last_conv_model_layer(model: ModelType) -> LayerType:
 def preprocess_baselines(
     baselines: BaselineType,
     input_data_shape: torch.Size,
-) -> Tuple[List[Union[None, torch.Tensor]], bool]:
+) -> Tuple[List[BaselineType], bool]:
     """Adjust provided baselines to match input data dimension.
 
     When baselines should have the same dimension as data samples or should have
@@ -68,6 +68,7 @@ def preprocess_baselines(
         Tuple of baselines list and flag indicating if attributes should be
             aggregated.
     """
+    aggregate_attributes: bool = False
     baselines_list: List[Union[None, torch.Tensor]] = [baselines]
 
     if isinstance(baselines, torch.Tensor):

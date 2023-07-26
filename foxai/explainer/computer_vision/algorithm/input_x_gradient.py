@@ -114,6 +114,7 @@ class BaseInputXGradientSHAPCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
+        attributions: AttributionsType
         input_x_gradient = self.create_explainer(model=model, layer=layer)
 
         if isinstance(input_x_gradient, LayerGradientXActivation):

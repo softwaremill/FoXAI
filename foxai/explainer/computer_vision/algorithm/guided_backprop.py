@@ -103,7 +103,7 @@ class BaseGuidedBackpropCVExplainer(Explainer):
             RuntimeError: if attribution has shape (0).
         """
         guided_backprop = self.create_explainer(model=model)
-        attributions = guided_backprop.attribute(
+        attributions: AttributionsType = guided_backprop.attribute(
             input_data,
             target=pred_label_idx,
             additional_forward_args=additional_forward_args,

@@ -50,7 +50,7 @@ from foxai.explainer import (
 )
 from foxai.explainer.base_explainer import CVExplainerT
 from foxai.logger import create_logger
-from foxai.types import ModelType
+from foxai.types import AttributionsType, ModelType
 
 _LOGGER: Optional[logging.Logger] = None
 
@@ -228,7 +228,7 @@ class FoXaiExplainer(Generic[CVExplainerT]):
         torch.set_grad_enabled(self.prev_torch_grad)
         self.model.train(self.prev_model_training_state)
 
-    def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, torch.Tensor]]:
+    def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, AttributionsType]]:
         """Run model prediction and explain the model with given explainers.
 
         Explainers and model are defined as the class parameter.
@@ -255,7 +255,7 @@ class FoXaiExplainer(Generic[CVExplainerT]):
         # turn on requires grad for the input tensor
         input_tensor.requires_grad = True
 
-        explanations: Dict[str, torch.Tensor] = {}
+        explanations: Dict[str, AttributionsType] = {}
         for explainer_name in self.explainer_map:
             # zero the previous gradient for the model
             self.model.zero_grad()

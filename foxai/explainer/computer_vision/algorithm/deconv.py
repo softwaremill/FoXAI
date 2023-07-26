@@ -100,7 +100,7 @@ class BaseDeconvolutionCVExplainer(Explainer):
         """
 
         deconv = self.create_explainer(model=model)
-        attributions = deconv.attribute(
+        attributions: AttributionsType = deconv.attribute(
             input_data,
             target=pred_label_idx,
             additional_forward_args=additional_forward_args,

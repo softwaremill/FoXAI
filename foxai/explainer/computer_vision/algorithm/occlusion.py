@@ -157,9 +157,10 @@ class OcclusionCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
+        attributions: AttributionsType
         occlusion = Occlusion(model)
 
-        attributions_list: List[torch.Tensor] = []
+        attributions_list: List[AttributionsType] = []
         baselines_list, aggregate_attributes = preprocess_baselines(
             baselines=baselines,
             input_data_shape=input_data.shape,
