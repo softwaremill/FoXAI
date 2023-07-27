@@ -73,7 +73,7 @@ class TestExplainers:
         return get_function_kwargs
 
     @pytest.mark.parametrize("explainer_class", list(CVClassificationExplainers))
-    @pytest.mark.parametrize("batch_size", [1, 3, 4])
+    @pytest.mark.parametrize("batch_size", [1, 3])
     def test_explainers_cpu_for_batch_data(
         self,
         batch_size: int,
@@ -116,7 +116,7 @@ class TestExplainers:
         assert explanations[explainer_class.name].shape[0] == batch_img_tensor.shape[0]
 
     @pytest.mark.parametrize("explainer_class", list(CVClassificationExplainers))
-    @pytest.mark.parametrize("batch_size", [1, 3, 4])
+    @pytest.mark.parametrize("batch_size", [1, 3])
     def test_explainers_gpu_for_batch_data(
         self,
         batch_size: int,

@@ -74,7 +74,7 @@ def _eval_mode(func: Callable[..., Any]):
     """Switch model to the eval mode and back to initial mode after function execution."""
 
     @wraps(func)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self, *args, **kwargs) -> Any:
         # switch all models to eval mode and save the previous state
         was_training: bool = False
         if self.model.training:
