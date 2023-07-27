@@ -27,15 +27,16 @@ def _normalize_image(
     value_range: Tuple[float, float],
     resize_shape: Optional[Tuple[int, int]] = None,
 ) -> np.ndarray:
-    """Normalize an image by resizing it and rescaling its values.
+    """Normalize an image by resizing and rescaling its values.
 
     Args:
-        image: Input image of shape (B x H x W x C).
-        value_range: [min_value, max_value]
-        resize_shape: New image shape. Defaults to None.
+        image: Input images batch of shape `B x H x W x C`.
+        value_range: Value range to rescale values in form: `[min_value, max_value]`.
+        resize_shape: New images shape. If `None` images won't be resized.
+            Defaults to `None`.
 
     Returns:
-        Resized and rescaled image.
+        Resized and rescaled images batch.
     """
     image_max = np.max(image_batch)
     image_min = np.min(image_batch)
@@ -45,7 +46,7 @@ def _normalize_image(
     resized_image_list: List[np.ndarray] = []
     for image in image_batch:
         if resize_shape is not None:
-            # resize can only process single image with shape (H x W x C)
+            # resize can only process single image with shape H x W x C
             resized_image_list.append(
                 resize(
                     image,
@@ -78,27 +79,26 @@ def _get_segments_felzenszwalb(
     and Huttenlocher, D.P. International Journal of Computer Vision, 2004
 
     Args:
-        image: Input image in shape (B x H x W x C).
-            resize_image:
+        image: Input images batch in shape `B x H x W x C`.
         scale_range:  Range of image values to use for segmentation algorithm.
             Segmentation algorithm is sensitive to the input image
             values, therefore we need to be consistent with the range
-            for all images. Defaults to [-1.0, 1.0].
+            for all images. Defaults to `[-1.0, 1.0]`.
         dilation_rad: Sets how much each segment is dilated to include edges,
             larger values cause more blobby segments, smaller values
             get sharper areas.
-        image_resize: If not None, the image is resized to given shape HxW for
+        image_resize: If not `None`, the image is resized to given shape `H x W` for
             the segmentation purposes. The resulting segments are rescaled back
             to match the original image size. It is done for consistency w.r.t.
             segmentation parameter range.
-        sigma_values: Iterable of sigma values from Felzenszwalb algorithm. Sigma is
+        sigma_values: Iterable of sigma values from Felzenszwalb's algorithm. Sigma is
             width (standard deviation) of Gaussian kernel used in preprocessing.
-        scale_values: Iterable of scale values from Felzenszwalb algorithm. It's free
+        scale_values: Iterable of scale values from Felzenszwalb's algorithm. It's free
             parameter. Higher means larger clusters.
-        min_segment_size: Minimum segment size returned by Felzenszwalb algorithm.
+        min_segment_size: Minimum segment size returned by Felzenszwalb's algorithm.
     Returns:
-        masks: A list of lists of boolean masks as np.ndarrays if size HxW for im size of
-                HxWxC. First level of list has length of batch size.
+        A list of lists of boolean masks as `np.ndarray` if size `H x W` for im size of
+            `H x W x C`. First level of list has length of batch size.
     """
     # Normalize image value range and size
     original_shape = image_batch.shape[1:3]
@@ -141,11 +141,11 @@ def _get_segments_felzenszwalb(
 def _gain_density(
     mask1: np.ndarray, attributes: np.ndarray, mask2: Optional[np.ndarray] = None
 ) -> float:
-    """Calculate gain density as mean value in attributes segment.
+    """Calculate gain density as mean value in attributes mask.
 
     Args:
         mask1: Compute density for mask1.
-        attributes: Attributes array.
+        attributes: Attributes array used to compute gain density.
         mask2: If mask2 is specified, compute density
             for mask1 \\ mask2. Defaults to None.
 
@@ -221,7 +221,7 @@ class XRAI:
         baselines: torch.Tensor,
         steps: int,
     ) -> List[AttributionsType]:
-        """Get Integrated Gradients attributes.
+        """Compute Integrated Gradients attributes.
 
         Args:
             input_data: Input data.
@@ -233,8 +233,7 @@ class XRAI:
             call_model_args: Additional arguments to model forward pass.
             baselines: Baselines define the starting point from which integral
                 is computed.
-            steps: The number of steps used by the approximation
-                method.
+            steps: The number of steps used by the approximation method.
 
         Returns:
             List of attributions.
@@ -305,7 +304,7 @@ class XRAI:
         """Applies XRAI method on an input data and returns the result saliency heatmap.
 
         Args:
-            input_data: Input data in shape (B x C x H x W).
+            input_data: Input data in shape `B x C x H x W`.
             call_model_function: A function that interfaces with a model to return
                 specific data in a dictionary when given an input and other arguments.
                 The forward function of the model or any modification of it.
@@ -316,14 +315,14 @@ class XRAI:
                 the list should have the same dimensions as the
                 input. If the value is not set then the algorithm
                 will make the best effort to select default
-                baselines. Defaults to None.
+                baselines. Defaults to `None`.
             segments: The list of lists of precalculated image segments that should
                 be passed to XRAI. Each element of the list is an
-                [B,N,M] boolean array, where NxM are the image
-                dimensions, B is the batch size. Each elemeent on the list contains
-                exactly the mask that corresponds to one segment. If the value is None,
+                `[B, N, M]` boolean array, where `N x M` are the image
+                dimensions, `B` is the batch size. Each elemeent on the list contains
+                exactly the mask that corresponds to one segment. If the value is `None`,
                 Felzenszwalb's segmentation algorithm will be applied.
-                Defaults to None.
+                Defaults to `None`.
             steps: Number of steps to use for calculating the Integrated Gradients
                 attribution. The higher the number of steps the higher is the precision
                 but lower the performance.
@@ -335,26 +334,26 @@ class XRAI:
                 segments should be returned.
             flatten_xrai_segments: If set to True, the XRAI segments are returned as an
                 integer array with the same dimensions as the input (excluding color channels).
-                The elements of the array are set to values from the [1,N] range, where 1
-                is the most important segment and N is the least important segment. If
-                flatten_xrai_sements is set to False, the segments are returned as a
-                boolean array, where the first dimension has size N. The [0, ...] mask is
-                the most important and the [N-1, ...] mask is the least important.
+                The elements of the array are set to values from the `[1, N]` range, where 1
+                is the most important segment and `N` is the least important segment. If
+                flatten_xrai_sements is set to `False`, the segments are returned as a
+                boolean array, where the first dimension has size `N`. The `[0, ...]` mask is
+                the most important and the `[N-1, ...]` mask is the least important.
             min_pixel_diff: Do not consider masks that have difference less than
                 this number compared to the current mask. Set it to 1 to remove masks
-                that completely overlap with the current mask. Defaults to 50.
-            image_resize: If not None, the image is resized to given shape HxW for
+                that completely overlap with the current mask. Defaults to `50`.
+            image_resize: If not None, the image is resized to given shape `H x W` for
                 the segmentation purposes. The resulting segments are rescaled back
                 to match the original image size. It is done for consistency w.r.t.
-                segmentation parameter range. Defaults to (224, 224).
+                segmentation parameter range. Defaults to `(224, 224)`.
             sigma_values: Iterable of sigma values from Felzenszwalb algorithm. Sigma is
                 width (standard deviation) of Gaussian kernel used in preprocessing.
-                Defaults to (0.8,).
+                Defaults to `(0.8,)`.
             scale_values: Iterable of scale values from Felzenszwalb algorithm. It's free
                 parameter. Higher means larger clusters.
-                Defaults to (50, 100, 150, 250, 500, 1200,).
+                Defaults to `(50, 100, 150, 250, 500, 1200,)`.
             min_segment_size: Minimum segment size returned by Felzenszwalb algorithm.
-                Defaults to 150.
+                Defaults to `150`.
 
         Returns:
             A numpy array that contains the saliency heatmap.
@@ -434,31 +433,30 @@ class XRAI:
         """Run XRAI saliency given attributions and segments.
 
         Args:
-            attributes: Source attributions for XRAI. XRAI attributions will be same size
-                as the input attr.
+            attributes: Source attributions for XRAI.
             segment_list: Input segments as a list of boolean masks. XRAI uses these to
                 compute attribution sums. Fist level list is for batch dimension.
             gain_fun: The function that computes XRAI area attribution from source
-                attributions. Defaults to _gain_density, which calculates the
+                attributions. Defaults to `_gain_density`, which calculates the
                 density of attributions in a mask.
-            area_perc_th: The saliency map is computed to cover area_perc_th of
+            area_perc_th: The saliency map is computed to cover `area_perc_th` of
                 the image. Lower values will run faster, but produce
                 uncomputed areas in the image that will be filled to
             min_pixel_diff: Do not consider masks that have difference less than
                 this number compared to the current mask. Set it to 1
                 to remove masks that completely overlap with the
                 current mask.
-            integer_segments: If set to True, the XRAI segments are returned as an
+            integer_segments: If set to `True`, the XRAI segments are returned as an
                 integer array with the same dimensions as the input (excluding color
                 channels). The elements of the array are set to values from the
-                [1,N] range, where 1 is the most important segment and N is the
-                least important segment. If integer_segments is set to False,
+                `[1, N]` range, where `1` is the most important segment and `N` is the
+                least important segment. If integer_segments is set to `False`,
                 the segments are returned as a boolean array, where the first
-                dimension has size N. The [0, ...] mask is the most important and the
-                [N-1, ...] mask is the least important. Defaults to True.
+                dimension has size `N`. The `[0, ...]` mask is the most important and the
+                `[N-1, ...]` mask is the least important. Defaults to `True`.
 
         Returns:
-            Saliency heatmap np.ndarray and masks or an integer image with
+            Saliency heatmap `np.ndarray` and masks or an integer image with
                 area ranks depending on the parameter integer_segments.
         """
         batch_attr_maps: List[np.ndarray] = []
@@ -548,7 +546,7 @@ class XRAICVExplainer(Explainer):
         model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
-        **kwargs,  # pylint: disable = (unused-argument)
+        **kwargs,
     ) -> AttributionsType:
         """Generate model's attributes with XRAI algorithm explainer.
 
@@ -582,7 +580,7 @@ class XRAICVExplainer(Explainer):
                     #output_dims - 1 elements. Each tuple is applied as the
                     target for the corresponding example.
 
-                Default: None
+                Default: `None`
 
         Returns:
             The gradients with respect to each input feature.
