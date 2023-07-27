@@ -139,10 +139,19 @@ def _get_segments_felzenszwalb(
 
 
 def _gain_density(
-    mask1: np.ndarray, attr: np.ndarray, mask2: Optional[np.ndarray] = None
+    mask1: np.ndarray, attributes: np.ndarray, mask2: Optional[np.ndarray] = None
 ) -> float:
-    # Compute the attr density over mask1. If mask2 is specified, compute density
-    # for mask1 \ mask2
+    """Calculate gain density as mean value in attributes segment.
+
+    Args:
+        mask1: Compute density for mask1.
+        attributes: Attributes array.
+        mask2: If mask2 is specified, compute density
+            for mask1 \\ mask2. Defaults to None.
+
+    Returns:
+        Gain density score.
+    """
     if mask2 is None:
         added_mask = mask1
     else:
@@ -150,18 +159,45 @@ def _gain_density(
     if not np.any(added_mask):
         return -np.inf
     else:
-        return attr[added_mask].mean()
+        return attributes[added_mask].mean()
 
 
-def _get_diff_mask(add_mask: np.ndarray, base_mask: np.ndarray) -> np.ndarray:
-    return np.logical_and(add_mask, np.logical_not(base_mask))
+def _get_diff_mask(array1: np.ndarray, array2: np.ndarray) -> np.ndarray:
+    """Compute element-wise AND operation between two arrays.
+
+    Args:
+        array1: First array.
+        array2: Second array.
+
+    Returns:
+        Array of booleans representing result of element-wise AND operation
+            between arrays.
+    """
+    return np.logical_and(array1, np.logical_not(array2))
 
 
-def _get_diff_cnt(add_mask: np.ndarray, base_mask: np.ndarray) -> float:
-    return np.sum(_get_diff_mask(add_mask, base_mask))
+def _get_diff_cnt(array1: np.ndarray, array2: np.ndarray) -> int:
+    """Compute sum of different elements in 2 arrays.
+
+    Args:
+        array1: First array.
+        array2: Second array.
+
+    Returns:
+        Number of different elements between two arrays.
+    """
+    return np.sum(_get_diff_mask(array1, array2))
 
 
 def _unpack_segs_to_masks(segment_list: List[np.ndarray]) -> List[np.ndarray]:
+    """Create masks from segments.
+
+    Args:
+        segment_list: List of segments.
+
+    Returns:
+        List of masks.
+    """
     masks: List[np.ndarray] = []
     for segment in segment_list:
         for index in range(segment.min(), segment.max() + 1):
@@ -172,7 +208,7 @@ def _unpack_segs_to_masks(segment_list: List[np.ndarray]) -> List[np.ndarray]:
 class XRAI:
     """A CoreSaliency class that computes saliency masks using the XRAI method."""
 
-    def __init__(self, forward_func):
+    def __init__(self, forward_func: ModelType):
         # Initialize integrated gradients.
         self.forward_func = forward_func
 
@@ -185,7 +221,24 @@ class XRAI:
         baselines: torch.Tensor,
         steps: int,
     ) -> List[AttributionsType]:
-        """Takes mean of attributions from all baselines."""
+        """Get Integrated Gradients attributes.
+
+        Args:
+            input_data: Input data.
+            pred_label_idx: Output indices for which gradients are
+                computed (for classification cases, this is usually the
+                target class).
+            call_model_function: The forward function of the model or any
+                modification of it
+            call_model_args: Additional arguments to model forward pass.
+            baselines: Baselines define the starting point from which integral
+                is computed.
+            steps: The number of steps used by the approximation
+                method.
+
+        Returns:
+            List of attributions.
+        """
         grads: List[AttributionsType] = []
         integrated_gradients = IntegratedGradientsCVExplainer()
         for baseline in baselines:
@@ -202,28 +255,32 @@ class XRAI:
 
         return grads
 
-    def _make_baselines(
-        self, x_value: torch.Tensor, x_baselines: Optional[torch.Tensor]
-    ) -> torch.Tensor:
-        # If baseline is not provided default to im min and max values
-        if x_baselines is None:
-            x_baselines_list: List[torch.Tensor] = []
-            x_baselines_list.append(torch.min(x_value) * torch.ones_like(x_value))
-            x_baselines_list.append(torch.max(x_value) * torch.ones_like(x_value))
-            x_baselines = torch.vstack(x_baselines_list)
-        else:
-            for baseline in x_baselines:
-                if baseline.shape != x_value.shape:
-                    raise ValueError(
-                        f"Baseline size {baseline.shape} does not match input size {x_value.shape}"
-                    )
-        return x_baselines
+    def _validate_baselines(
+        self,
+        input_data: torch.Tensor,
+        baselines: torch.Tensor,
+    ) -> None:
+        """Validate if baselines are correct.
+
+        Args:
+            input_data: Input data.
+            baselines: Baselines define the starting point from which integral
+                is computed.
+
+        Raises:
+            ValueError: If baselines and input data shapes differ.
+        """
+        for baseline in baselines:
+            if baseline.shape != input_data.shape:
+                raise ValueError(
+                    f"Baseline size {baseline.shape} does not match input size {input_data.shape}"
+                )
 
     def get_attribution_mask(
         self,
         input_data: torch.Tensor,
-        call_model_function: ModelType,
         pred_label_idx: TargetType,
+        call_model_function: ModelType,
         call_model_args: Any = None,
         baselines: Optional[torch.Tensor] = None,
         segments: Optional[List[List[np.ndarray]]] = None,
@@ -245,34 +302,22 @@ class XRAI:
         ),
         min_segment_size: int = 150,
     ) -> np.ndarray:
-        """Applies XRAI method on an input image and returns the result saliency heatmap.
+        """Applies XRAI method on an input data and returns the result saliency heatmap.
 
         Args:
-            input_data: Input ndarray.
+            input_data: Input data in shape (B x C x H x W).
             call_model_function: A function that interfaces with a model to return
                 specific data in a dictionary when given an input and other arguments.
-            Expected function signature:
-            - call_model_function(input_data_batch,
-                                    call_model_args=None,
-                                    expected_keys=None):
-                input_data_batch - Input for the model, given as a batch (i.e.
-                    dimension 0 is the batch dimension, dimensions 1 through n
-                    represent a single input).
-                call_model_args - Other arguments used to call and run the model.
-                expected_keys - List of keys that are expected in the output. For
-                    this method (XRAI), the expected keys are
-                    INPUT_OUTPUT_GRADIENTS - Gradients of the output being
-                    explained (the logit/softmax value) with respect to the input.
-                    Shape should be the same shape as input_data_batch.
+                The forward function of the model or any modification of it.
             call_model_args: The arguments that will be passed to the call model
                 function, for every call of the model.
-            baselines: a list of baselines to use for calculating
+            baselines: A list of baselines to use for calculating
                 Integrated Gradients attribution. Every baseline in
                 the list should have the same dimensions as the
                 input. If the value is not set then the algorithm
                 will make the best effort to select default
-            baselines. Defaults to None.
-            segments: the lsit of lists of precalculated image segments that should
+                baselines. Defaults to None.
+            segments: The list of lists of precalculated image segments that should
                 be passed to XRAI. Each element of the list is an
                 [B,N,M] boolean array, where NxM are the image
                 dimensions, B is the batch size. Each elemeent on the list contains
@@ -294,8 +339,7 @@ class XRAI:
                 is the most important segment and N is the least important segment. If
                 flatten_xrai_sements is set to False, the segments are returned as a
                 boolean array, where the first dimension has size N. The [0, ...] mask is
-                the most important and the [N-1, ...] mask is the least important. This
-                parameter has an effect only if return_xrai_segments is set to True.
+                the most important and the [N-1, ...] mask is the least important.
             min_pixel_diff: Do not consider masks that have difference less than
                 this number compared to the current mask. Set it to 1 to remove masks
                 that completely overlap with the current mask. Defaults to 50.
@@ -312,20 +356,13 @@ class XRAI:
             min_segment_size: Minimum segment size returned by Felzenszwalb algorithm.
                 Defaults to 150.
 
-        Raises:
-            ValueError: If algorithm type is unknown (not full or fast).
-                        If the shape of `base_attribution` dosn't match the shape of
-                        `input_data`.
-                        If the shape of INPUT_OUTPUT_GRADIENTS doesn't match the
-                        shape of input_data_batch.
-
         Returns:
-            np.ndarray: A numpy array that contains the saliency heatmap.
+            A numpy array that contains the saliency heatmap.
         """
         if baselines is not None:
-            x_baselines = self._make_baselines(input_data, baselines)
+            self._validate_baselines(input_data, baselines)
             baselines = torch.vstack(
-                [torch.tensor(x).to(input_data.device) for x in x_baselines]
+                [torch.tensor(x).to(input_data.device) for x in baselines]
             )
         else:
             baselines = torch.rand((2,) + input_data.shape, device=input_data.device)
@@ -397,9 +434,9 @@ class XRAI:
         """Run XRAI saliency given attributions and segments.
 
         Args:
-            attr: Source attributions for XRAI. XRAI attributions will be same size
+            attributes: Source attributions for XRAI. XRAI attributions will be same size
                 as the input attr.
-            segs: Input segments as a list of boolean masks. XRAI uses these to
+            segment_list: Input segments as a list of boolean masks. XRAI uses these to
                 compute attribution sums. Fist level list is for batch dimension.
             gain_fun: The function that computes XRAI area attribution from source
                 attributions. Defaults to _gain_density, which calculates the
@@ -407,15 +444,21 @@ class XRAI:
             area_perc_th: The saliency map is computed to cover area_perc_th of
                 the image. Lower values will run faster, but produce
                 uncomputed areas in the image that will be filled to
-            satisfy completeness. Defaults to 1.0.
             min_pixel_diff: Do not consider masks that have difference less than
                 this number compared to the current mask. Set it to 1
                 to remove masks that completely overlap with the
                 current mask.
-            integer_segments: See XRAIParameters. Defaults to True.
+            integer_segments: If set to True, the XRAI segments are returned as an
+                integer array with the same dimensions as the input (excluding color
+                channels). The elements of the array are set to values from the
+                [1,N] range, where 1 is the most important segment and N is the
+                least important segment. If integer_segments is set to False,
+                the segments are returned as a boolean array, where the first
+                dimension has size N. The [0, ...] mask is the most important and the
+                [N-1, ...] mask is the least important. Defaults to True.
 
         Returns:
-            tuple: saliency heatmap and list of masks or an integer image with
+            Saliency heatmap np.ndarray and masks or an integer image with
                 area ranks depending on the parameter integer_segments.
         """
         batch_attr_maps: List[np.ndarray] = []
