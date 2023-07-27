@@ -129,13 +129,29 @@ def _get_segments_felzenszwalb(
                         anti_aliasing=False,
                     ).astype(int)
                 segment_list.append(segment)
+
         masks = _unpack_segs_to_masks(segment_list)
         if dilation_rad:
-            footprint = disk(dilation_rad)
-            masks = [dilation(mask, footprint=footprint) for mask in masks]
+            masks = apply_dilation(dilation_rad=dilation_rad, masks=masks)
 
         batch_masks.append(masks)
     return batch_masks
+
+
+def apply_dilation(dilation_rad: int, masks: List[np.ndarray]) -> List[np.ndarray]:
+    """Apply morphological dilation of images.
+
+    Args:
+        dilation_rad: Sets how much each segment is dilated to include edges,
+            larger values cause more blobby segments, smaller values
+            get sharper areas.
+        masks: List of masks to process.
+
+    Returns:
+        List of dilated masks.
+    """
+    footprint = disk(dilation_rad)
+    return [dilation(mask, footprint=footprint) for mask in masks]
 
 
 def _gain_density(
@@ -212,8 +228,8 @@ class XRAI:
         # Initialize integrated gradients.
         self.forward_func = forward_func
 
+    @staticmethod
     def _get_integrated_gradients(
-        self,
         input_data: torch.Tensor,
         pred_label_idx: TargetType,
         call_model_function: ModelType,
@@ -254,8 +270,8 @@ class XRAI:
 
         return grads
 
+    @staticmethod
     def _validate_baselines(
-        self,
         input_data: torch.Tensor,
         baselines: torch.Tensor,
     ) -> None:
@@ -359,12 +375,13 @@ class XRAI:
             A numpy array that contains the saliency heatmap.
         """
         if baselines is not None:
-            self._validate_baselines(input_data, baselines)
             baselines = torch.vstack(
                 [torch.tensor(x).to(input_data.device) for x in baselines]
             )
         else:
             baselines = torch.rand((2,) + input_data.shape, device=input_data.device)
+
+        self._validate_baselines(input_data, baselines)
 
         attrs = self._get_integrated_gradients(
             input_data=input_data,
@@ -381,25 +398,19 @@ class XRAI:
         if len(attr.shape) > 2:
             attr = attr.max(axis=1)
 
-        x_value_np: np.ndarray = (
-            input_data.reshape(
-                (
-                    input_data.shape[0],
-                    input_data.shape[2],
-                    input_data.shape[3],
-                    input_data.shape[1],
-                )
+        # reshape input data from B x C x H x W to B x H x W x C
+        reshaped_input_data: torch.Tensor = input_data.reshape(
+            (
+                input_data.shape[0],
+                input_data.shape[2],
+                input_data.shape[3],
+                input_data.shape[1],
             )
-            .detach()
-            .cpu()
-            .numpy()
         )
 
-        if segments is not None:
-            segs = segments
-        else:
-            segs = _get_segments_felzenszwalb(
-                image_batch=x_value_np,
+        if segments is None:
+            segments = _get_segments_felzenszwalb(
+                image_batch=reshaped_input_data.detach().cpu().numpy(),
                 dilation_rad=dilation_rad,
                 scale_range=scale_range,
                 image_resize=image_resize,
@@ -410,7 +421,7 @@ class XRAI:
 
         attr_map, _ = self._xrai(
             attributes=attr,
-            segment_list=segs,
+            segment_list=segments,
             area_perc_th=area_threshold,
             min_pixel_diff=min_pixel_diff,
             gain_fun=_gain_density,
@@ -441,7 +452,8 @@ class XRAI:
                 density of attributions in a mask.
             area_perc_th: The saliency map is computed to cover `area_perc_th` of
                 the image. Lower values will run faster, but produce
-                uncomputed areas in the image that will be filled to
+                uncomputed areas in the image that will be filled to satisfy
+                completeness. Defaults to `1.0`.
             min_pixel_diff: Do not consider masks that have difference less than
                 this number compared to the current mask. Set it to 1
                 to remove masks that completely overlap with the
@@ -461,68 +473,15 @@ class XRAI:
         """
         batch_attr_maps: List[np.ndarray] = []
         batch_final_mask_trace: List[Union[np.ndarray, List[np.ndarray]]] = []
-        for attribute_sample, segment in zip(attributes, segment_list):
-            output_attr: np.ndarray = -np.inf * np.ones(
-                shape=attribute_sample.shape, dtype=float
+        for attribute_sample, segments in zip(attributes, segment_list):
+            output_attr, final_mask_trace = XRAI._xrai_single_sample(
+                gain_fun=gain_fun,
+                area_perc_th=area_perc_th,
+                min_pixel_diff=min_pixel_diff,
+                integer_segments=integer_segments,
+                attribute_sample=attribute_sample,
+                segments=segments,
             )
-            current_area_perc: float = 0.0
-            current_mask = np.zeros(attribute_sample.shape, dtype=bool)
-
-            masks_trace: List[Tuple[np.ndarray, float]] = []
-            remaining_masks = dict(enumerate(segment))
-
-            added_masks_cnt: int = 1
-            # While the mask area is less than area_th and remaining_masks is not empty
-            while current_area_perc <= area_perc_th:
-                best_gain: float = -np.inf
-                best_key: int
-                remove_key_queue: List[int] = []
-                for mask_key in remaining_masks:
-                    mask: np.ndarray = remaining_masks[mask_key]
-                    # If mask does not add more than min_pixel_diff to current mask, remove
-                    mask_pixel_diff = _get_diff_cnt(mask, current_mask)
-                    if mask_pixel_diff < min_pixel_diff:
-                        remove_key_queue.append(mask_key)
-                        continue
-                    gain: float = gain_fun(mask, attribute_sample, current_mask)
-                    if gain > best_gain:
-                        best_gain = gain
-                        best_key = mask_key
-                for key in remove_key_queue:
-                    del remaining_masks[key]
-
-                # if dictionary is empty end processing
-                if not remaining_masks:
-                    break
-
-                added_mask = remaining_masks[best_key]
-                mask_diff = _get_diff_mask(added_mask, current_mask)
-                masks_trace.append((mask_diff, best_gain))
-
-                current_mask = np.logical_or(current_mask, added_mask)
-                current_area_perc = np.mean(current_mask)
-                output_attr[mask_diff] = best_gain
-                del remaining_masks[best_key]  # delete used key
-                added_masks_cnt += 1
-
-            uncomputed_mask: np.ndarray = output_attr == -np.inf
-            # Assign the uncomputed areas a value such that sum is same as ig
-            output_attr[uncomputed_mask] = gain_fun(
-                uncomputed_mask, attribute_sample, None
-            )
-            masks_trace_array_list = [
-                v[0] for v in sorted(masks_trace, key=lambda x: -x[1])
-            ]
-            if np.any(uncomputed_mask):
-                masks_trace_array_list.append(uncomputed_mask)
-
-            final_mask_trace: List[np.ndarray] = masks_trace_array_list
-            if integer_segments:
-                integer_segment_mask = np.zeros(shape=attribute_sample.shape, dtype=int)
-                for i, mask in enumerate(masks_trace_array_list):
-                    integer_segment_mask[mask] = i + 1
-
-                final_mask_trace = [integer_segment_mask]
 
             # add 2 artificial dimensions
             # first for artificial batch size which will be stacked
@@ -536,6 +495,109 @@ class XRAI:
         final_batch_final_mask_trace = np.vstack(batch_final_mask_trace)
 
         return final_batch_attr_maps, final_batch_final_mask_trace
+
+    @staticmethod
+    def _xrai_single_sample(
+        gain_fun: Callable[[np.ndarray, np.ndarray, Optional[np.ndarray]], float],
+        area_perc_th: float,
+        min_pixel_diff: int,
+        integer_segments: bool,
+        attribute_sample: np.ndarray,
+        segments: List[np.ndarray],
+    ) -> Tuple[np.ndarray, List[np.ndarray]]:
+        """Run XRAI saliency given single attribution and segment.
+
+        Args:
+            attributes: Source attribution for XRAI.
+            segment_list: Input segment as a list of boolean mask. XRAI uses these to
+                compute attribution sums.
+            gain_fun: The function that computes XRAI area attribution from source
+                attributions. Defaults to `_gain_density`, which calculates the
+                density of attributions in a mask.
+            area_perc_th: The saliency map is computed to cover `area_perc_th` of
+                the image. Lower values will run faster, but produce
+                uncomputed areas in the image that will be filled to satisfy
+                completeness.
+            min_pixel_diff: Do not consider masks that have difference less than
+                this number compared to the current mask. Set it to 1
+                to remove masks that completely overlap with the
+                current mask.
+            integer_segments: If set to `True`, the XRAI segments are returned as an
+                integer array with the same dimensions as the input (excluding color
+                channels). The elements of the array are set to values from the
+                `[1, N]` range, where `1` is the most important segment and `N` is the
+                least important segment. If integer_segments is set to `False`,
+                the segments are returned as a boolean array, where the first
+                dimension has size `N`. The `[0, ...]` mask is the most important and the
+                `[N-1, ...]` mask is the least important.
+            attribute_sample: Source attribution for XRAI.
+            segments: Input segments as a list of boolean masks. XRAI uses these to
+                compute attribution sums.
+
+        Returns:
+            Saliency heatmap `np.ndarray` and masks or an integer image with
+                area ranks depending on the parameter integer_segments.
+        """
+        output_attr: np.ndarray = -np.inf * np.ones(
+            shape=attribute_sample.shape, dtype=float
+        )
+        current_area_perc: float = 0.0
+        current_mask = np.zeros(attribute_sample.shape, dtype=bool)
+
+        masks_trace: List[Tuple[np.ndarray, float]] = []
+        remaining_masks = dict(enumerate(segments))
+
+        added_masks_cnt: int = 1
+        # While the mask area is less than area_th and remaining_masks is not empty
+        while current_area_perc <= area_perc_th:
+            best_gain: float = -np.inf
+            best_key: int
+            remove_key_queue: List[int] = []
+            for mask_key in remaining_masks:
+                mask: np.ndarray = remaining_masks[mask_key]
+                # If mask does not add more than min_pixel_diff to current mask, remove
+                mask_pixel_diff = _get_diff_cnt(mask, current_mask)
+                if mask_pixel_diff < min_pixel_diff:
+                    remove_key_queue.append(mask_key)
+                    continue
+                gain: float = gain_fun(mask, attribute_sample, current_mask)
+                if gain > best_gain:
+                    best_gain = gain
+                    best_key = mask_key
+            for key in remove_key_queue:
+                del remaining_masks[key]
+
+                # if dictionary is empty end processing
+            if not remaining_masks:
+                break
+
+            added_mask = remaining_masks[best_key]
+            mask_diff = _get_diff_mask(added_mask, current_mask)
+            masks_trace.append((mask_diff, best_gain))
+
+            current_mask = np.logical_or(current_mask, added_mask)
+            current_area_perc = np.mean(current_mask)
+            output_attr[mask_diff] = best_gain
+            del remaining_masks[best_key]  # delete used key
+            added_masks_cnt += 1
+
+        uncomputed_mask: np.ndarray = output_attr == -np.inf
+        # Assign the uncomputed areas a value such that sum is same as ig
+        output_attr[uncomputed_mask] = gain_fun(uncomputed_mask, attribute_sample, None)
+        masks_trace_array_list = [
+            v[0] for v in sorted(masks_trace, key=lambda x: -x[1])
+        ]
+        if np.any(uncomputed_mask):
+            masks_trace_array_list.append(uncomputed_mask)
+
+        final_mask_trace: List[np.ndarray] = masks_trace_array_list
+        if integer_segments:
+            integer_segment_mask = np.zeros(shape=attribute_sample.shape, dtype=int)
+            for i, mask in enumerate(masks_trace_array_list):
+                integer_segment_mask[mask] = i + 1
+
+            final_mask_trace = [integer_segment_mask]
+        return output_attr, final_mask_trace
 
 
 class XRAICVExplainer(Explainer):
