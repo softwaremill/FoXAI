@@ -5,7 +5,7 @@ Based on https://github.com/PAIR-code/saliency/blob/master/saliency/core/xrai.py
 """
 from __future__ import absolute_import, division, print_function
 
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -248,10 +248,10 @@ class XRAI:
 
     def _get_integrated_gradients(
         self,
-        image: torch.Tensor,
-        pred_label_idx,
-        call_model_function,
-        call_model_args,
+        input_data: torch.Tensor,
+        pred_label_idx: TargetType,
+        call_model_function: ModelType,
+        call_model_args: Any,
         baselines: torch.Tensor,
         steps: int,
     ) -> List[AttributionsType]:
@@ -262,7 +262,7 @@ class XRAI:
             grads.append(
                 integrated_gradients.calculate_features(
                     model=call_model_function,
-                    input_data=image,
+                    input_data=input_data,
                     baselines=baseline,
                     pred_label_idx=pred_label_idx,
                     n_steps=steps,
@@ -289,9 +289,9 @@ class XRAI:
                     )
         return x_baselines
 
-    def get_mask(
+    def get_attribution_mask(
         self,
-        x_value: torch.Tensor,
+        input_data: torch.Tensor,
         call_model_function,
         pred_label_idx,
         call_model_args=None,
@@ -301,16 +301,15 @@ class XRAI:
     ) -> np.ndarray:
         """Applies XRAI method on an input image and returns the result saliency heatmap.
 
-
         Args:
-            x_value: Input ndarray.
+            input_data: Input ndarray.
             call_model_function: A function that interfaces with a model to return
             specific data in a dictionary when given an input and other arguments.
             Expected function signature:
-            - call_model_function(x_value_batch,
+            - call_model_function(input_data_batch,
                                     call_model_args=None,
                                     expected_keys=None):
-                x_value_batch - Input for the model, given as a batch (i.e.
+                input_data_batch - Input for the model, given as a batch (i.e.
                 dimension 0 is the batch dimension, dimensions 1 through n
                 represent a single input).
                 call_model_args - Other arguments used to call and run the model.
@@ -318,7 +317,7 @@ class XRAI:
                 this method (XRAI), the expected keys are
                 INPUT_OUTPUT_GRADIENTS - Gradients of the output being
                     explained (the logit/softmax value) with respect to the input.
-                    Shape should be the same shape as x_value_batch.
+                    Shape should be the same shape as input_data_batch.
             call_model_args: The arguments that will be passed to the call model
                 function, for every call of the model.
             baselines: a list of baselines to use for calculating
@@ -343,16 +342,16 @@ class XRAI:
         Raises:
             ValueError: If algorithm type is unknown (not full or fast).
                         If the shape of `base_attribution` dosn't match the shape of
-                        `x_value`.
+                        `input_data`.
                         If the shape of INPUT_OUTPUT_GRADIENTS doesn't match the
-                        shape of x_value_batch.
+                        shape of input_data_batch.
 
         Returns:
             np.ndarray: A numpy array that contains the saliency heatmap.
         """
         results = self.get_mask_with_details(
-            x_value,
-            call_model_function,
+            input_data=input_data,
+            call_model_function=call_model_function,
             call_model_args=call_model_args,
             pred_label_idx=pred_label_idx,
             baselines=baselines,
@@ -363,26 +362,25 @@ class XRAI:
 
     def get_mask_with_details(
         self,
-        x_value: torch.Tensor,
-        call_model_function,
-        pred_label_idx,
-        call_model_args=None,
+        input_data: torch.Tensor,
+        call_model_function: ModelType,
+        pred_label_idx: TargetType,
+        call_model_args: Any = None,
         baselines: Optional[torch.Tensor] = None,
         segments: Optional[List[List[np.ndarray]]] = None,
         extra_parameters=None,
     ) -> XRAIOutput:
         """Applies XRAI method on an input image and returns detailed information.
 
-
         Args:
-            x_value: Input ndarray.
+            input_data: Input ndarray.
             call_model_function: A function that interfaces with a model to return
                 specific data in a dictionary when given an input and other arguments.
             Expected function signature:
-            - call_model_function(x_value_batch,
+            - call_model_function(input_data_batch,
                                     call_model_args=None,
                                     expected_keys=None):
-                x_value_batch - Input for the model, given as a batch (i.e.
+                input_data_batch - Input for the model, given as a batch (i.e.
                     dimension 0 is the batch dimension, dimensions 1 through n
                     represent a single input).
                 call_model_args - Other arguments used to call and run the model.
@@ -390,7 +388,7 @@ class XRAI:
                     this method (XRAI), the expected keys are
                     INPUT_OUTPUT_GRADIENTS - Gradients of the output being
                     explained (the logit/softmax value) with respect to the input.
-                    Shape should be the same shape as x_value_batch.
+                    Shape should be the same shape as input_data_batch.
             call_model_args: The arguments that will be passed to the call model
                 function, for every call of the model.
             baselines: a list of baselines to use for calculating
@@ -415,9 +413,9 @@ class XRAI:
         Raises:
             ValueError: If algorithm type is unknown (not full or fast).
                         If the shape of `base_attribution` dosn't match the shape of
-                        `x_value`.
+                        `input_data`.
                         If the shape of INPUT_OUTPUT_GRADIENTS doesn't match the
-                        shape of x_value_batch.
+                        shape of input_data_batch.
 
         Returns:
             XRAIOutput: an object that contains the output of the XRAI algorithm.
@@ -427,17 +425,17 @@ class XRAI:
 
         # Calculate IG attribution if not provided by the caller.
         if baselines is not None:
-            x_baselines = self._make_baselines(x_value, baselines)
+            x_baselines = self._make_baselines(input_data, baselines)
             baselines = torch.vstack(
-                [torch.tensor(x).to(x_value.device) for x in x_baselines]
+                [torch.tensor(x).to(input_data.device) for x in x_baselines]
             )
         else:
-            baselines = torch.rand((2,) + x_value.shape, device=x_value.device)
+            baselines = torch.rand((2,) + input_data.shape, device=input_data.device)
 
         attrs = self._get_integrated_gradients(
-            x_value,
-            pred_label_idx,
-            call_model_function,
+            input_data=input_data,
+            pred_label_idx=pred_label_idx,
+            call_model_function=call_model_function,
             call_model_args=call_model_args,
             baselines=baselines,
             steps=extra_parameters.steps,
@@ -450,8 +448,13 @@ class XRAI:
             attr = attr.max(axis=1)
 
         x_value_np: np.ndarray = (
-            x_value.reshape(
-                (x_value.shape[0], x_value.shape[2], x_value.shape[3], x_value.shape[1])
+            input_data.reshape(
+                (
+                    input_data.shape[0],
+                    input_data.shape[2],
+                    input_data.shape[3],
+                    input_data.shape[1],
+                )
             )
             .detach()
             .cpu()
@@ -652,8 +655,8 @@ class XRAICVExplainer(Explainer):
         """
         xrai_explainer = XRAI(forward_func=model)
 
-        attributions_np = xrai_explainer.get_mask(
-            input_data,
+        attributions_np = xrai_explainer.get_attribution_mask(
+            input_data=input_data,
             pred_label_idx=pred_label_idx,
             call_model_function=model,
             **kwargs,
