@@ -1,5 +1,5 @@
 """File contains functions to modifiy DNN models."""
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import torch
 from captum._utils.typing import BaselineType
@@ -69,7 +69,7 @@ def preprocess_baselines(
             aggregated.
     """
     aggregate_attributes: bool = False
-    baselines_list: List[Union[None, torch.Tensor]] = [baselines]
+    baselines_list: List[BaselineType] = [baselines]
 
     if isinstance(baselines, torch.Tensor):
         # if dimension of baselines is greater than batch data user have provided
