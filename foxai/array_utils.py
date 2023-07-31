@@ -3,6 +3,7 @@ import sys
 
 import cv2
 import numpy as np
+import torch
 
 from foxai.types import AttributionsType
 
@@ -119,7 +120,7 @@ def resize_attributes(
     return single_channel_attributes
 
 
-def transpose_color_in_array(array: np.ndarray) -> np.ndarray:
+def transpose_color_last_in_array_np(array: np.ndarray) -> np.ndarray:
     """Transpose color from the first to the last dimension of an array.
 
     More technically transpose array from (C x H x W) to (H x W x C) shape or from
@@ -138,6 +139,81 @@ def transpose_color_in_array(array: np.ndarray) -> np.ndarray:
         return np.transpose(array, (1, 2, 0))
     elif len(array.shape) == 4:
         return np.transpose(array, (0, 2, 3, 1))
+    else:
+        raise RuntimeError(
+            f"Wrong shape of array to transpose. Expected 3 or 4 dimensions but got: {len(array.shape)} dimensions."
+        )
+
+
+def transpose_color_first_in_array_np(array: np.ndarray) -> np.ndarray:
+    """Transpose color from the last to the first dimension of an array.
+
+    More technically transpose array from (H x W x C) to (C x H x W) shape or from
+    (B x H x W x C) to (B x C x H x W).
+
+    B stands for batch size, C stands for color, H stands for height and W
+    stands for width.
+
+    Args:
+        array: Array of shape (H x W x C) or (B x H x W x C)).
+
+    Returns:
+        Array of shape (C x H x W) or (B x C x H x W)).
+    """
+    if len(array.shape) == 3:
+        return np.transpose(array, (2, 0, 1))
+    elif len(array.shape) == 4:
+        return np.transpose(array, (0, 3, 1, 2))
+    else:
+        raise RuntimeError(
+            f"Wrong shape of array to transpose. Expected 3 or 4 dimensions but got: {len(array.shape)} dimensions."
+        )
+
+
+def transpose_color_last_in_array_pt(array: torch.Tensor) -> torch.Tensor:
+    """Transpose color from the first to the last dimension of an tensor.
+
+    More technically transpose tensor from (C x H x W) to (H x W x C) shape or from
+    (B x C x H x W) to (B x H x W x C).
+
+    B stands for batch size, C stands for color, H stands for height and W
+    stands for width.
+
+    Args:
+        array: Tensor of shape (C x H x W) or (B x C x H x W)).
+
+    Returns:
+        Tensor of shape (H x W x C) or (B x H x W x C)).
+    """
+    if len(array.shape) == 3:
+        return array.permute(1, 2, 0)
+    elif len(array.shape) == 4:
+        return array.permute(0, 2, 3, 1)
+    else:
+        raise RuntimeError(
+            f"Wrong shape of array to transpose. Expected 3 or 4 dimensions but got: {len(array.shape)} dimensions."
+        )
+
+
+def transpose_color_first_in_array_pt(array: torch.Tensor) -> torch.Tensor:
+    """Transpose color from the last to the first dimension of a tensor.
+
+    More technically transpose tensor from (H x W x C) to (C x H x W) shape or from
+    (B x H x W x C) to (B x C x H x W).
+
+    B stands for batch size, C stands for color, H stands for height and W
+    stands for width.
+
+    Args:
+        array: Tensor of shape (H x W x C) or (B x H x W x C)).
+
+    Returns:
+        Tensor of shape (C x H x W) or (B x C x H x W)).
+    """
+    if len(array.shape) == 3:
+        return array.permute(2, 0, 1)
+    elif len(array.shape) == 4:
+        return array.permute(0, 3, 1, 2)
     else:
         raise RuntimeError(
             f"Wrong shape of array to transpose. Expected 3 or 4 dimensions but got: {len(array.shape)} dimensions."

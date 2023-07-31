@@ -14,7 +14,7 @@ from skimage import segmentation
 from skimage.morphology import dilation, disk
 from skimage.transform import resize
 
-from foxai.array_utils import validate_result
+from foxai.array_utils import transpose_color_last_in_array_pt, validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.algorithm.integrated_gradients import (
     IntegratedGradientsCVExplainer,
@@ -374,16 +374,12 @@ class XRAI:
         Returns:
             A numpy array that contains the saliency heatmap.
         """
-        if baselines is not None:
-            baselines = torch.vstack(
-                [torch.tensor(x).to(input_data.device) for x in baselines]
-            )
-        else:
+        if baselines is None:
             baselines = torch.rand((2,) + input_data.shape, device=input_data.device)
 
         self._validate_baselines(input_data, baselines)
 
-        attrs = self._get_integrated_gradients(
+        batch_ig_attributes_per_channel = self._get_integrated_gradients(
             input_data=input_data,
             pred_label_idx=pred_label_idx,
             call_model_function=call_model_function,
@@ -392,21 +388,20 @@ class XRAI:
             steps=steps,
         )
         # Merge attributions from different baselines.
-        attr = np.mean([a.detach().cpu().numpy() for a in attrs], axis=0)
+        batch_ig_attributes = np.mean(
+            [
+                ig_attributes.detach().cpu().numpy()
+                for ig_attributes in batch_ig_attributes_per_channel
+            ],
+            axis=0,
+        )
 
         # Merge attribution channels for XRAI input
-        if len(attr.shape) > 2:
-            attr = attr.max(axis=1)
+        if len(batch_ig_attributes.shape) > 2:
+            batch_ig_attributes = batch_ig_attributes.max(axis=1)
 
         # reshape input data from B x C x H x W to B x H x W x C
-        reshaped_input_data: torch.Tensor = input_data.reshape(
-            (
-                input_data.shape[0],
-                input_data.shape[2],
-                input_data.shape[3],
-                input_data.shape[1],
-            )
-        )
+        reshaped_input_data: torch.Tensor = transpose_color_last_in_array_pt(input_data)
 
         if segments is None:
             segments = _get_segments_felzenszwalb(
@@ -419,8 +414,8 @@ class XRAI:
                 min_segment_size=min_segment_size,
             )
 
-        attr_map, _ = self._xrai(
-            attributes=attr,
+        batch_saliency, _ = self._xrai(
+            attributes=batch_ig_attributes,
             segment_list=segments,
             area_perc_th=area_threshold,
             min_pixel_diff=min_pixel_diff,
@@ -428,7 +423,7 @@ class XRAI:
             integer_segments=flatten_xrai_segments,
         )
 
-        return attr_map
+        return batch_saliency
 
     @staticmethod
     def _aggregate_single_result_list_into_batch(
