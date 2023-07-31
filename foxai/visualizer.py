@@ -17,7 +17,7 @@ from foxai.array_utils import (
     transpose_color_in_array,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
-from foxai.types import AttributionsType
+from foxai.types import AttributionsType, BboxType
 
 
 def draw_image(
@@ -280,7 +280,7 @@ def preprocess_object_detection_image(input_image: torch.Tensor) -> np.ndarray:
 
 def get_heatmap_bbox(
     heatmap: np.ndarray,
-    bbox: List[int],
+    bbox: BboxType,
     mask_value: int = 0,
 ) -> np.ndarray:
     """_summary_
@@ -289,7 +289,7 @@ def get_heatmap_bbox(
 
     Args:
         heatmap: Heatmap to visualize.
-        bbox: Bounding box of detection.
+        bbox: Bounding box of detection in format `[x1, x2, y1, y2]`.
         mask_value: Masking value . Defaults to 0.
 
     Returns:
@@ -303,14 +303,14 @@ def get_heatmap_bbox(
 
 
 def draw_heatmap_in_bbox(
-    bbox: List[int],
+    bbox: BboxType,
     heatmap: torch.Tensor,
     img: np.ndarray,
 ) -> np.ndarray:
     """Draw heatmap in bounding box on image.
 
     Args:
-        bbox: List of coordinates for bounding box.
+        bbox: Tuple of coordinates for bounding box in format `[x1, x2, y1, y2]`.
         heatmap: Heatmap to display.
         img: Original image.
 
@@ -360,22 +360,21 @@ def object_detection_visualization(
     Returns:
         Array of series of images with heatmap displayed on detection bounding boxes.
     """
+    bbox: Tuple[int, int, int, int]
     masks = detections.saliency_maps
     boxes = [pred.bbox for pred in detections.predictions]
     class_names = [pred.class_name for pred in detections.predictions]
     img_to_display = preprocess_object_detection_image(input_image)
     img_to_display = img_to_display[..., ::-1]  # convert to bgr
     images = [img_to_display]
-
     for i, mask in enumerate(masks):
         res_img = img_to_display.copy()
         bbox, cls_name = boxes[i], class_names[i]
-        bbox = [int(val) for val in bbox]
         res_img = draw_heatmap_in_bbox(bbox, mask, res_img)
 
         # convert to (C x H x W)
         res_img_tensor = torch.tensor(res_img).transpose(0, 2).transpose(1, 2)
-        bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
+        bbox = (bbox[1], bbox[0], bbox[3], bbox[2])
         res_img_tensor = torchvision.utils.draw_bounding_boxes(
             image=res_img_tensor,
             boxes=torch.tensor([bbox]),

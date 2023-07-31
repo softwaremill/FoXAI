@@ -11,7 +11,7 @@ DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
 class PredictionOutput:
     """Data class for model prediction output in YOLO style."""
 
-    bbox: List[int]
+    bbox: Tuple[int, int, int, int]
     class_number: int
     class_name: str
     confidence: float
