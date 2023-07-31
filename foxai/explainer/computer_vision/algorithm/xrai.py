@@ -431,6 +431,31 @@ class XRAI:
         return attr_map
 
     @staticmethod
+    def _aggregate_single_result_list_into_batch(
+        result_list: Union[List[np.ndarray], List[List[np.ndarray]]],
+    ) -> np.ndarray:
+        """Aggregate single result list into batch array.
+
+        Args:
+            result_list: List or list of lists of arrays representing attributes or
+                list of mask traces to be aggregated into batch array.
+
+        Returns:
+            Batch tensor.
+        """
+        # add 2 artificial dimensions
+        # first for artificial batch size which will be stacked
+        # second for artificial 1D channel
+        batch_attributes: List[np.ndarray] = []
+        if isinstance(result_list[0], list):
+            for inner_list in result_list:
+                batch_attributes.append(np.stack(list(inner_list)))
+        else:
+            batch_attributes = [np.expand_dims(val, 0) for val in result_list]
+
+        return np.stack(batch_attributes)
+
+    @staticmethod
     def _xrai(
         attributes: np.ndarray,
         segment_list: List[List[np.ndarray]],
@@ -471,10 +496,10 @@ class XRAI:
             Saliency heatmap `np.ndarray` and masks or an integer image with
                 area ranks depending on the parameter integer_segments.
         """
-        batch_attr_maps: List[np.ndarray] = []
-        batch_final_mask_trace: List[Union[np.ndarray, List[np.ndarray]]] = []
+        attributes_list: List[np.ndarray] = []
+        mask_trace_list: List[List[np.ndarray]] = []
         for attribute_sample, segments in zip(attributes, segment_list):
-            output_attr, final_mask_trace = XRAI._xrai_single_sample(
+            attribute, mask_trace = XRAI._xrai_single_sample(
                 gain_fun=gain_fun,
                 area_perc_th=area_perc_th,
                 min_pixel_diff=min_pixel_diff,
@@ -482,19 +507,17 @@ class XRAI:
                 attribute_sample=attribute_sample,
                 segments=segments,
             )
+            attributes_list.append(attribute)
+            mask_trace_list.append(mask_trace)
 
-            # add 2 artificial dimensions
-            # first for artificial batch size which will be stacked
-            # second for artificial 1D channel
-            batch_attr_maps.append(output_attr[None, None, ...])
-            batch_final_mask_trace.append(
-                [im[None, None, ...] for im in final_mask_trace]
-            )
+        batch_attr_maps = XRAI._aggregate_single_result_list_into_batch(
+            result_list=attributes_list
+        )
+        batch_final_mask_trace = XRAI._aggregate_single_result_list_into_batch(
+            result_list=mask_trace_list
+        )
 
-        final_batch_attr_maps = np.vstack(batch_attr_maps)
-        final_batch_final_mask_trace = np.vstack(batch_final_mask_trace)
-
-        return final_batch_attr_maps, final_batch_final_mask_trace
+        return batch_attr_maps, batch_final_mask_trace
 
     @staticmethod
     def _xrai_single_sample(
