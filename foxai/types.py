@@ -9,3 +9,4 @@ LayerType = torch.nn.Module
 ModelType = torch.nn.Module
 
 AttributionsType = torch.Tensor
+TargetType = Union[torch.Tensor, int]

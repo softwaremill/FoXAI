@@ -1,11 +1,10 @@
 """Abstract Explainer class."""
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Optional, TypeVar
 
 import torch
-from captum._utils.typing import TargetType
 
-from foxai.types import AttributionsType, ModelType
+from foxai.types import AttributionsType, ModelType, TargetType
 
 
 class Explainer(ABC):
@@ -17,7 +16,7 @@ class Explainer(ABC):
         self,
         model: ModelType,
         input_data: torch.Tensor,  # TODO: add more generic way of passing model inputs # pylint: disable = (fixme)
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         **kwargs,
     ) -> AttributionsType:
         """Calculate features of given explainer.

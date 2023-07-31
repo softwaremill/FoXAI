@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional, Union
 
 import torch
 import torch.nn.functional as F
-from captum._utils.typing import TargetType
 from captum.attr import GuidedGradCam
 
 from foxai.array_utils import validate_result
@@ -22,7 +21,7 @@ from foxai.explainer.computer_vision.object_detection.base_object_detector impor
     BaseObjectDetector,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
-from foxai.types import AttributionsType, LayerType, ModelType
+from foxai.types import AttributionsType, LayerType, ModelType, TargetType
 
 
 class LayerBaseGradCAM:
@@ -169,9 +168,7 @@ class BaseGradCAMCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
-        additional_forward_args: Any = None,
-        attribute_to_layer_input: bool = False,
+        pred_label_idx: Optional[TargetType] = None,
         **kwargs,
     ) -> AttributionsType:
         """Generate features image with GradCAM algorithm explainer.
@@ -206,30 +203,6 @@ class BaseGradCAMCVExplainer(Explainer):
                     #output_dims - 1 elements. Each tuple is applied as the
                     target for the corresponding example.
                 Default: None
-            additional_forward_args: If the forward function
-                requires additional arguments other than the inputs for
-                which attributions should not be computed, this argument
-                can be provided. It must be either a single additional
-                argument of a Tensor or arbitrary (non-tuple) type or a
-                tuple containing multiple additional arguments including
-                tensors or any arbitrary python types. These arguments
-                are provided to forward_func in order following the
-                arguments in inputs.
-                Note that attributions are not computed with respect
-                to these arguments.
-                Default: None
-            attribute_to_layer_input: Indicates whether to
-                compute the attribution with respect to the layer input
-                or output in `LayerGradCam`.
-                If `attribute_to_layer_input` is set to True
-                then the attributions will be computed with respect to
-                layer inputs, otherwise it will be computed with respect
-                to layer outputs.
-                Note that currently it is assumed that either the input
-                or the output of internal layer, depending on whether we
-                attribute to the input or output, is a single tensor.
-                Support for multiple tensors will be added later.
-                Default: False
 
         Returns:
             Element-wise product of (upsampled) GradCAM
@@ -278,7 +251,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
         interpolate_mode: str = "nearest",
@@ -421,10 +394,9 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,  # pylint: disable = (unused-argument)
-        additional_forward_args: Any = None,  # pylint: disable = (unused-argument)
-        attribute_to_layer_input: bool = False,  # pylint: disable = (unused-argument)
-        relu_attributions: bool = False,  # pylint: disable = (unused-argument)
+        pred_label_idx: Optional[
+            TargetType
+        ] = None,  # pylint: disable = (unused-argument)
         layer: Optional[LayerType] = None,
         **kwargs,
     ) -> AttributionsType:
@@ -465,37 +437,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
                     #output_dims - 1 elements. Each tuple is applied as the
                     target for the corresponding example.
                 Default: None
-            additional_forward_args: If the forward function
-                requires additional arguments other than the inputs for
-                which attributions should not be computed, this argument
-                can be provided. It must be either a single additional
-                argument of a Tensor or arbitrary (non-tuple) type or a
-                tuple containing multiple additional arguments including
-                tensors or any arbitrary python types. These arguments
-                are provided to forward_func in order following the
-                arguments in inputs.
-                Note that attributions are not computed with respect
-                to these arguments.
-                Default: None
-            attribute_to_layer_input: Indicates whether to
-                compute the attribution with respect to the layer input
-                or output in `LayerGradCam`.
-                If `attribute_to_layer_input` is set to True
-                then the attributions will be computed with respect to
-                layer inputs, otherwise it will be computed with respect
-                to layer outputs.
-                Note that currently it is assumed that either the input
-                or the output of internal layer, depending on whether we
-                attribute to the input or output, is a single tensor.
-                Support for multiple tensors will be added later.
-                Default: False
-            relu_attributions: Indicates whether to
-                apply a ReLU operation on the final attribution,
-                returning only non-negative attributions. Setting this
-                flag to True matches the original GradCAM algorithm,
-                otherwise, by default, both positive and negative
-                attributions are returned.
-                Default: False
             layer: Layer for which attributions are computed.
                 If None provided, last convolutional layer from the model
                 is taken.
