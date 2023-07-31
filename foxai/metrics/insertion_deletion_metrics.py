@@ -39,8 +39,8 @@ def _metric_calculation(
     transformed_img: torch.Tensor,
     model: ModelType,
     chosen_class: int,
-    steps_num=30,
-    metric_type=Metrics.INSERTION,
+    steps_num: int = 30,
+    metric_type: Metrics = Metrics.INSERTION,
 ) -> Tuple[np.ndarray, List]:
     """Calculate metric (insertion or deletion) given importance map, image, model and chosen class.
 
