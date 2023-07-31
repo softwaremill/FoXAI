@@ -371,6 +371,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
             ValueError: if model does not contain conv layers.
             RuntimeError: if attributions has shape (0)
         """
+        attributions: AttributionsType
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
@@ -524,9 +525,9 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         if isinstance(gradcam, LayerBaseGradCAM):
             attributions = gradcam(input_data)
 
-        if not isinstance(attributions, torch.Tensor):
+        if not isinstance(attributions, AttributionsType):
             raise RuntimeError(
-                f"Saliency map is `{type(attributions)}`, but expected type is `torch.Tensor`."
+                f"Saliency map is `{type(attributions)}`, but expected type is `AttributionsType`."
             )
 
         validate_result(attributions=attributions)

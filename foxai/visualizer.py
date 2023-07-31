@@ -17,6 +17,7 @@ from foxai.array_utils import (
     transpose_color_last_in_array_np,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
+from foxai.types import AttributionsType
 
 
 def draw_image(
@@ -144,7 +145,7 @@ def _preprocess_img_and_attributes(
 
 
 def mean_channels_visualization(
-    attributions: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
     title: str = "",
     figsize: Tuple[int, int] = (8, 8),
@@ -187,7 +188,7 @@ def mean_channels_visualization(
 
 
 def single_channel_visualization(
-    attributions: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
     selected_channel: int,
     title: str = "",

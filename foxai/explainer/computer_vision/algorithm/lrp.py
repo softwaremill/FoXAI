@@ -115,6 +115,7 @@ class BaseLRPCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
+        attributions: AttributionsType
         lrp = self.create_explainer(model=model, layer=layer)
 
         if isinstance(lrp, LRP):

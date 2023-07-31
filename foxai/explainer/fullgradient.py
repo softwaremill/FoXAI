@@ -36,7 +36,7 @@ from torch.utils.hooks import RemovableHandle
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.logger import create_logger
-from foxai.types import ModelType
+from foxai.types import AttributionsType, ModelType
 
 _LOGGER: Optional[logging.Logger] = None
 """Global logger instance."""
@@ -436,7 +436,7 @@ class BaseFullGradientCVExplainer(Explainer):
         input_data: torch.Tensor,
         pred_label_idx: Optional[int] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate features image with Full Gradients algorithm explainer.
 
         Args:
@@ -478,7 +478,7 @@ class BaseFullGradientCVExplainer(Explainer):
         fullgrad = self.create_explainer(
             model=model, image_size=cast(Tuple[int, int, int], image_size)
         )
-        attributions = fullgrad.compute_saliency(
+        attributions: AttributionsType = fullgrad.compute_saliency(
             input_data=input_data,
             target=pred_label_idx,
         )
