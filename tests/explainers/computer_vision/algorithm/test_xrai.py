@@ -5,7 +5,12 @@ import numpy as np
 import pytest
 import torch
 
-from foxai.explainer.computer_vision.algorithm.xrai import XRAI, _unpack_segs_to_masks
+from foxai.explainer.computer_vision.algorithm.xrai import (
+    XRAI,
+    _normalize_image,
+    _resize_image,
+    _unpack_segs_to_masks,
+)
 
 
 def test__unpack_segs_to_masks():
@@ -22,6 +27,28 @@ def test__unpack_segs_to_masks():
     for r in result:
         assert isinstance(r, np.ndarray)
         assert r.dtype == bool
+
+
+def test___normalize_image():
+    """Test if __normalize_image will rescale images to given value range."""
+    image_batch = np.random.random(size=(10, 28, 28, 3))
+
+    result = _normalize_image(image_batch=image_batch, value_range=[10, 20])
+
+    assert isinstance(result, np.ndarray)
+    np.testing.assert_almost_equal(result.max(), 20)
+    np.testing.assert_almost_equal(result.min(), 10)
+
+
+def test___resize_image():
+    """Test if __resize_image will reshape images to given shape."""
+    resize_shape = (224, 224)
+    image_batch = np.zeros((10, 28, 28, 3))
+
+    result = _resize_image(image_batch=image_batch, resize_shape=resize_shape)
+
+    assert isinstance(result, np.ndarray)
+    assert result.shape == (10, 224, 224, 3)
 
 
 class TestXRAI:

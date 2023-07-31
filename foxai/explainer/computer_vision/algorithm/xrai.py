@@ -14,7 +14,11 @@ from skimage import segmentation
 from skimage.morphology import dilation, disk
 from skimage.transform import resize
 
-from foxai.array_utils import transpose_color_last_in_array_pt, validate_result
+from foxai.array_utils import (
+    standardize_array,
+    transpose_color_last_in_array_pt,
+    validate_result,
+)
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.algorithm.integrated_gradients import (
     IntegratedGradientsCVExplainer,
@@ -25,43 +29,54 @@ from foxai.types import AttributionsType, ModelType
 def _normalize_image(
     image_batch: np.ndarray,
     value_range: Tuple[float, float],
-    resize_shape: Optional[Tuple[int, int]] = None,
 ) -> np.ndarray:
-    """Normalize an image by resizing and rescaling its values.
+    """Normalize an image by rescaling its values.
 
     Args:
         image: Input images batch of shape `B x H x W x C`.
         value_range: Value range to rescale values in form: `[min_value, max_value]`.
-        resize_shape: New images shape. If `None` images won't be resized.
-            Defaults to `None`.
 
     Returns:
-        Resized and rescaled images batch.
+        Rescaled images batch.
     """
-    image_max = np.max(image_batch)
-    image_min = np.min(image_batch)
-    image_batch = (image_batch - image_min) / (image_max - image_min)
-    image_batch = image_batch * (value_range[1] - value_range[0]) + value_range[0]
+    for index, image in enumerate(image_batch):
+        standardized_array = standardize_array(array=image.astype(np.float_))
+        image_batch[index] = (
+            standardized_array * (value_range[1] - value_range[0]) + value_range[0]
+        )
+
+    return image_batch
+
+
+def _resize_image(
+    image_batch: np.ndarray,
+    resize_shape: Tuple[int, int],
+) -> np.ndarray:
+    """Resize images.
+
+    Args:
+        image: Input images batch of shape `B x H x W x C`.
+        resize_shape: New images shape.
+
+    Returns:
+        Resized images batch.
+    """
     color_channels: int = image_batch.shape[-1]
     resized_image_list: List[np.ndarray] = []
     for image in image_batch:
-        if resize_shape is not None:
-            # resize can only process single image with shape H x W x C
-            resized_image_list.append(
-                resize(
-                    image,
-                    resize_shape + (color_channels,),
-                    order=3,
-                    mode="constant",
-                    preserve_range=True,
-                    anti_aliasing=True,
-                )
+        # resize can only process single image with shape H x W x C
+        resized_image_list.append(
+            resize(
+                image,
+                resize_shape + (color_channels,),
+                order=3,
+                mode="constant",
+                preserve_range=True,
+                anti_aliasing=True,
             )
-    # add artificial batch size dimension to each image
-    batch_resized_image = np.vstack(
-        [np.expand_dims(im, 0) for im in resized_image_list]
-    )
-    return batch_resized_image
+        )
+
+    return np.stack(resized_image_list)
 
 
 def _get_segments_felzenszwalb(
@@ -102,7 +117,9 @@ def _get_segments_felzenszwalb(
     """
     # Normalize image value range and size
     original_shape = image_batch.shape[1:3]
-    image_batch = _normalize_image(image_batch, scale_range, image_resize)
+    image_batch = _normalize_image(image_batch, scale_range)
+    if image_resize is not None:
+        image_batch = _resize_image(image_batch, image_resize)
 
     if len(image_batch.shape) == 3:
         # add artificial batch size
