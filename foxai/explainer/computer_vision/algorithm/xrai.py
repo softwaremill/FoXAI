@@ -9,7 +9,7 @@ from typing import Any, Callable, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType, TargetType
 from skimage import segmentation
 from skimage.morphology import dilation, disk
 from skimage.transform import resize
@@ -239,7 +239,7 @@ def _unpack_segs_to_masks(segment_list: List[np.ndarray]) -> List[np.ndarray]:
 
 
 class XRAI:
-    """A CoreSaliency class that computes saliency masks using the XRAI method."""
+    """Class that computes saliency heatmaps and masks using the XRAI method."""
 
     def __init__(self, forward_func: ModelType):
         # Initialize integrated gradients.
@@ -251,7 +251,7 @@ class XRAI:
         pred_label_idx: TargetType,
         call_model_function: ModelType,
         call_model_args: Any,
-        baselines: torch.Tensor,
+        baselines: BaselineType,
         steps: int,
     ) -> List[AttributionsType]:
         """Compute Integrated Gradients attributes.
@@ -290,7 +290,7 @@ class XRAI:
     @staticmethod
     def _validate_baselines(
         input_data: torch.Tensor,
-        baselines: torch.Tensor,
+        baselines: BaselineType,
     ) -> None:
         """Validate if baselines are correct.
 
@@ -314,7 +314,7 @@ class XRAI:
         pred_label_idx: TargetType,
         call_model_function: ModelType,
         call_model_args: Any = None,
-        baselines: Optional[torch.Tensor] = None,
+        baselines: Optional[BaselineType] = None,
         segments: Optional[List[List[np.ndarray]]] = None,
         steps: int = 100,
         area_threshold: float = 1.0,
@@ -543,7 +543,6 @@ class XRAI:
         """Run XRAI saliency given single attribution and segment.
 
         Args:
-            attributes: Source attribution for XRAI.
             segment_list: Input segment as a list of boolean mask. XRAI uses these to
                 compute attribution sums.
             gain_fun: The function that computes XRAI area attribution from source
@@ -636,7 +635,10 @@ class XRAI:
 
 
 class XRAICVExplainer(Explainer):
-    """XRAI algorithm explainer."""
+    """XRAI algorithm explainer.
+
+    Paper: https://arxiv.org/abs/1906.02825
+    """
 
     def calculate_features(
         self,
