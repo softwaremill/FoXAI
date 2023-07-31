@@ -90,7 +90,7 @@ class SaliencyCVExplainer(Explainer):
         """
         saliency = Saliency(forward_func=model)
 
-        attributions = saliency.attribute(
+        attributions: AttributionsType = saliency.attribute(
             input_data,
             target=pred_label_idx,
             abs=abs_value,

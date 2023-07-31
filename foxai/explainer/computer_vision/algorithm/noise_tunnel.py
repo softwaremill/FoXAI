@@ -119,7 +119,7 @@ class BaseNoiseTunnelCVExplainer(Explainer):
         """
         noise_tunnel = self.create_explainer(model=model, layer=layer)
 
-        attributions = noise_tunnel.attribute(
+        attributions: AttributionsType = noise_tunnel.attribute(
             inputs=input_data,
             nt_type=nt_type,
             nt_samples=nt_samples,
