@@ -1,7 +1,8 @@
 """File contains functions to modifiy DNN models."""
-from typing import List
+from typing import List, Tuple
 
 import torch
+from captum._utils.typing import BaselineType
 
 from foxai.types import LayerType, ModelType
 
@@ -47,3 +48,34 @@ def get_last_conv_model_layer(model: ModelType) -> LayerType:
         raise ValueError("The model does not contain convolution layers.")
 
     return conv_layers[-1]
+
+
+def preprocess_baselines(
+    baselines: BaselineType,
+    input_data_shape: torch.Size,
+) -> Tuple[List[BaselineType], bool]:
+    """Adjust provided baselines to match input data dimension.
+
+    When baselines should have the same dimension as data samples or should have
+    additional first dimension to compute averaged attributes across all baselines.
+
+    Args:
+        baselines: Single tensor matching data sample dimensions or tensor
+            containing batch of baselines for each data sample.
+        input_data_shape: Shape of data sample batch.
+
+    Returns:
+        Tuple of baselines list and flag indicating if attributes should be
+            aggregated.
+    """
+    aggregate_attributes: bool = False
+    baselines_list: List[BaselineType] = [baselines]
+
+    if isinstance(baselines, torch.Tensor):
+        # if dimension of baselines is greater than batch data user have provided
+        # multiple baselines to aggregate results
+        if len(baselines.shape) == len(input_data_shape) + 1:
+            aggregate_attributes = True
+            baselines_list = list(baselines)
+
+    return baselines_list, aggregate_attributes
