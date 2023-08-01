@@ -289,7 +289,7 @@ def get_heatmap_bbox(
 
     Args:
         heatmap: Heatmap to visualize.
-        bbox: Bounding box of detection in format `[x1, x2, y1, y2]`.
+        bbox: Bounding box of detection in format `(x1, x2, y1, y2)`.
         mask_value: Masking value . Defaults to 0.
 
     Returns:
@@ -310,7 +310,7 @@ def draw_heatmap_in_bbox(
     """Draw heatmap in bounding box on image.
 
     Args:
-        bbox: Tuple of coordinates for bounding box in format `[x1, x2, y1, y2]`.
+        bbox: Tuple of coordinates for bounding box in format `(x1, x2, y1, y2)`.
         heatmap: Heatmap to display.
         img: Original image.
 
@@ -360,7 +360,7 @@ def object_detection_visualization(
     Returns:
         Array of series of images with heatmap displayed on detection bounding boxes.
     """
-    bbox: Tuple[int, int, int, int]
+    bbox: BboxType
     masks = detections.saliency_maps
     boxes = [pred.bbox for pred in detections.predictions]
     class_names = [pred.class_name for pred in detections.predictions]

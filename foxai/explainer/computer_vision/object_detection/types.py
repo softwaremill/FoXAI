@@ -4,6 +4,8 @@ from typing import List, Tuple
 
 import torch
 
+from foxai.types import BboxType
+
 DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
 
 
@@ -11,7 +13,7 @@ DetectionOutput = Tuple[torch.Tensor, torch.Tensor]
 class PredictionOutput:
     """Data class for model prediction output in YOLO style."""
 
-    bbox: Tuple[int, int, int, int]
+    bbox: BboxType
     class_number: int
     class_name: str
     confidence: float
