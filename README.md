@@ -262,4 +262,4 @@ The table below presents a list of available explainers:
 | CV_LAYER_CONDUCTANCE_EXPLAINER          | yes                                  |
 | CV_SALIENCY_EXPLAINER                   | yes                                  |
 | CV_GUIDED_BACKPOPAGATION_EXPLAINER      | yes                                  |
-| CV_CV_XRAI_EXPLAINER                    | yes                                  |
+| CV_XRAI_EXPLAINER                       | no                                   |
