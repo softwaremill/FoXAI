@@ -238,27 +238,28 @@ different callbacks.
 
 The table below presents a list of available explainers:
 
-|              Explainer name             |           Is deterministic           |
+|             Explainer name              |           Is deterministic           |
 |:---------------------------------------:|:------------------------------------:|
-| CV_OCCLUSION_EXPLAINER                  | yes, if non-random baseline provided |
-| CV_INTEGRATED_GRADIENTS_EXPLAINER       | yes, if non-random baseline provided |
-| CV_NOISE_TUNNEL_EXPLAINER               | no                                   |
-| CV_GRADIENT_SHAP_EXPLAINER              | no                                   |
-| CV_LRP_EXPLAINER                        | yes                                  |
-| CV_FULL_GRADIENTS_EXPLAINER             | yes                                  |
-| CV_GUIDEDGRADCAM_EXPLAINER              | yes                                  |
+|         CV_OCCLUSION_EXPLAINER          | yes, if non-random baseline provided |
+|    CV_INTEGRATED_GRADIENTS_EXPLAINER    | yes, if non-random baseline provided |
+|        CV_NOISE_TUNNEL_EXPLAINER        |                  no                  |
+|       CV_GRADIENT_SHAP_EXPLAINER        |                  no                  |
+|            CV_LRP_EXPLAINER             |                 yes                  |
+|       CV_FULL_GRADIENTS_EXPLAINER       |                 yes                  |
+|       CV_GUIDEDGRADCAM_EXPLAINER        |                 yes                  |
 | CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER | yes, if non-random baseline provided |
-| CV_LAYER_NOISE_TUNNEL_EXPLAINER         | no                                   |
-| CV_LAYER_GRADIENT_SHAP_EXPLAINER        | no                                   |
-| CV_LAYER_LRP_EXPLAINER                  | yes                                  |
-| CV_LAYER_GRADCAM_EXPLAINER              | yes                                  |
-| CV_INPUT_X_GRADIENT_EXPLAINER           | yes                                  |
-| CV_LAYER_INPUT_X_GRADIENT_EXPLAINER     | yes                                  |
-| CV_DEEPLIFT_EXPLAINER                   | yes, if non-random baseline provided |
-| CV_LAYER_DEEPLIFT_EXPLAINER             | yes, if non-random baseline provided |
-| CV_DEEPLIFT_SHAP_EXPLAINER              | yes, if non-random baseline provided |
-| CV_LAYER_DEEPLIFT_SHAP_EXPLAINER        | yes, if non-random baseline provided |
-| CV_DECONVOLUTION_EXPLAINER              | yes                                  |
-| CV_LAYER_CONDUCTANCE_EXPLAINER          | yes                                  |
-| CV_SALIENCY_EXPLAINER                   | yes                                  |
-| CV_GUIDED_BACKPOPAGATION_EXPLAINER      | yes                                  |
+|     CV_LAYER_NOISE_TUNNEL_EXPLAINER     |                  no                  |
+|    CV_LAYER_GRADIENT_SHAP_EXPLAINER     |                  no                  |
+|         CV_LAYER_LRP_EXPLAINER          |                 yes                  |
+|       CV_LAYER_GRADCAM_EXPLAINER        |                 yes                  |
+|      CV_INPUT_X_GRADIENT_EXPLAINER      |                 yes                  |
+|   CV_LAYER_INPUT_X_GRADIENT_EXPLAINER   |                 yes                  |
+|          CV_DEEPLIFT_EXPLAINER          | yes, if non-random baseline provided |
+|       CV_LAYER_DEEPLIFT_EXPLAINER       | yes, if non-random baseline provided |
+|       CV_DEEPLIFT_SHAP_EXPLAINER        | yes, if non-random baseline provided |
+|    CV_LAYER_DEEPLIFT_SHAP_EXPLAINER     | yes, if non-random baseline provided |
+|       CV_DECONVOLUTION_EXPLAINER        |                 yes                  |
+|     CV_LAYER_CONDUCTANCE_EXPLAINER      |                 yes                  |
+|          CV_SALIENCY_EXPLAINER          |                 yes                  |
+|   CV_GUIDED_BACKPOPAGATION_EXPLAINER    |                 yes                  |
+|         CV_XRAI_EXPLAINER               |                  no                  |
