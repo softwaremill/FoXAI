@@ -3,15 +3,14 @@
 Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/saliency.py.
 """
 
-from typing import Any
+from typing import Any, Optional
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import Saliency
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
-from foxai.types import AttributionsType, ModelType
+from foxai.types import AttributionsType, ModelType, TargetType
 
 
 class SaliencyCVExplainer(Explainer):
@@ -21,7 +20,7 @@ class SaliencyCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         abs_value: bool = True,
         additional_forward_args: Any = None,
         **kwargs,  # pylint: disable = (unused-argument)

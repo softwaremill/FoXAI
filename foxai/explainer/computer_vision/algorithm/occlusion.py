@@ -3,16 +3,16 @@
 Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/occlusion.py.
 """
 
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import torch
-from captum._utils.typing import BaselineType, TargetType
+from captum._utils.typing import BaselineType
 from captum.attr import Occlusion
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import preprocess_baselines
-from foxai.types import AttributionsType, ModelType
+from foxai.types import AttributionsType, ModelType, TargetType
 
 
 class OcclusionCVExplainer(Explainer):
@@ -22,16 +22,16 @@ class OcclusionCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         sliding_window_shapes: Union[Tuple[int, ...], Tuple[Tuple[int, ...], ...]] = (
             1,
             1,
             1,
         ),
-        strides: Union[
-            None, int, Tuple[int, ...], Tuple[Union[int, Tuple[int, ...]], ...]
+        strides: Optional[
+            Union[int, Tuple[int, ...], Tuple[Union[int, Tuple[int, ...]], ...]]
         ] = None,
-        baselines: BaselineType = None,
+        baselines: Optional[BaselineType] = None,
         additional_forward_args: Any = None,
         perturbations_per_eval: int = 1,
         show_progress: bool = False,

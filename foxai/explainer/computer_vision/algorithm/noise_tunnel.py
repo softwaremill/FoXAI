@@ -7,13 +7,12 @@ from abc import abstractmethod
 from typing import Optional
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunnel
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
-from foxai.types import AttributionsType, LayerType, ModelType, StdevsType
+from foxai.types import AttributionsType, LayerType, ModelType, StdevsType, TargetType
 
 
 class BaseNoiseTunnelCVExplainer(Explainer):
@@ -35,7 +34,7 @@ class BaseNoiseTunnelCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         nt_type: str = "smoothgrad",
         nt_samples: int = 5,
         nt_samples_batch_size: Optional[int] = None,
