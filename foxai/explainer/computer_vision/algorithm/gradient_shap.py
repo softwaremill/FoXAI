@@ -8,7 +8,7 @@ from abc import abstractmethod
 from typing import Any, List, Optional, Union
 
 import torch
-from captum._utils.typing import BaselineType, TargetType
+from captum._utils.typing import BaselineType
 from captum.attr import GradientShap, LayerGradientShap
 
 from foxai.array_utils import validate_result
@@ -17,7 +17,7 @@ from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     preprocess_baselines,
 )
-from foxai.types import AttributionsType, LayerType, ModelType, StdevsType
+from foxai.types import AttributionsType, LayerType, ModelType, StdevsType, TargetType
 
 
 class BaseGradientSHAPCVExplainer(Explainer):
@@ -57,8 +57,8 @@ class BaseGradientSHAPCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
-        baselines: BaselineType = None,
+        pred_label_idx: Optional[TargetType] = None,
+        baselines: Optional[BaselineType] = None,
         n_samples: int = 5,
         stdevs: StdevsType = 0.0,
         additional_forward_args: Any = None,

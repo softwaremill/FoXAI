@@ -26,7 +26,7 @@ from abc import abstractmethod
 from functools import wraps
 from math import isclose
 from sys import exit as terminate
-from typing import Any, Callable, Final, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Final, List, Optional, Tuple, cast
 
 import torch
 import torch.nn.functional as F
@@ -36,7 +36,7 @@ from torch.utils.hooks import RemovableHandle
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.logger import create_logger
-from foxai.types import AttributionsType, ModelType
+from foxai.types import AttributionsType, ModelType, TargetType
 
 _LOGGER: Optional[logging.Logger] = None
 """Global logger instance."""
@@ -370,7 +370,7 @@ class FullGrad:
     def compute_saliency(
         self,
         input_data: torch.Tensor,
-        target: Optional[Union[torch.Tensor, int]] = None,
+        target: Optional[TargetType] = None,
     ) -> torch.Tensor:
         """Compute FullGrad saliency map.
 
@@ -434,7 +434,7 @@ class BaseFullGradientCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[int] = None,
+        pred_label_idx: Optional[TargetType] = None,
         **kwargs,
     ) -> AttributionsType:
         """Generate features image with Full Gradients algorithm explainer.

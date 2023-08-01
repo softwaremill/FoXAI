@@ -8,7 +8,6 @@ from abc import abstractmethod
 from typing import Any, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import LRP, LayerLRP
 from captum.attr._utils.lrp_rules import EpsilonRule, GammaRule
 
@@ -18,7 +17,7 @@ from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     modify_modules,
 )
-from foxai.types import AttributionsType, LayerType, ModelType
+from foxai.types import AttributionsType, LayerType, ModelType, TargetType
 
 
 class BaseLRPCVExplainer(Explainer):
@@ -44,7 +43,7 @@ class BaseLRPCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
         verbose: bool = False,

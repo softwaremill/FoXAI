@@ -6,7 +6,7 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/l
 from typing import Any, List, Optional
 
 import torch
-from captum._utils.typing import BaselineType, TargetType
+from captum._utils.typing import BaselineType
 from captum.attr import LayerConductance
 
 from foxai.array_utils import validate_result
@@ -15,7 +15,7 @@ from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     preprocess_baselines,
 )
-from foxai.types import AttributionsType, LayerType, ModelType
+from foxai.types import AttributionsType, LayerType, ModelType, TargetType
 
 
 class LayerConductanceCVExplainer(Explainer):
@@ -49,8 +49,8 @@ class LayerConductanceCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
-        baselines: BaselineType = None,
+        pred_label_idx: Optional[TargetType] = None,
+        baselines: Optional[BaselineType] = None,
         additional_forward_args: Any = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
