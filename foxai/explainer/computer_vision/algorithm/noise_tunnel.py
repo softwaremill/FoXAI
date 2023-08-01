@@ -4,7 +4,7 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/noise_t
 """
 
 from abc import abstractmethod
-from typing import Optional, Tuple, Union
+from typing import Optional
 
 import torch
 from captum._utils.typing import TargetType
@@ -13,13 +13,14 @@ from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunn
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
+from foxai.types import AttributionsType, LayerType, ModelType, StdevsType
 
 
 class BaseNoiseTunnelCVExplainer(Explainer):
     """Base Noise Tunnel algorithm explainer."""
 
     @abstractmethod
-    def create_explainer(self, model: torch.nn.Module, **kwargs) -> NoiseTunnel:
+    def create_explainer(self, model: ModelType, **kwargs) -> NoiseTunnel:
         """Create explainer object.
 
         Args:
@@ -32,16 +33,17 @@ class BaseNoiseTunnelCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         nt_type: str = "smoothgrad",
         nt_samples: int = 5,
         nt_samples_batch_size: Optional[int] = None,
-        stdevs: Union[float, Tuple[float, ...]] = 1.0,
+        stdevs: StdevsType = 1.0,
         draw_baseline_from_distrib: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Noise Tunnel algorithm explainer.
 
         Args:
@@ -102,6 +104,8 @@ class BaseNoiseTunnelCVExplainer(Explainer):
                 randomly draw baseline samples from the `baselines`
                 distribution provided as an input tensor.
                 Default: False
+            layer: Layer for which attributions are computed.
+                Default: None
 
         Returns:
             Attribution with respect to each input feature. attributions
@@ -113,11 +117,9 @@ class BaseNoiseTunnelCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
-
         noise_tunnel = self.create_explainer(model=model, layer=layer)
 
-        attributions = noise_tunnel.attribute(
+        attributions: AttributionsType = noise_tunnel.attribute(
             inputs=input_data,
             nt_type=nt_type,
             nt_samples=nt_samples,
@@ -135,7 +137,7 @@ class NoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> NoiseTunnel:
         """Create explainer object.
@@ -156,8 +158,8 @@ class LayerNoiseTunnelCVExplainer(BaseNoiseTunnelCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
-        layer: Optional[torch.nn.Module] = None,
+        model: ModelType,
+        layer: Optional[LayerType] = None,
         **kwargs,
     ) -> NoiseTunnel:
         """Create explainer object.

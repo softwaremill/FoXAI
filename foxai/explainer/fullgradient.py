@@ -26,7 +26,7 @@ from abc import abstractmethod
 from functools import wraps
 from math import isclose
 from sys import exit as terminate
-from typing import Any, Callable, Final, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Callable, Final, List, Optional, Tuple, Union, cast
 
 import torch
 import torch.nn.functional as F
@@ -36,9 +36,7 @@ from torch.utils.hooks import RemovableHandle
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.logger import create_logger
-
-Submodule = TypeVar("Submodule", bound=torch.nn.Module)
-"""Subclass of the torch.nn.Module"""
+from foxai.types import AttributionsType, ModelType
 
 _LOGGER: Optional[logging.Logger] = None
 """Global logger instance."""
@@ -76,7 +74,7 @@ def _eval_mode(func: Callable[..., Any]):
     """Switch model to the eval mode and back to initial mode after function execution."""
 
     @wraps(func)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self, *args, **kwargs) -> Any:
         # switch all models to eval mode and save the previous state
         was_training: bool = False
         if self.model.training:
@@ -97,7 +95,7 @@ def _eval_mode(func: Callable[..., Any]):
 class FullGradExtractor:
     """Extract gradient tensors needed for FullGrad computation using pytorch hooks."""
 
-    def __init__(self, model: Submodule, im_size: Tuple[int, int, int] = (3, 224, 224)):
+    def __init__(self, model: ModelType, im_size: Tuple[int, int, int] = (3, 224, 224)):
         self.model = model
         self.im_size: Tuple[int, int, int] = im_size
 
@@ -145,7 +143,7 @@ class FullGradExtractor:
             # disable full_backward_hook to use normal backward_hooks
             module._is_full_backward_hook = None  # pylint: disable = (protected-access)
 
-    def _extract_layer_bias(self, module: Submodule) -> Optional[torch.Tensor]:
+    def _extract_layer_bias(self, module: ModelType) -> Optional[torch.Tensor]:
         """Extract bias of each layer
 
         For batchnorm, the overall "bias" is different from batchnorm bias parameter.
@@ -189,7 +187,7 @@ class FullGradExtractor:
         return self._biases
 
     def _extract_layer_grads(  # pylint: disable = unused-argument
-        self, module: Submodule, in_grad: _grad_t, out_grad: _grad_t
+        self, module: ModelType, in_grad: _grad_t, out_grad: _grad_t
     ) -> None:
         """Collect gradient outputs from each layer, that contains bias term.
 
@@ -231,8 +229,8 @@ class FullGrad:
     Compute FullGrad saliency map and full gradient decomposition
     """
 
-    def __init__(self, model: Submodule, image_size=(3, 224, 224)):
-        self.model: Submodule = model
+    def __init__(self, model: ModelType, image_size=(3, 224, 224)):
+        self.model = model
         self.im_size: Tuple[int, int, int, int] = (1,) + image_size
         self.model_ext: FullGradExtractor = FullGradExtractor(
             model=self.model, im_size=image_size
@@ -421,7 +419,7 @@ class BaseFullGradientCVExplainer(Explainer):
 
     @abstractmethod
     def create_explainer(
-        self, model: torch.nn.Module, image_size: Tuple[int, int, int]
+        self, model: ModelType, image_size: Tuple[int, int, int]
     ) -> FullGrad:
         """Create explainer object.
 
@@ -434,11 +432,11 @@ class BaseFullGradientCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: Optional[int] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate features image with Full Gradients algorithm explainer.
 
         Args:
@@ -480,7 +478,7 @@ class BaseFullGradientCVExplainer(Explainer):
         fullgrad = self.create_explainer(
             model=model, image_size=cast(Tuple[int, int, int], image_size)
         )
-        attributions = fullgrad.compute_saliency(
+        attributions: AttributionsType = fullgrad.compute_saliency(
             input_data=input_data,
             target=pred_label_idx,
         )
@@ -493,7 +491,7 @@ class FullGradientCVExplainer(BaseFullGradientCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         image_size: Tuple[int, int, int],
     ) -> FullGrad:
         """Create explainer object.

@@ -47,9 +47,11 @@ from foxai.explainer import (
     NoiseTunnelCVExplainer,
     OcclusionCVExplainer,
     SaliencyCVExplainer,
+    XRAICVExplainer,
 )
 from foxai.explainer.base_explainer import CVExplainerT
 from foxai.logger import create_logger
+from foxai.types import AttributionsType, ModelType
 
 _LOGGER: Optional[logging.Logger] = None
 
@@ -90,6 +92,7 @@ class CVClassificationExplainers(Enum):
     CV_LAYER_CONDUCTANCE_EXPLAINER: str = LayerConductanceCVExplainer.__name__
     CV_SALIENCY_EXPLAINER: str = SaliencyCVExplainer.__name__
     CV_GUIDED_BACKPOPAGATION_EXPLAINER: str = GuidedBackpropCVExplainer.__name__
+    CV_XRAI_EXPLAINER: str = XRAICVExplainer.__name__
 
 
 class CVObjectDetectionExplainers(Enum):
@@ -110,7 +113,7 @@ class ExplainerWithParams:
     def __init__(
         self,
         explainer_name: Union[CVClassificationExplainers, CVObjectDetectionExplainers],
-        **kwargs
+        **kwargs,
     ) -> None:
         self.explainer_name = explainer_name
         if kwargs:
@@ -135,7 +138,7 @@ class ExplainerClassWithParams(Generic[CVExplainerT]):
 
 
 class FoXaiExplainer(Generic[CVExplainerT]):
-    """Context menager for FoXAI explanation.
+    """Context manager for FoXAI explanation.
 
     Example:
         with FoXaiExplainer(
@@ -157,7 +160,7 @@ class FoXaiExplainer(Generic[CVExplainerT]):
 
     def __init__(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         explainers: List[ExplainerWithParams],
         target: int = 0,
     ) -> None:
@@ -171,17 +174,17 @@ class FoXaiExplainer(Generic[CVExplainerT]):
         if not explainers:
             raise ValueError("At leas one explainer should be defined.")
 
-        self.model: torch.nn.Module = model
+        self.model: ModelType = model
         self.prev_model_training_state: bool = self.model.training
 
         self.explainer_map: Dict[str, ExplainerClassWithParams] = {
-            explainer_with_params.explainer_name.name: ExplainerClassWithParams(
+            f"{explainer_with_params.explainer_name.name}_{index}": ExplainerClassWithParams(
                 explainer_class=getattr(
                     explainer, explainer_with_params.explainer_name.value
                 )(),
                 **explainer_with_params.kwargs,
             )
-            for explainer_with_params in explainers
+            for index, explainer_with_params in enumerate(explainers)
         }
 
         self.target: int = target
@@ -227,7 +230,7 @@ class FoXaiExplainer(Generic[CVExplainerT]):
         torch.set_grad_enabled(self.prev_torch_grad)
         self.model.train(self.prev_model_training_state)
 
-    def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, torch.Tensor]]:
+    def __call__(self, *args, **kwargs) -> Tuple[Any, Dict[str, AttributionsType]]:
         """Run model prediction and explain the model with given explainers.
 
         Explainers and model are defined as the class parameter.
@@ -254,7 +257,7 @@ class FoXaiExplainer(Generic[CVExplainerT]):
         # turn on requires grad for the input tensor
         input_tensor.requires_grad = True
 
-        explanations: Dict[str, torch.Tensor] = {}
+        explanations: Dict[str, AttributionsType] = {}
         for explainer_name in self.explainer_map:
             # zero the previous gradient for the model
             self.model.zero_grad()

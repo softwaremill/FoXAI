@@ -3,14 +3,16 @@
 Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/occlusion.py.
 """
 
-from typing import Any, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType, TargetType
 from captum.attr import Occlusion
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
+from foxai.explainer.computer_vision.model_utils import preprocess_baselines
+from foxai.types import AttributionsType, ModelType
 
 
 class OcclusionCVExplainer(Explainer):
@@ -18,7 +20,7 @@ class OcclusionCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
         pred_label_idx: TargetType = None,
         sliding_window_shapes: Union[Tuple[int, ...], Tuple[Tuple[int, ...], ...]] = (
@@ -29,12 +31,12 @@ class OcclusionCVExplainer(Explainer):
         strides: Union[
             None, int, Tuple[int, ...], Tuple[Union[int, Tuple[int, ...]], ...]
         ] = None,
-        baselines: Union[None, int, float, torch.Tensor] = None,
+        baselines: BaselineType = None,
         additional_forward_args: Any = None,
         perturbations_per_eval: int = 1,
         show_progress: bool = False,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Occlusion algorithm explainer.
 
         Args:
@@ -96,12 +98,16 @@ class OcclusionCVExplainer(Explainer):
                 feature when occluded.
                 Baselines can be provided as:
 
-                - a single tensor, if inputs is a single tensor, with
-                    exactly the same dimensions as inputs or
-                    broadcastable to match the dimensions of inputs
-
-                - a single scalar, if inputs is a single tensor, which will
-                    be broadcasted for each input value in input tensor.
+                - a single tensor, if input_data is a single tensor, with
+                    exactly the same dimensions as input_data or the first
+                    dimension is one and the remaining dimensions match
+                    with input_data.
+                - a batch tensor, if input_data is a batch tensor, with
+                    each tensor of a batch with exactly the same dimensions as
+                    input_data and the first dimension is number of different baselines
+                    to compute and their averaged score. Typical usage of batch
+                    baselines is to provide random baselines and compute mean
+                    attributes from them.
 
                 In the cases when `baselines` is not provided, we internally
                 use zero scalar corresponding to each input tensor.
@@ -151,25 +157,36 @@ class OcclusionCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
+        attributions: AttributionsType
         occlusion = Occlusion(model)
 
-        # defining baseline distribution of images
-        if baselines is None:
-            baselines = torch.randn(
-                input_data.shape,
-                requires_grad=True,
-                device=input_data.device,
-            )
-
-        attributions = occlusion.attribute(
-            input_data,
-            strides=strides,
-            target=pred_label_idx,
-            sliding_window_shapes=sliding_window_shapes,
+        attributions_list: List[AttributionsType] = []
+        baselines_list, aggregate_attributes = preprocess_baselines(
             baselines=baselines,
-            additional_forward_args=additional_forward_args,
-            perturbations_per_eval=perturbations_per_eval,
-            show_progress=show_progress,
+            input_data_shape=input_data.shape,
         )
-        validate_result(attributions=attributions)
+
+        for baseline in baselines_list:
+            attributions = occlusion.attribute(
+                input_data,
+                strides=strides,
+                target=pred_label_idx,
+                sliding_window_shapes=sliding_window_shapes,
+                baselines=baseline,
+                additional_forward_args=additional_forward_args,
+                perturbations_per_eval=perturbations_per_eval,
+                show_progress=show_progress,
+            )
+            validate_result(attributions=attributions)
+            # if aggregation of attributes is required make sure that dimension of
+            # stacked attributes have baseline number dimension
+            if aggregate_attributes:
+                attributions = attributions.unsqueeze(0)
+
+            attributions_list.append(attributions)
+
+        attributions = torch.vstack(attributions_list)
+        if aggregate_attributes:
+            attributions = torch.mean(attributions, dim=0)
+
         return attributions

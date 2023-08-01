@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import cv2
 import matplotlib
@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision
-from matplotlib.pyplot import Figure
+from matplotlib.pyplot import Axes, Figure
 
 from foxai.array_utils import (
     convert_standardized_float_to_uint8,
@@ -14,9 +14,46 @@ from foxai.array_utils import (
     resize_attributes,
     retain_only_positive,
     standardize_array,
-    transpose_color_in_array,
+    transpose_color_last_in_array_np,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
+from foxai.types import AttributionsType
+
+
+def draw_image(
+    image: torch.Tensor,
+    title: str = "",
+    ax: Optional[Axes] = None,
+    figsize: Tuple[int, int] = (8, 8),
+) -> Figure:
+    """Draw picture.
+
+    Args:
+        image: Image in shape (C x H x W).
+        title: Title for the plot.
+        ax: Axis class used to draw image. If not provided, new figure will be created.
+        figsize: Tuple with size of figure. Defaults to (8, 8).
+
+    Returns:
+        Axes with the plot rendered.
+    """
+    if ax is None:
+        figure = Figure(figsize=figsize)
+        ax = figure.subplots()
+
+    # change image shape from (C X H X W) to (H X W X C) where C stands for colour, X is height and W is width dimension
+    sample_np = image.permute((1, 2, 0)).detach().cpu().numpy().astype(float)
+
+    ax.set_title(title)
+    # disable visualizing X and Y axes
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+
+    # convert image from float to uint8 and display it
+    ax.imshow(
+        convert_standardized_float_to_uint8(standardize_array(sample_np.astype(float)))
+    )
+    return ax.get_figure()
 
 
 def generate_figure(
@@ -25,6 +62,7 @@ def generate_figure(
     title: str = "",
     figsize: Tuple[int, int] = (8, 8),
     alpha: float = 0.5,
+    ax: Optional[Axes] = None,
 ) -> Figure:
     """Create figure from image and heatmap.
 
@@ -34,21 +72,23 @@ def generate_figure(
         title: Title of the figure. Defaults to "".
         figsize: Tuple with size of figure. Defaults to (8, 8).
         alpha: Opacity level. Defaults to 0.5,
+        ax: Axis class used to draw image. If not provided, new figure will be created.
 
     Returns:
         Heatmap of single channel applied on original image.
     """
-    figure = Figure(figsize=figsize)
-    axis = figure.subplots()
-    axis.imshow(transformed_img)
-    heatmap_plot = axis.imshow(
+    if ax is None:
+        ax = Figure(figsize=figsize).subplots()
+    ax.imshow(transformed_img)
+    heatmap_plot = ax.imshow(
         attributions, cmap=matplotlib.cm.jet, vmin=0, vmax=1, alpha=alpha
     )
 
-    figure.colorbar(heatmap_plot, label="Pixel relevance")
-    axis.get_xaxis().set_visible(False)
-    axis.get_yaxis().set_visible(False)
-    axis.set_title(title)
+    figure = ax.get_figure()
+    ax.figure.colorbar(heatmap_plot, label="Pixel relevance")
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    ax.set_title(title)
 
     return figure
 
@@ -68,8 +108,8 @@ def _preprocess_img_and_attributes(
         - transpoze image matrix from (C x H x W) to (H x W x C)
 
     Args:
-        attributions: Features.
-        transformed_img: Image in shape (C x H x W) or (H x W).
+        attributes_matrix: Features.
+        transformed_img_np: Image in shape (C x H x W) or (H x W).
         only_positive_attr: Whether to display only positive or all attributes.
             Defaults to True.
 
@@ -98,19 +138,20 @@ def _preprocess_img_and_attributes(
     standardized_img = standardize_array(transformed_img_np.astype(np.dtype(float)))
 
     # transpoze image from (C x H x W) shape to (H x W x C) to matplotlib imshow
-    normalized_transformed_img = transpose_color_in_array(
+    normalized_transformed_img = transpose_color_last_in_array_np(
         convert_standardized_float_to_uint8(standardized_img),
     )
     return grayscale_attributes, normalized_transformed_img
 
 
 def mean_channels_visualization(
-    attributions: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
     title: str = "",
     figsize: Tuple[int, int] = (8, 8),
     alpha: float = 0.5,
     only_positive_attr: bool = True,
+    ax: Optional[Axes] = None,
 ) -> Figure:
     """Create image with calculated heatmap.
 
@@ -122,6 +163,7 @@ def mean_channels_visualization(
         alpha: Opacity level. Defaults to 0.5,
         only_positive_attr: Whether to display only positive or all attributes.
             Defaults to True.
+        ax: Axis class used to draw image. If not provided, new figure will be created.
 
     Returns:
         Heatmap of mean channel values applied on original image.
@@ -141,17 +183,19 @@ def mean_channels_visualization(
         title=title,
         figsize=figsize,
         alpha=alpha,
+        ax=ax,
     )
 
 
 def single_channel_visualization(
-    attributions: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
     selected_channel: int,
     title: str = "",
     figsize: Tuple[int, int] = (8, 8),
     alpha: float = 0.5,
     only_positive_attr: bool = True,
+    ax: Optional[Axes] = None,
 ) -> Figure:
     """Create image with calculated heatmap.
 
@@ -164,6 +208,7 @@ def single_channel_visualization(
         alpha: Opacity level. Defaults to 0.5,
         only_positive_attr: Whether to display only positive or all attributes.
             Defaults to True.
+        ax: Axis class used to draw image. If not provided, new figure will be created.
 
     Returns:
         Heatmap of single channel applied on original image.
@@ -194,6 +239,7 @@ def single_channel_visualization(
         title=title,
         figsize=figsize,
         alpha=alpha,
+        ax=ax,
     )
 
 

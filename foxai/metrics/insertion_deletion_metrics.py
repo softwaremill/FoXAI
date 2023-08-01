@@ -5,12 +5,13 @@ import numpy as np
 import torch
 from torchvision.transforms.functional import gaussian_blur
 
+from foxai.types import AttributionsType, ModelType
 from foxai.visualizer import _preprocess_img_and_attributes
 
 
 class Metrics(Enum):
     """
-    Helper Enum represenitng insertion and deletion metrics.
+    Helper Enum representing insertion and deletion metrics.
     """
 
     INSERTION = 1
@@ -34,9 +35,9 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
 
 
 def _metric_calculation(
-    attrs: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
-    model: torch.nn.Module,
+    model: ModelType,
     chosen_class: int,
     steps_num=30,
     metric_type=Metrics.INSERTION,
@@ -44,7 +45,7 @@ def _metric_calculation(
     """Calculate metric (insertion or deletion) given importance map, image, model and chosen class.
 
     Args:
-        attrs: Torch Tensor corresponding to importance map.
+        attributions: Torch Tensor corresponding to importance map.
         transformed_img: Torch Tensor corresponding to image.
         model: model which we are explaining.
         chosen_class: index of the class we are creating metric for.
@@ -61,7 +62,7 @@ def _metric_calculation(
     if metric_type not in [Metrics.INSERTION, Metrics.DELETION]:
         raise AttributeError(f"Metric type not in {['INSERTION', 'DELETION']}")
 
-    attributes_matrix: np.ndarray = attrs.detach().cpu().numpy()
+    attributes_matrix: np.ndarray = attributions.detach().cpu().numpy()
     transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
 
     preprocessed_attrs, _ = _preprocess_img_and_attributes(
@@ -122,15 +123,15 @@ def _metric_calculation(
 
 
 def deletion(
-    attrs: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
-    model: torch.nn.Module,
+    model: ModelType,
     chosen_class: int,
 ) -> Tuple[np.ndarray, List]:
     """Calculate deletion metric given importance map, image, model and chosen class.
 
     Args:
-        attrs: Torch Tensor corresponding to importance map.
+        attributions: Torch Tensor corresponding to importance map.
         transformed_img: Torch Tensor corresponding to image.
         model: model which we are explaining.
         chosen_class: index of the class we are creating metric for.
@@ -143,20 +144,20 @@ def deletion(
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
     """
     return _metric_calculation(
-        attrs, transformed_img, model, chosen_class, metric_type=Metrics.DELETION
+        attributions, transformed_img, model, chosen_class, metric_type=Metrics.DELETION
     )
 
 
 def insertion(
-    attrs: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
-    model: torch.nn.Module,
+    model: ModelType,
     chosen_class: int,
 ) -> Tuple[np.ndarray, List]:
     """Calculate insertion metric given importance map, image, model and chosen class.
 
     Args:
-        attrs: Torch Tensor corresponding to importance map.
+        attributions: Torch Tensor corresponding to importance map.
         transformed_img: Torch Tensor corresponding to image.
         model: model which we are explaining.
         chosen_class: index of the class we are creating metric for.
@@ -169,5 +170,9 @@ def insertion(
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
     """
     return _metric_calculation(
-        attrs, transformed_img, model, chosen_class, metric_type=Metrics.INSERTION
+        attributions,
+        transformed_img,
+        model,
+        chosen_class,
+        metric_type=Metrics.INSERTION,
     )
