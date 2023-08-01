@@ -47,6 +47,7 @@ from foxai.explainer import (
     NoiseTunnelCVExplainer,
     OcclusionCVExplainer,
     SaliencyCVExplainer,
+    XRAICVExplainer,
 )
 from foxai.explainer.base_explainer import CVExplainerT
 from foxai.logger import create_logger
@@ -91,6 +92,7 @@ class CVClassificationExplainers(Enum):
     CV_LAYER_CONDUCTANCE_EXPLAINER: str = LayerConductanceCVExplainer.__name__
     CV_SALIENCY_EXPLAINER: str = SaliencyCVExplainer.__name__
     CV_GUIDED_BACKPOPAGATION_EXPLAINER: str = GuidedBackpropCVExplainer.__name__
+    CV_XRAI_EXPLAINER: str = XRAICVExplainer.__name__
 
 
 class CVObjectDetectionExplainers(Enum):
