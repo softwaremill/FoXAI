@@ -2,7 +2,7 @@ name: Publish Docs to gh-pages
 on: [push, workflow_dispatch]
 
 env:
-  POETRY_VERSION: '1.2.1'
+  POETRY_VERSION: '1.5.1'
   PYTHON_VERSION: '3.8'
 jobs:
   build_docs:
