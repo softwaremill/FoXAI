@@ -244,17 +244,29 @@ def single_channel_visualization(
 
 
 def visualize_metric(
-    importance_lst: List[np.ndarray],
+    importance_list: List[np.ndarray],
     metric_result: float,
     metric_type: str = "Deletion",
 ):
     """
-    Visualize graph for Insertion or deletion metric based on which area under the curve is caluclated.
+    Visualize chart for Insertion or deletion metric based on which area under the curve is caluclated.
+
+    Args:
+        importance_list: List of temporary results used for calculating metrics like deletion or insertion.
+        metric_result: Overall result of metric.
+        metric_type: String name of visualized metric (currently supported are Deletion and Insertion).
     """
+    x_vals = [elem[0] for elem in importance_list]
+    y_vals = [elem[1] for elem in importance_list]
     plt.ylim((0, 1))
-    plt.xlim((0, len(importance_lst)))
-    plt.plot(np.arange(len(importance_lst)), importance_lst)
+    plt.xlim((0, 1))
+    plt.plot(x_vals, y_vals)
     plt.title(f"{metric_type}: {metric_result}")
+    plt.ylabel("Probablity of predicting chosen class")
+    if metric_type == "Deletion":
+        plt.xlabel("Percentage of image removed")
+    else:
+        plt.xlabel("Percentage of image revealed")
     plt.show()
 
 

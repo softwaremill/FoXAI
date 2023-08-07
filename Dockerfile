@@ -1,5 +1,8 @@
-FROM pytorch/pytorch:1.12.1-cuda11.3-cudnn8-runtime
+FROM nvcr.io/nvidia/pytorch:22.12-py3
 # from https://hub.docker.com/r/yahwang/ubuntu-pyenv/dockerfile
+RUN export TZ=Europe/Paris
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+
 ARG BUILD_PYTHON_DEPS=" \
         make \
         build-essential \
