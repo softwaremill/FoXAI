@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         cuda_version: ["11.0.3", "11.2.2", "11.4.3", "11.6.2", "11.8.0", "12.0.0"]
-        python_version: ["3.7.2", "3.8", "3.9", "3.10", "3.11"]
+        python_version: ["3.8", "3.9", "3.10"]
     uses: ./.github/workflows/installation_test_called_workflow.yaml
     with:
       cuda_version: ${{ matrix.cuda_version }}

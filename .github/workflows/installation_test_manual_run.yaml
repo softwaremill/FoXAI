@@ -20,14 +20,12 @@ on:
       python_version:
         description: "Select Python version"
         required: true
-        default: "3.7.2"
+        default: "3.8"
         type: choice
         options:
-          - "3.7.2"
           - "3.8"
           - "3.9"
           - "3.10"
-          - "3.11"
 
 jobs:
   foxai:
