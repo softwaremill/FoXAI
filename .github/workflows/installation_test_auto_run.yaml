@@ -1,7 +1,8 @@
 name: PR Installation test
+run-name: Installation test, CUDA ${{ matrix.cuda_version }},  PYTHON ${{ matrix.python_version }}
 
 on:
-  pull_request
+  pull_request:
 
 jobs:
   foxai:
