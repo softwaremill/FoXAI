@@ -8,13 +8,12 @@ from abc import abstractmethod
 from typing import Any, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import InputXGradient, LayerGradientXActivation
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
-from foxai.types import AttributionsType, LayerType, ModelType
+from foxai.types import AttributionsType, LayerType, ModelType, TargetType
 
 
 class BaseInputXGradientSHAPCVExplainer(Explainer):
@@ -40,7 +39,7 @@ class BaseInputXGradientSHAPCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
         layer: Optional[LayerType] = None,

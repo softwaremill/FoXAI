@@ -8,7 +8,7 @@ from abc import abstractmethod
 from typing import Any, List, Optional, Union
 
 import torch
-from captum._utils.typing import BaselineType, TargetType
+from captum._utils.typing import BaselineType
 from captum.attr import DeepLiftShap, LayerDeepLiftShap
 
 from foxai.array_utils import validate_result
@@ -23,6 +23,7 @@ from foxai.types import (
     CustomAttributionFuncType,
     LayerType,
     ModelType,
+    TargetType,
 )
 
 
@@ -65,8 +66,8 @@ class BaseDeepLIFTSHAPCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
-        baselines: BaselineType = None,
+        pred_label_idx: Optional[TargetType] = None,
+        baselines: Optional[BaselineType] = None,
         additional_forward_args: Any = None,
         custom_attribution_func: Optional[CustomAttributionFuncType] = None,
         attribute_to_layer_input: bool = False,

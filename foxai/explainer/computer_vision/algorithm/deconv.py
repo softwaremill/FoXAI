@@ -4,16 +4,15 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/guided_
 """
 
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import Deconvolution
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import modify_modules
-from foxai.types import AttributionsType, ModelType
+from foxai.types import AttributionsType, ModelType, TargetType
 
 
 class BaseDeconvolutionCVExplainer(Explainer):
@@ -38,7 +37,7 @@ class BaseDeconvolutionCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         **kwargs,
     ) -> AttributionsType:

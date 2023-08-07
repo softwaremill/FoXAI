@@ -15,7 +15,7 @@ with FoXaiExplainer(
     model=yolo_model,
     explainers=[
         ExplainerWithParams(
-            explainer_name=Explainers.CV_NOISE_TUNNEL_EXPLAINER,
+            explainer_name=CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER,
             nt_samples=1,
             nt_type="smoothgrad_sq",
             stdevs=0.1,
@@ -46,8 +46,12 @@ from example.yolov5_exmaple.yolo_utils import (  # scale_boxes,
     non_max_suppression,
     xywh2xyxy,
 )
-from foxai.context_manager import Explainers, ExplainerWithParams, FoXaiExplainer
-from foxai.explainer.base_explainer import CVExplainer
+from foxai.context_manager import (
+    CVClassificationExplainers,
+    ExplainerWithParams,
+    FoXaiExplainer,
+)
+from foxai.visualizer import mean_channels_visualization
 
 TARGET: Final[int] = 0
 """ The target class to be explained with XAI.
@@ -352,7 +356,7 @@ def main():
         model=yolo_model,
         explainers=[
             ExplainerWithParams(
-                explainer_name=Explainers.CV_NOISE_TUNNEL_EXPLAINER,
+                explainer_name=CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER,
                 nt_samples=1,
                 nt_type="smoothgrad_sq",
                 stdevs=0.1,
@@ -362,7 +366,7 @@ def main():
     ) as xai_model:
         _, attributions = xai_model(input_image)
 
-    attributions = attributions["CV_NOISE_TUNNEL_EXPLAINER"]
+    attributions = attributions["CV_NOISE_TUNNEL_EXPLAINER_0"]
 
     # standard inference
     y = model.model(input_image)
@@ -395,7 +399,7 @@ def main():
         boxes=bboxes,
         labels=labels,
     )
-    figure = CVExplainer.visualize(
+    figure = mean_channels_visualization(
         attributions=attributions.squeeze(), transformed_img=pred_image
     )
     canvas = FigureCanvas(figure)
