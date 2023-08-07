@@ -21,7 +21,7 @@ jobs:
     runs-on: gpu-t4-pool
     container:
       image: nvidia/cuda:${{ inputs.cuda_version }}-runtime-ubuntu20.04 # https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist
-      options: --cpus="3" --memory-reservation 10g --gpus 1
+      options: --cpus="3.0" --memory-reservation 10g --gpus 1
       volumes:
         - /usr/local/nvidia/lib64:/usr/local/nvidia/lib64
     steps:
