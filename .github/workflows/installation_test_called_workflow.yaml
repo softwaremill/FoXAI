@@ -1,4 +1,5 @@
 name: Installation test
+run-name: Installation test, CUDA ${{ inputs.cuda_version }},  PYTHON ${{ inputs.python_version }}
 
 on:
   workflow_call:
