@@ -1,0 +1,36 @@
+name: Manual Installation test
+
+on:
+  workflow_dispatch:
+    inputs:
+      cuda_version:
+        description: "Select CUDA version"
+        required: true
+        default: "11.6.2"
+        type: choice
+        options:
+          - "11.0.3"
+          - "11.2.2"
+          - "11.4.3"
+          - "11.6.2"
+          - "11.8.0"
+          - "12.0.0"
+      python_version:
+        description: "Select Python version"
+        required: true
+        default: "3.7.2"
+        type: choice
+        options:
+          - "3.7.2"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+
+jobs:
+  foxai:
+    name: Install FoxAI
+    uses: ./.github/workflows/installation_test_called_workflow.yaml
+    with:
+      cuda_version: ${{ inputs.cuda_version }}
+      python_version: ${{ inputs.python_version }}

@@ -1,41 +1,26 @@
 name: Installation test
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       cuda_version:
         description: "Select CUDA version"
         required: true
-        default: "11.6.2"
-        type: choice
-        options:
-          - "11.0.3"
-          - "11.2.2"
-          - "11.4.3"
-          - "11.6.2"
-          - "11.8.0"
-          - "12.0.0"
+        type: string
       python_version:
         description: "Select Python version"
         required: true
-        default: "3.7"
-        type: choice
-        options:
-          - "3.7"
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
+        type: string
 
 env:
   POETRY_VERSION: "1.4.2"
 jobs:
   foxai:
-    name: Launch GKE Pod with GPU
+    name: Install FoxAI
     runs-on: gpu-t4-pool
     container:
       image: nvidia/cuda:${{ inputs.cuda_version }}-runtime-ubuntu20.04 # https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist
-      options: --cpus 2 --memory-reservation 8g --gpus all
+      options: --cpus="1.5" --memory-reservation 6g --gpus 1
       volumes:
         - /usr/local/nvidia/lib64:/usr/local/nvidia/lib64
     steps:
