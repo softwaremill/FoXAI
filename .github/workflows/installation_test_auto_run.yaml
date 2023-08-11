@@ -1,0 +1,19 @@
+name: PR Installation test
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  foxai:
+    name: Install FoxAI
+    strategy:
+      fail-fast: false
+      matrix:
+        cuda_version: ["11.7.1"]
+        python_version: ["3.8", "3.9", "3.10"]
+    uses: ./.github/workflows/installation_test_called_workflow.yaml
+    with:
+      cuda_version: ${{ matrix.cuda_version }}
+      python_version: ${{ matrix.python_version }}
