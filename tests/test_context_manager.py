@@ -99,7 +99,7 @@ class TestFoXaiExplainer:
         img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
 
         explainers: List[ExplainerWithParams] = [
-            ExplainerWithParams(CVClassificationExplainers.CV_GRADIENT_SHAP_EXPLAINER),
+            ExplainerWithParams(CVClassificationExplainers.CV_DEEPLIFT_EXPLAINER),
             ExplainerWithParams(CVClassificationExplainers.CV_NOISE_TUNNEL_EXPLAINER),
             ExplainerWithParams(CVClassificationExplainers.CV_OCCLUSION_EXPLAINER),
         ]
@@ -110,7 +110,10 @@ class TestFoXaiExplainer:
             _, xai_explanations = xai_model(img_tensor)
 
             assert list(
-                map(lambda explainer: explainer.explainer_name.name, explainers)
+                map(
+                    lambda explainer_tuple: f"{explainer_tuple[1].explainer_name.name}_{explainer_tuple[0]}",
+                    enumerate(explainers),
+                )
             ) == list(xai_explanations.keys())
 
     def test_model_inference_with_explainer(self, classifier: torch.nn.Module):
@@ -196,12 +199,14 @@ class TestFoXaiExplainer:
             target=0,
         ) as xai_model:
             explainer_kwargs: Dict[str, Any] = xai_model.explainer_map[
-                "CV_GRADIENT_SHAP_EXPLAINER"
+                "CV_GRADIENT_SHAP_EXPLAINER_0"
             ].kwargs
             assert explainer_kwargs["n_samples"] == 100
             assert explainer_kwargs["stdevs"] == 0.0005
 
-            explainer_kwargs = xai_model.explainer_map["CV_OCCLUSION_EXPLAINER"].kwargs
+            explainer_kwargs = xai_model.explainer_map[
+                "CV_OCCLUSION_EXPLAINER_1"
+            ].kwargs
             assert explainer_kwargs["stride_value"] == 5
             assert explainer_kwargs["window_value"] == 5
 
@@ -240,7 +245,7 @@ class TestFoXaiExplainer:
 
         assert torch.equal(
             foxai_attributes_dict[
-                CVClassificationExplainers.CV_INPUT_X_GRADIENT_EXPLAINER.name
+                f"{CVClassificationExplainers.CV_INPUT_X_GRADIENT_EXPLAINER.name}_0"
             ],
             explainer_attributes,
         )
@@ -268,3 +273,36 @@ class TestFoXaiExplainer:
                 assert not classifier.training
 
         assert classifier.training
+
+    def test_context_manager_should_process_multiple_explainers_of_the_same_type(
+        self, classifier: torch.nn.Module
+    ):
+        """Test whether explanations from context manager and explainer class
+        gives same results.
+        """
+
+        classifier.eval()
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Grayscale(),
+                transforms.Resize(size=224),
+                transforms.CenterCrop(size=224),
+            ]
+        )
+        img_tensor: torch.Tensor = transform(pikachu_image).unsqueeze(0)
+        explainers = [
+            ExplainerWithParams(
+                CVClassificationExplainers.CV_INPUT_X_GRADIENT_EXPLAINER
+            ),
+            ExplainerWithParams(
+                CVClassificationExplainers.CV_INPUT_X_GRADIENT_EXPLAINER
+            ),
+        ]
+        with FoXaiExplainer(
+            model=classifier,
+            explainers=explainers,
+        ) as xai_model:
+            _, foxai_attributes_dict = xai_model(img_tensor)
+
+        assert len(foxai_attributes_dict.keys()) == len(explainers)

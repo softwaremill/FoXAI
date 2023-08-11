@@ -2,7 +2,7 @@ fail_fast: false
 default_stages: [commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -36,7 +36,7 @@ repos:
       - id: pytest
         name: pytest
         files: tests/
-        entry: poetry run pytest
+        entry: poetry run pytest tests/
         language: system
         pass_filenames: false
       - id: locks

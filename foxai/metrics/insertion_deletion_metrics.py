@@ -5,12 +5,13 @@ import numpy as np
 import torch
 from torchvision.transforms.functional import gaussian_blur
 
+from foxai.types import AttributionsType, ModelType
 from foxai.visualizer import _preprocess_img_and_attributes
 
 
 class Metrics(Enum):
     """
-    Helper Enum represenitng insertion and deletion metrics.
+    Helper Enum representing insertion and deletion metrics.
     """
 
     INSERTION = 1
@@ -21,9 +22,9 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
     """Get elements from array according to the number of wanted steps.
 
     Args:
-        sorted_attrs: Numpy array of floats correponding to importance map values sorted
-                      in ascending or descending order.
-        steps_num: wanted number of steps
+        sorted_attrs: Numpy array of floats correponding to importance map values
+            sorted in ascending or descending order.
+        stepns_num: wanted number of steps
 
     Returns:
         Numpy array of sample values according to decided number of steps.
@@ -34,25 +35,29 @@ def _get_stepped_attrs(sorted_attrs: np.ndarray, steps_num: int) -> np.ndarray:
 
 
 def _metric_calculation(
-    attrs: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
-    model: torch.nn.Module,
+    model: ModelType,
     chosen_class: int,
     steps_num=30,
     metric_type=Metrics.INSERTION,
+    kernel=(101, 101),
 ) -> Tuple[np.ndarray, List]:
     """Calculate metric (insertion or deletion) given importance map, image, model and chosen class.
+    Implementation of both metrics (insertion and deletion) are inspired by the paper
+    "RISE: Randomized Input Sampling for Explanation of Black-box Models": https://arxiv.org/abs/1806.07421
 
     Args:
-        attrs: Torch Tensor corresponding to importance map.
+        attributions: Torch Tensor corresponding to importance map.
         transformed_img: Torch Tensor corresponding to image.
         model: model which we are explaining.
         chosen_class: index of the class we are creating metric for.
         metric_type: type of metric presented using enum, supported ones are: Insertion and Deletion.
+        kernel: define a tuple regarding the used blurring kernel. Default value is 101 to produce very blurred value.
 
     Returns:
         metric: numerical value of chosen metric for given picture and explanation.
-        importance_lst: list of numpy elements corresponding to confidence value at each step.
+        importance_list: list of numpy elements corresponding to confidence value at each step.
 
     Raises:
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
@@ -61,7 +66,7 @@ def _metric_calculation(
     if metric_type not in [Metrics.INSERTION, Metrics.DELETION]:
         raise AttributeError(f"Metric type not in {['INSERTION', 'DELETION']}")
 
-    attributes_matrix: np.ndarray = attrs.detach().cpu().numpy()
+    attributes_matrix: np.ndarray = attributions.detach().cpu().numpy()
     transformed_img_np: np.ndarray = transformed_img.detach().cpu().numpy()
 
     preprocessed_attrs, _ = _preprocess_img_and_attributes(
@@ -73,7 +78,7 @@ def _metric_calculation(
     sorted_attrs: np.ndarray = np.flip(np.sort(np.unique(preprocessed_attrs)))
     stepped_attrs: np.ndarray = _get_stepped_attrs(sorted_attrs, steps_num)
 
-    importance_lst: List[np.ndarray] = []
+    importance_list: List[Tuple[float, float]] = []
 
     cuda = next(model.parameters()).is_cuda
     device = torch.device("cuda" if cuda else "cpu")
@@ -82,7 +87,7 @@ def _metric_calculation(
     removed_img_part[:] = transformed_img.mean()
 
     if metric_type == Metrics.INSERTION:
-        removed_img_part = gaussian_blur(transformed_img, [101, 101])
+        removed_img_part = gaussian_blur(transformed_img, kernel)
 
     for val in stepped_attrs:
         attributes_map_np: np.ndarray = np.expand_dims(
@@ -114,60 +119,72 @@ def _metric_calculation(
 
         output = model(perturbed_img.unsqueeze(dim=0))
         softmax_output: torch.Tensor = torch.nn.functional.softmax(output)[0]
-        importance_lst.append(softmax_output[chosen_class].detach().numpy())
+        importance_val: float = float(
+            softmax_output[chosen_class].detach().cpu().numpy()
+        )
+        importance_list.append((val, importance_val))
 
-    metric: np.ndarray = np.round(np.trapz(importance_lst) / len(importance_lst), 4)
+    importance_values: List = [elem[0] for elem in importance_list]
+    metric: np.ndarray = np.round(
+        np.trapz(importance_values) / len(importance_values), 4
+    )
 
-    return metric, importance_lst
+    return metric, importance_list
 
 
 def deletion(
-    attrs: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
-    model: torch.nn.Module,
+    model: ModelType,
     chosen_class: int,
 ) -> Tuple[np.ndarray, List]:
     """Calculate deletion metric given importance map, image, model and chosen class.
 
     Args:
-        attrs: Torch Tensor corresponding to importance map.
+        attributions: Torch Tensor corresponding to importance map.
         transformed_img: Torch Tensor corresponding to image.
         model: model which we are explaining.
         chosen_class: index of the class we are creating metric for.
 
     Returns:
         metric: numerical value of chosen metric for given picture and explanation.
-        importance_lst: list of numpy elements corresponding to confidence value at each step.
+        importance_list: list of numpy elements corresponding to confidence value at each step.
 
     Raises:
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
     """
     return _metric_calculation(
-        attrs, transformed_img, model, chosen_class, metric_type=Metrics.DELETION
+        attributions, transformed_img, model, chosen_class, metric_type=Metrics.DELETION
     )
 
 
 def insertion(
-    attrs: torch.Tensor,
+    attributions: AttributionsType,
     transformed_img: torch.Tensor,
-    model: torch.nn.Module,
+    model: ModelType,
     chosen_class: int,
+    kernel=(101, 101),
 ) -> Tuple[np.ndarray, List]:
     """Calculate insertion metric given importance map, image, model and chosen class.
 
     Args:
-        attrs: Torch Tensor corresponding to importance map.
+        attributions: Torch Tensor corresponding to importance map.
         transformed_img: Torch Tensor corresponding to image.
         model: model which we are explaining.
         chosen_class: index of the class we are creating metric for.
 
     Returns:
         metric: numerical value of chosen metric for given picture and explanation.
-        importance_lst: list of numpy elements corresponding to confidence value at each step.
+        importance_list: list of numpy elements corresponding to confidence value at each step.
 
     Raises:
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
     """
     return _metric_calculation(
-        attrs, transformed_img, model, chosen_class, metric_type=Metrics.INSERTION
+        attributions,
+        transformed_img,
+        model,
+        chosen_class,
+        metric_type=Metrics.INSERTION,
+        kernel=kernel,
     )

@@ -1,0 +1,38 @@
+name: Installation test
+run-name: Installation test, CUDA ${{ inputs.cuda_version }},  PYTHON ${{ inputs.python_version }}
+
+on:
+  workflow_call:
+    inputs:
+      cuda_version:
+        description: "Select CUDA version"
+        required: true
+        type: string
+      python_version:
+        description: "Select Python version"
+        required: true
+        type: string
+
+env:
+  POETRY_VERSION: "1.4.2"
+jobs:
+  foxai:
+    name: Install FoxAI
+    runs-on: gpu-t4-pool
+    container:
+      image: nvidia/cuda:${{ inputs.cuda_version }}-runtime-ubuntu20.04 # https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist
+      options: --cpus="3.0" --memory-reservation 10g --gpus 1
+      volumes:
+        - /usr/local/nvidia/lib64:/usr/local/nvidia/lib64
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install system libs
+        run: |
+          apt-get update -y
+          apt-get install -y libglib2.0-0 libx11-dev libxext-dev
+      - uses: "./.github/actions/build-module"
+        env:
+          PYTHON_VERSION: ${{ inputs.python_version }}
+        with:
+          moduleName: "src"

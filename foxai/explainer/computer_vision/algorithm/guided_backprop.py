@@ -4,15 +4,15 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/guided_
 """
 
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import GuidedBackprop
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import modify_modules
+from foxai.types import AttributionsType, ModelType, TargetType
 
 
 class BaseGuidedBackpropCVExplainer(Explainer):
@@ -21,7 +21,7 @@ class BaseGuidedBackpropCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> GuidedBackprop:
         """Create explainer object.
@@ -32,12 +32,12 @@ class BaseGuidedBackpropCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Guided Backpropagation algorithm explainer.
 
         Args:
@@ -102,7 +102,7 @@ class BaseGuidedBackpropCVExplainer(Explainer):
             RuntimeError: if attribution has shape (0).
         """
         guided_backprop = self.create_explainer(model=model)
-        attributions = guided_backprop.attribute(
+        attributions: AttributionsType = guided_backprop.attribute(
             input_data,
             target=pred_label_idx,
             additional_forward_args=additional_forward_args,
@@ -116,7 +116,7 @@ class GuidedBackpropCVExplainer(BaseGuidedBackpropCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> GuidedBackprop:
         """Create explainer object.

@@ -1,5 +1,8 @@
-FROM pytorch/pytorch:1.12.1-cuda11.3-cudnn8-runtime
+FROM nvcr.io/nvidia/pytorch:22.12-py3
 # from https://hub.docker.com/r/yahwang/ubuntu-pyenv/dockerfile
+RUN export TZ=Europe/Paris
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+
 ARG BUILD_PYTHON_DEPS=" \
         make \
         build-essential \
@@ -43,7 +46,7 @@ COPY pyproject.toml .
 COPY README.md .
 COPY mypy.ini .
 # setup poetry, install deps and build wheel
-RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 - \
+RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 - \
     && export PATH="/root/.local/bin:$PATH" \
     && echo 'export PATH="/root/.local/bin:$PATH"' >> ~/.bashrc \
     && poetry config virtualenvs.create true \

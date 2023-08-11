@@ -184,10 +184,10 @@ To separate runtime environments for different services and repositories, it is
 recommended to use a virtual Python environment. You can configure `Poetry` to
 create a new virtual environment in the project directory of every repository. To
 install `Poetry` follow the instruction at https://python-poetry.org/docs/#installing-with-the-official-installer. We are using `Poetry` in version
-`1.2.1`. To install a specific version You have to provide desired package
+`1.4.2`. To install a specific version You have to provide desired package
 version:
 ```bash
-curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.1 python3 -
+curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.2 python3 -
 ```
 Add poetry to PATH:
 ```bash
@@ -233,3 +233,33 @@ be introduced. In the end, the module should work with all types of tasks (NLP, 
 In `example/notebooks/` directory You can find notebooks with example usage of this
 framework. Scripts in `example/` directory contain samples of training models using
 different callbacks.
+
+## Explainers list
+
+The table below presents a list of available explainers:
+
+|              Explainer name             |           Is deterministic           |
+|:---------------------------------------:|:------------------------------------:|
+| CV_OCCLUSION_EXPLAINER                  | yes, if non-random baseline provided |
+| CV_INTEGRATED_GRADIENTS_EXPLAINER       | yes, if non-random baseline provided |
+| CV_NOISE_TUNNEL_EXPLAINER               | no                                   |
+| CV_GRADIENT_SHAP_EXPLAINER              | no                                   |
+| CV_LRP_EXPLAINER                        | yes                                  |
+| CV_FULL_GRADIENTS_EXPLAINER             | yes                                  |
+| CV_GUIDEDGRADCAM_EXPLAINER              | yes                                  |
+| CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER | yes, if non-random baseline provided |
+| CV_LAYER_NOISE_TUNNEL_EXPLAINER         | no                                   |
+| CV_LAYER_GRADIENT_SHAP_EXPLAINER        | no                                   |
+| CV_LAYER_LRP_EXPLAINER                  | yes                                  |
+| CV_LAYER_GRADCAM_EXPLAINER              | yes                                  |
+| CV_INPUT_X_GRADIENT_EXPLAINER           | yes                                  |
+| CV_LAYER_INPUT_X_GRADIENT_EXPLAINER     | yes                                  |
+| CV_DEEPLIFT_EXPLAINER                   | yes, if non-random baseline provided |
+| CV_LAYER_DEEPLIFT_EXPLAINER             | yes, if non-random baseline provided |
+| CV_DEEPLIFT_SHAP_EXPLAINER              | yes, if non-random baseline provided |
+| CV_LAYER_DEEPLIFT_SHAP_EXPLAINER        | yes, if non-random baseline provided |
+| CV_DECONVOLUTION_EXPLAINER              | yes                                  |
+| CV_LAYER_CONDUCTANCE_EXPLAINER          | yes                                  |
+| CV_SALIENCY_EXPLAINER                   | yes                                  |
+| CV_GUIDED_BACKPOPAGATION_EXPLAINER      | yes                                  |
+| CV_XRAI_EXPLAINER                       | no                                   |

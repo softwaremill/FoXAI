@@ -4,15 +4,15 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/guided_
 """
 
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import Deconvolution
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import modify_modules
+from foxai.types import AttributionsType, ModelType, TargetType
 
 
 class BaseDeconvolutionCVExplainer(Explainer):
@@ -21,7 +21,7 @@ class BaseDeconvolutionCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
     ) -> Deconvolution:
         """Create explainer object.
 
@@ -35,18 +35,18 @@ class BaseDeconvolutionCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Deconvolution algorithm explainer.
 
         Args:
             model: The forward function of the model or any
                 modification of it.
-            inputs: Input for which
+            input_data: Input for which
                 attributions are computed. If forward_func takes a single
                 tensor as input, a single input tensor should be provided.
             pred_label_idx: Output indices for
@@ -99,7 +99,7 @@ class BaseDeconvolutionCVExplainer(Explainer):
         """
 
         deconv = self.create_explainer(model=model)
-        attributions = deconv.attribute(
+        attributions: AttributionsType = deconv.attribute(
             input_data,
             target=pred_label_idx,
             additional_forward_args=additional_forward_args,
@@ -109,11 +109,11 @@ class BaseDeconvolutionCVExplainer(Explainer):
 
 
 class DeconvolutionCVExplainer(BaseDeconvolutionCVExplainer):
-    """Base Deconvolution algorithm explainer."""
+    """Deconvolution algorithm explainer."""
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
     ) -> Deconvolution:
         """Create explainer object.
 
