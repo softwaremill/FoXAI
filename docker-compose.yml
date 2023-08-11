@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  trainer:
+    env_file: .env
+    image: "rfl/foxai-trainer:latest"
+    build: "./"
+    container_name: "foxai-trainer"
+    shm_size: 32gb
+    volumes:
+      - ".:/FoXAI"
+      - "${IMG_DIR}/:/home/user/Downloads"
+    ports:
+      - 8888:8888
+      - 6006:6006
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    privileged: true
+    command: ["bash", "-c", "source /etc/bash.bashrc && jupyter lab --notebook-dir=/FoXAI --ip 0.0.0.0 --no-browser --allow-root"]
