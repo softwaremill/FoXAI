@@ -27,6 +27,10 @@ from foxai.explainer.computer_vision.algorithm.input_x_gradient import (
     InputXGradientCVExplainer,
     LayerInputXGradientCVExplainer,
 )
+from foxai.explainer.computer_vision.algorithm.input_x_gradient_old import (
+    InputXGradientCVExplainerOld,
+    LayerInputXGradientCVExplainerOld,
+)
 from foxai.explainer.computer_vision.algorithm.integrated_gradients import (
     IntegratedGradientsCVExplainer,
     LayerIntegratedGradientsCVExplainer,
