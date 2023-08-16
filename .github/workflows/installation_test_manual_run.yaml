@@ -1,5 +1,5 @@
 name: Manual Installation test
-run-name: Installation test, CUDA ${{ inputs.cuda_version }},  PYTHON ${{ inputs.python_version }}
+run-name: Installation test, CUDA ${{ inputs.cuda_version }}, PYTHON ${{ inputs.python_version }}, PyTorch ${{ inputs.torch_version }}, PyTorch-Lightning ${{ inputs.torch_lightning_version }}, Pandas ${{ inputs.pandas_version }}
 
 
 on:
