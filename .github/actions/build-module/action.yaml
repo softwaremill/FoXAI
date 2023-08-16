@@ -19,6 +19,10 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+    - name: Upgrade pip
+      shell: bash
+      run: |
+        PIP_ROOT_USER_ACTION=ignore pip install --upgrade pip
     - name: Load cached venv
       id: cached-poetry-dependencies
       uses: actions/cache@v3
@@ -29,13 +33,23 @@ runs:
           venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('poetry.lock') }}
           venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
     - name: Setup poetry
-      uses: abatilo/actions-poetry@v2.1.5
+      uses: abatilo/actions-poetry@v2.3.0
+      env:
+          PIP_ROOT_USER_ACTION: ignore
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
+    - name: Install pandas (version ${{ env.PANDAS_VERSION }})
+      shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
+      run: |
+        pip install pandas==${{ env.PANDAS_VERSION }}
     - name: Install dependencies
       shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
       run: |
-        poetry install
+        poetry install --quiet
       working-directory: "${{ inputs.moduleFolder }}"
     - name: Run Black
       shell: bash

@@ -5,6 +5,15 @@ run-name: Installation test, CUDA ${{ inputs.cuda_version }},  PYTHON ${{ inputs
 on:
   workflow_dispatch:
     inputs:
+      pandas_version:
+        description: "Select Pandas version"
+        required: true
+        default: "2.0.0"
+        type: choice
+        options:
+          - "1.1.0"
+          - "2.0.0"
+          - "2.0.3"
       cuda_version:
         description: "Select CUDA version"
         required: true
@@ -35,3 +44,4 @@ jobs:
     with:
       cuda_version: ${{ inputs.cuda_version }}
       python_version: ${{ inputs.python_version }}
+      pandas_version: ${{ inputs.pandas_version }}
