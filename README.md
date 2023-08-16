@@ -139,9 +139,9 @@ In `example/notebooks/` directory You can find notebooks with example usage of t
 framework. Scripts in `example/` directory contain samples of training models using
 different callbacks.
 
-| Description         | Notebook | Google Colab |
-|---------------------|----------|--------------|
-| Basic usage         | [Notebook](https://github.com/softwaremill/FoXAI/blob/develop/example/notebooks/basic_usage.ipynb)     | <sub>[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1_Wc-ci3cyYwuSbpbwMSbLlQIiL-VVaXo?usp=sharing)</sub> |
+| Tutorial description | Notebook | Google Colab |
+|----------------------|----------|--------------|
+| Basic usage          | [Notebook](https://github.com/softwaremill/FoXAI/blob/develop/example/notebooks/basic_usage.ipynb)     | <sub>[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1_Wc-ci3cyYwuSbpbwMSbLlQIiL-VVaXo?usp=sharing)</sub> |
 
 
 ## Explainers list
