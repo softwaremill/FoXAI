@@ -43,7 +43,19 @@ runs:
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        pip install pandas==${{ env.PANDAS_VERSION }}
+        pip install torch==${{ env.TORCH_VERSION }}
+    - name: Install torch (version ${{ env.TORCH_VERSION }})
+      shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
+      run: |
+        pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
+    - name: Install pytorch-lightning (version ${{ env.PYTORCH_LIGHTNING_VERSION }})
+      shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
+      run: |
+        pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
     - name: Install dependencies
       shell: bash
       env:

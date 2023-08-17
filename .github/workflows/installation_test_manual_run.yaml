@@ -25,7 +25,7 @@ on:
           - "1.13.1"
           - "2.0.0"
           - "2.0.1"
-      torch_lightning_version:
+      pytorch_lightning_version:
         description: "Select PyTorch-Lightning version"
         required: true
         default: "2.0.7"
@@ -69,3 +69,5 @@ jobs:
       cuda_version: ${{ inputs.cuda_version }}
       python_version: ${{ inputs.python_version }}
       pandas_version: ${{ inputs.pandas_version }}
+      torch_version: ${{ inputs.torch_version }}
+      pytorch_lightning_version: ${{ inputs.pytorch_lightning_version }}
