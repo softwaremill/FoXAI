@@ -38,6 +38,12 @@ runs:
           PIP_ROOT_USER_ACTION: ignore
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
+    - name: Install dependencies
+      shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
+      run: |
+        poetry install --quiet
     - name: Install pandas (version ${{ env.PANDAS_VERSION }})
       shell: bash
       env:
@@ -56,12 +62,6 @@ runs:
           PIP_ROOT_USER_ACTION: ignore
       run: |
         pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
-    - name: Install dependencies
-      shell: bash
-      env:
-          PIP_ROOT_USER_ACTION: ignore
-      run: |
-        poetry install --quiet
       working-directory: "${{ inputs.moduleFolder }}"
     - name: Run Black
       shell: bash
