@@ -53,7 +53,9 @@ environment you should use GitHub Actions workflow called
 
 First, create PR to the `develop` branch, add
 selection option with dependency you would like to test by modifying
-`.github/workflows/installation_test_manual_run.yaml` file, commit, and push
+`.github/workflows/installation_test_manual_run.yaml`,
+`.github/workflows/installation_test_called_workflow.yaml`, and
+`.github/actions/build-module/action.yaml` files, commit, and push
 to the repository.
 
 Next, go to the repository page > `Actions` >
@@ -61,6 +63,19 @@ Next, go to the repository page > `Actions` >
 versions > `Run workflow`.
 
 Remember to attach links to the workflow runs to the PR comment or description.
+
+## Add New Dependency Test
+
+In `installation_test_manual_run.yaml` you should add selecting
+dependencies version in `on` > `workflow_dispatch` > `inputs` and provide
+them as environment variables in `job` > `foxai` > `with`.
+
+In the `installation_test_called_workflow.yaml` file you should add
+environment variables to `on` > `workflow_calls` > `inputs` and to `jobs` >
+`foxai` > `steps` > `env` which will be used in `action.yaml` script.
+
+In `action.yaml` file you should add lines with
+installation of given dependency version explicite after `poetry install`.
 
 # Releasing
 
