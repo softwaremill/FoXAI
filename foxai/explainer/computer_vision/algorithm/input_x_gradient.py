@@ -15,18 +15,18 @@ from foxai.explainer.computer_vision.algorithm.gradient_utils import (
     compute_layer_gradients,
 )
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
-from foxai.types import AttributionsType, LayerType, ModelType, TargetType
+from foxai.types import AttributionsType, LayerType, ModelType
 
 
 class BaseInputXGradientSHAPCVExplainer(Explainer):
     """Base Input X Gradient algorithm explainer."""
 
     @abstractmethod
-    def calculate_features(
+    def calculate_features(  # type: ignore[override]
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         additional_forward_args: Optional[Tuple[Any]] = None,
         **kwargs,
     ) -> AttributionsType:
@@ -36,11 +36,11 @@ class BaseInputXGradientSHAPCVExplainer(Explainer):
 class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
     """Input X Gradient algorithm explainer."""
 
-    def calculate_features(
+    def calculate_features(  # type: ignore[override]
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         additional_forward_args: Optional[Tuple[Any]] = None,
         **kwargs,
     ) -> AttributionsType:
@@ -97,11 +97,11 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
 class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
     """Layer Input X Gradient algorithm explainer."""
 
-    def calculate_features(
+    def calculate_features(  # type: ignore[override]
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         additional_forward_args: Optional[Tuple[Any]] = None,
         attribute_to_layer_input: bool = False,
         layer: Optional[LayerType] = None,

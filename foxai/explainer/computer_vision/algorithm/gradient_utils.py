@@ -3,13 +3,13 @@ from typing import Any, Callable, Optional, Tuple
 
 import torch
 
-from foxai.types import LayerType, ModelType, TargetType
+from foxai.types import LayerType, ModelType
 
 
 def _run_forward(
     forward_func: Callable,
     input_tensor: torch.Tensor,
-    target: Optional[TargetType] = None,
+    target: Optional[int] = None,
     additional_forward_args: Optional[Tuple[Any]] = None,
 ) -> torch.Tensor:
     r"""Executes forward pass and returns result with respect to the target.
@@ -29,21 +29,13 @@ def _run_forward(
 
     if target is None:
         return output
-    elif isinstance(target, int):
-        return output[:, target]
-    elif isinstance(target, torch.Tensor):
-        assert torch.numel(target) == 1 and isinstance(
-            target.item(), int
-        ), f"Tensor {target} is not a valid class"
-        return output[:, target.item()]
-    else:
-        raise AssertionError(f"Target type {type(target)} is not valid.")
+    return output[:, target]
 
 
 def compute_gradients(
     forward_fn: Callable,
     input_tensor: torch.Tensor,
-    target_ind: Optional[TargetType] = None,
+    target_ind: Optional[int] = None,
     additional_forward_args: Optional[Tuple[Any]] = None,
 ) -> torch.Tensor:
     r"""
@@ -67,11 +59,11 @@ def compute_gradients(
     return grads[0]
 
 
-def _forward_layer_distributed_eval(
+def _forward_layer_eval(
     forward_fn: ModelType,
     inputs: torch.Tensor,
     layer: LayerType,
-    target_ind: Optional[TargetType] = None,
+    target_ind: Optional[int] = None,
     additional_forward_args: Any = None,
     attribute_to_layer_input: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -80,21 +72,21 @@ def _forward_layer_distributed_eval(
     pass and return layer result and optionally also the output of the forward function
     depending on whether we set `attribute_to_layer_input` to True or False.
     """
-    saved_layer: torch.Tensor
+    activations: torch.Tensor
 
     def pre_hook_wrapper(_):
         def forward_pre_hook(_, input_tensor):
-            nonlocal saved_layer
-            saved_layer = input_tensor[0]
-            return saved_layer.clone()
+            nonlocal activations
+            activations = input_tensor[0]
+            return activations.clone()
 
         return forward_pre_hook
 
     def hook_wrapper(_):
         def forward_hook(_, input_tensor, output):  # pylint: disable=unused-argument
-            nonlocal saved_layer
-            saved_layer = output
-            return saved_layer.clone()
+            nonlocal activations
+            activations = output
+            return activations.clone()
 
         return forward_hook
 
@@ -110,8 +102,8 @@ def _forward_layer_distributed_eval(
             target=target_ind,
             additional_forward_args=additional_forward_args,
         )
-        return saved_layer, output
-    finally:
+        return activations, output
+    finally:  # ensuring hooks are always returned, before return statement
         if hook is not None:
             hook.remove()
 
@@ -120,7 +112,7 @@ def compute_layer_gradients(
     model: ModelType,
     layer: LayerType,
     inputs: torch.Tensor,
-    target_ind: Optional[TargetType] = None,
+    target_ind: Optional[int] = None,
     additional_forward_args: Optional[Any] = None,
     attribute_to_layer_input: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -156,7 +148,7 @@ def compute_layer_gradients(
             Target layer output for given input.
     """
     with torch.autograd.set_grad_enabled(True):
-        layer_outputs, output = _forward_layer_distributed_eval(
+        layer_outputs, output = _forward_layer_eval(
             model,
             inputs,
             layer,

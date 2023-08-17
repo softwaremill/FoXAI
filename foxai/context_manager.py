@@ -50,10 +50,6 @@ from foxai.explainer import (
     XRAICVExplainer,
 )
 from foxai.explainer.base_explainer import CVExplainerT
-from foxai.explainer.computer_vision.algorithm.input_x_gradient_old import (
-    InputXGradientCVExplainerOld,
-    LayerInputXGradientCVExplainerOld,
-)
 from foxai.logger import create_logger
 from foxai.types import AttributionsType, ModelType
 
@@ -97,11 +93,6 @@ class CVClassificationExplainers(Enum):
     CV_SALIENCY_EXPLAINER: str = SaliencyCVExplainer.__name__
     CV_GUIDED_BACKPOPAGATION_EXPLAINER: str = GuidedBackpropCVExplainer.__name__
     CV_XRAI_EXPLAINER: str = XRAICVExplainer.__name__
-
-    CV_INPUT_X_GRADIENT_EXPLAINER_OLD: str = InputXGradientCVExplainerOld.__name__
-    CV_LAYER_INPUT_X_GRADIENT_EXPLAINER_OLD: str = (
-        LayerInputXGradientCVExplainerOld.__name__
-    )
 
 
 class CVObjectDetectionExplainers(Enum):
