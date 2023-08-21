@@ -43,9 +43,9 @@ def _metric_calculation(
     metric_type=Metrics.INSERTION,
     kernel=(101, 101),
 ) -> Tuple[np.ndarray, List]:
-    """Calculate metric (insertion or deletion) given importance map, image, model and chosen class. Implementation of both metrics
-      (insertion and deletion) are inspired by the paper "RISE: Randomized Input Sampling for Explanation of Black-box Models"
-        : https://arxiv.org/abs/1806.07421
+    """Calculate metric (insertion or deletion) given importance map, image, model and chosen class.
+    Implementation of both metrics (insertion and deletion) are inspired by the paper
+    "RISE: Randomized Input Sampling for Explanation of Black-box Models": https://arxiv.org/abs/1806.07421
 
     Args:
         attributions: Torch Tensor corresponding to importance map.
