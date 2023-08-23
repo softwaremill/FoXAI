@@ -98,6 +98,8 @@ def _forward_layer_eval(
 
     hook: Optional[RemovableHandle] = None
     try:
+        # forward_hook is used to get the final activation from the forward function of the model
+        # and pre_forward_hook when the activation is to be with relation to the target layer
         if attribute_to_layer_input:
             hook = layer.register_forward_pre_hook(pre_hook_wrapper(layer))
         else:
