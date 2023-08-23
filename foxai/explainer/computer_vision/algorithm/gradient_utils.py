@@ -2,6 +2,7 @@ from inspect import signature
 from typing import Any, Callable, Optional, Tuple
 
 import torch
+from torch.utils.hooks import RemovableHandle
 
 from foxai.types import LayerType, ModelType
 
@@ -71,6 +72,11 @@ def _forward_layer_eval(
     A helper function that allows to set a hook on model's `layer`, run the forward
     pass and return layer result and optionally also the output of the forward function
     depending on whether we set `attribute_to_layer_input` to True or False.
+
+    NOTE: To properly handle inplace operations, a clone of the layer output
+    is stored. This structure inhibits execution of a backward hook on the last
+    module for the layer output when computing the gradient with respect to
+    the input, since we store an intermediate clone, as opposed to the true module output.
     """
     activations: torch.Tensor
 
@@ -90,7 +96,7 @@ def _forward_layer_eval(
 
         return forward_hook
 
-    hook = None
+    hook: Optional[RemovableHandle] = None
     try:
         if attribute_to_layer_input:
             hook = layer.register_forward_pre_hook(pre_hook_wrapper(layer))
@@ -103,7 +109,7 @@ def _forward_layer_eval(
             additional_forward_args=additional_forward_args,
         )
         return activations, output
-    finally:  # ensuring hooks are always returned, before return statement
+    finally:
         if hook is not None:
             hook.remove()
 
@@ -111,7 +117,7 @@ def _forward_layer_eval(
 def compute_layer_gradients(
     model: ModelType,
     layer: LayerType,
-    inputs: torch.Tensor,
+    input_tensor: torch.Tensor,
     target_ind: Optional[int] = None,
     additional_forward_args: Optional[Any] = None,
     attribute_to_layer_input: bool = False,
@@ -132,7 +138,7 @@ def compute_layer_gradients(
         model: forward function. This can be for example model's
                     forward function.
         layer:      Layer for which gradients / output will be evaluated.
-        inputs:     Input at which gradients are evaluated, will be passed to forward_fn.
+        input_tensor:     Input at which gradients are evaluated, will be passed to forward_fn.
         target_ind: Index of the target class for which gradients must be computed (classification only).
         additional_forward_args: Additional input arguments that forward function requires.
         attribute_to_layer_input: Indicates whether to compute the attribution with respect to the layer input
@@ -150,7 +156,7 @@ def compute_layer_gradients(
     with torch.autograd.set_grad_enabled(True):
         layer_outputs, output = _forward_layer_eval(
             model,
-            inputs,
+            input_tensor,
             layer,
             target_ind=target_ind,
             additional_forward_args=additional_forward_args,
