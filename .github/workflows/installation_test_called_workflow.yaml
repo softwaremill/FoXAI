@@ -1,5 +1,5 @@
 name: Installation test
-run-name: Installation test, CUDA ${{ inputs.cuda_version }},  PYTHON ${{ inputs.python_version }}
+run-name: Installation test, CUDA ${{ inputs.cuda_version }}, PYTHON ${{ inputs.python_version }}, PyTorch ${{ inputs.torch_version }}, PyTorch-Lightning ${{ inputs.torch_lightning_version }}, Pandas ${{ inputs.pandas_version }}
 
 on:
   workflow_call:
@@ -12,9 +12,21 @@ on:
         description: "Select Python version"
         required: true
         type: string
+      pandas_version:
+        description: "Select Pandas version"
+        required: true
+        type: string
+      torch_version:
+        description: "Select PyTorch version"
+        required: true
+        type: string
+      pytorch_lightning_version:
+        description: "Select PyTorch-Lightning version"
+        required: true
+        type: string
 
 env:
-  POETRY_VERSION: "1.4.2"
+  POETRY_VERSION: "1.5.1"
 jobs:
   foxai:
     name: Install FoxAI
@@ -28,11 +40,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install system libs
+        env:
+          DEBIAN_FRONTEND: "noninteractive"
+          TZ: "Etc/UTC"
         run: |
           apt-get update -y
-          apt-get install -y libglib2.0-0 libx11-dev libxext-dev
+          apt-get install -y libglib2.0-0 libx11-dev libxext-dev libgl1-mesa-glx
+          apt-get install -y curl
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+          apt-get install -y nodejs
+          node --version
       - uses: "./.github/actions/build-module"
         env:
           PYTHON_VERSION: ${{ inputs.python_version }}
+          PANDAS_VERSION: ${{ inputs.pandas_version }}
+          TORCH_VERSION: ${{ inputs.torch_version }}
+          PYTORCH_LIGHTNING_VERSION: ${{ inputs.pytorch_lightning_version }}
         with:
           moduleName: "src"
