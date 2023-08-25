@@ -6,21 +6,21 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/salienc
 from typing import Any, Optional
 
 import torch
-from captum.attr import Saliency
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
-from foxai.types import AttributionsType, ModelType, TargetType
+from foxai.explainer.computer_vision.algorithm.gradient_utils import compute_gradients
+from foxai.types import AttributionsType, ModelType
 
 
 class SaliencyCVExplainer(Explainer):
     """Saliency algorithm explainer."""
 
-    def calculate_features(
+    def calculate_features(  # type: ignore[override]
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         abs_value: bool = True,
         additional_forward_args: Any = None,
         **kwargs,  # pylint: disable = (unused-argument)
@@ -87,13 +87,19 @@ class SaliencyCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        saliency = Saliency(forward_func=model)
+        grad_required = input_data.requires_grad
+        input_data.requires_grad_()
 
-        attributions: AttributionsType = saliency.attribute(
-            input_data,
-            target=pred_label_idx,
-            abs=abs_value,
-            additional_forward_args=additional_forward_args,
+        gradients = compute_gradients(
+            model, input_data, pred_label_idx, additional_forward_args
         )
+        if abs_value:
+            attributions = torch.abs(gradients)
+        else:
+            attributions = gradients
+
+        if not grad_required:
+            input_data.requires_grad_(False)
+
         validate_result(attributions=attributions)
         return attributions
