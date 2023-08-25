@@ -49,7 +49,7 @@ runs:
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        poetry install --quiet
+        poetry install 
     
     - name: Install pandas (version ${{ env.PANDAS_VERSION }})
       shell: bash
