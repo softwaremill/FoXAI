@@ -56,6 +56,9 @@ runs:
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
+        python -c "import sys; print(sys.executable)"
+        source .venv/bin/activate
+        python -c "import sys; print(sys.executable)"
         pip uninstall pandas --yes 
         pip install pandas==${{ env.PANDAS_VERSION }}
     
