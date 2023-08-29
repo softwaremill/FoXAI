@@ -64,16 +64,16 @@ runs:
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        pip uninstall torch --yes
-        pip install torch==${{ env.TORCH_VERSION }}
+        poetry run pip uninstall torch --yes
+        poetry run pip install torch==${{ env.TORCH_VERSION }}
 
     - name: Install pytorch-lightning (version ${{ env.PYTORCH_LIGHTNING_VERSION }})
       shell: bash
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        pip uninstall pytorch-lightning --yes --root-user-action ignore
-        pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
+        poetry run pip uninstall pytorch-lightning --yes --root-user-action ignore
+        poetry run pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
       working-directory: "${{ inputs.moduleFolder }}"
 
     - name: Run Black
