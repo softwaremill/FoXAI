@@ -56,11 +56,8 @@ runs:
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        python -c "import sys; print(sys.executable)"
-        poetry shell
-        python -c "import sys; print(sys.executable)"
-        pip uninstall pandas --yes 
-        pip install pandas==${{ env.PANDAS_VERSION }}
+        poetry run pip uninstall pandas --yes 
+        poetry run pip install pandas==${{ env.PANDAS_VERSION }}
     
     - name: Install torch (version ${{ env.TORCH_VERSION }})
       shell: bash
