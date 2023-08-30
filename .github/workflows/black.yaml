@@ -26,5 +26,5 @@ jobs:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           level: warning
-          workdir: src
+          workdir: foxai
           execute_command: 'poetry run mypy'
