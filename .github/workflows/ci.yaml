@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - development
+      - develop
   pull_request:
     branches:
       - main
-      - development
+      - develop
       - release/*
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
