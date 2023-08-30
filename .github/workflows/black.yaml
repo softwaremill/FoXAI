@@ -27,4 +27,4 @@ jobs:
           reporter: github-pr-review
           level: warning
           workdir: foxai
-          execute_command: 'poetry run mypy'
+          # execute_command: 'poetry run mypy'
