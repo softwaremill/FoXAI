@@ -108,6 +108,14 @@ foxai.explainer.computer\_vision.algorithm.saliency module
    :undoc-members:
    :show-inheritance:
 
+foxai.explainer.computer\_vision.algorithm.xrai module
+------------------------------------------------------
+
+.. automodule:: foxai.explainer.computer_vision.algorithm.xrai
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

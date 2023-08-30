@@ -20,6 +20,14 @@ foxai.explainer.base\_explainer module
    :undoc-members:
    :show-inheritance:
 
+foxai.explainer.fullgradient module
+-----------------------------------
+
+.. automodule:: foxai.explainer.fullgradient
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

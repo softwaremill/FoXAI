@@ -58,10 +58,11 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="foxai.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.array_utils">foxai.array_utils module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.context_manager">foxai.context_manager module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#foxai-array-utils-module">foxai.array_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#foxai-context-manager-module">foxai.context_manager module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.logger">foxai.logger module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai.visualizer">foxai.visualizer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#foxai-types-module">foxai.types module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="foxai.html#foxai-visualizer-module">foxai.visualizer module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="foxai.html#module-foxai">Module contents</a></li>
 </ul>
 </li>
@@ -100,80 +101,14 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
-<section id="module-foxai.metrics.metrics">
-<span id="foxai-metrics-metrics-module"></span><h2>foxai.metrics.metrics module<a class="headerlink" href="#module-foxai.metrics.metrics" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="foxai.metrics.metrics.Metrics">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">foxai.metrics.metrics.</span></span><span class="sig-name descname"><span class="pre">Metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foxai/metrics/metrics.html#Metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.metrics.metrics.Metrics" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-<p>Helper Enum represenitng insertion and deletion metrics.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="foxai.metrics.metrics.Metrics.DELETION">
-<span class="sig-name descname"><span class="pre">DELETION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#foxai.metrics.metrics.Metrics.DELETION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="foxai.metrics.metrics.Metrics.INSERTION">
-<span class="sig-name descname"><span class="pre">INSERTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#foxai.metrics.metrics.Metrics.INSERTION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="foxai.metrics.metrics.deletion">
-<span class="sig-prename descclassname"><span class="pre">foxai.metrics.metrics.</span></span><span class="sig-name descname"><span class="pre">deletion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformed_img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chosen_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/foxai/metrics/metrics.html#deletion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.metrics.metrics.deletion" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate deletion metric given importance map, image, model and chosen class.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attrs</strong> – Torch Tensor corresponding to importance map.</p></li>
-<li><p><strong>transformed_img</strong> – Torch Tensor corresponding to image.</p></li>
-<li><p><strong>model</strong> – model which we are explaining.</p></li>
-<li><p><strong>chosen_class</strong> – index of the class we are creating metric for.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>numerical value of chosen metric for given picture and explanation.
-importance_lst: list of numpy elements corresponding to confidence value at each step.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>metric</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>AttributeError</strong> – if metric type is not enum of Metrics.INSERTION or Metrics.DELETION</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="foxai.metrics.metrics.insertion">
-<span class="sig-prename descclassname"><span class="pre">foxai.metrics.metrics.</span></span><span class="sig-name descname"><span class="pre">insertion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformed_img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chosen_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/foxai/metrics/metrics.html#insertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#foxai.metrics.metrics.insertion" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate insertion metric given importance map, image, model and chosen class.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attrs</strong> – Torch Tensor corresponding to importance map.</p></li>
-<li><p><strong>transformed_img</strong> – Torch Tensor corresponding to image.</p></li>
-<li><p><strong>model</strong> – model which we are explaining.</p></li>
-<li><p><strong>chosen_class</strong> – index of the class we are creating metric for.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>numerical value of chosen metric for given picture and explanation.
-importance_lst: list of numpy elements corresponding to confidence value at each step.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>metric</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>AttributeError</strong> – if metric type is not enum of Metrics.INSERTION or Metrics.DELETION</p>
-</dd>
-</dl>
-</dd></dl>
-
+<section id="foxai-metrics-focus-module">
+<h2>foxai.metrics.focus module<a class="headerlink" href="#foxai-metrics-focus-module" title="Permalink to this heading"></a></h2>
 </section>
-<section id="module-foxai.metrics">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-foxai.metrics" title="Permalink to this heading"></a></h2>
+<section id="foxai-metrics-insertion-deletion-metrics-module">
+<h2>foxai.metrics.insertion_deletion_metrics module<a class="headerlink" href="#foxai-metrics-insertion-deletion-metrics-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 </section>
 </section>
 

@@ -39,6 +39,14 @@ foxai.logger module
    :undoc-members:
    :show-inheritance:
 
+foxai.types module
+------------------
+
+.. automodule:: foxai.types
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 foxai.visualizer module
 -----------------------
 
