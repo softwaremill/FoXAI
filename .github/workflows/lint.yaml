@@ -27,4 +27,4 @@ jobs:
           reporter: github-pr-review
           level: warning
           workdir: .
-          # execute_command: 'poetry run mypy'
+          execute_command: 'mypy -p foxai --show-error-context --pretty --namespace-packages --explicit-package-bases --ignore-missing-imports'
