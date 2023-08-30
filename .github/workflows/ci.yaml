@@ -4,16 +4,16 @@ on:
   push:
     branches:
       - main
-      - development
+      - develop
   pull_request:
     branches:
       - main
-      - development
+      - develop
       - release/*
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 env:
-  POETRY_VERSION: '1.2.1'
+  POETRY_VERSION: '1.4.2'
   PYTHON_VERSION: '3.8'
 jobs:
   foxai:
@@ -23,3 +23,8 @@ jobs:
       - uses: "./.github/actions/build-module"
         with:
           moduleName: "src"
+        env:
+          PYTHON_VERSION: "3.8"
+          TORCH_VERSION: "2.0.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu"
+          PANDAS_VERSION: "2.0.0"
+          PYTORCH_LIGHTNING_VERSION: "2.0.7"

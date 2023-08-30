@@ -4,12 +4,11 @@ Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/guided_
 and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/grad_cam.py.
 """
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 import torch
 import torch.nn.functional as F
-from captum._utils.typing import TargetType
 from captum.attr import GuidedGradCam
 
 from foxai.array_utils import validate_result
@@ -22,15 +21,18 @@ from foxai.explainer.computer_vision.object_detection.base_object_detector impor
     BaseObjectDetector,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
+from foxai.types import AttributionsType, LayerType, ModelType, TargetType
 
 
-class LayerBaseGradCAM(ABC):
+class LayerBaseGradCAM:
     """Layer GradCAM for object detection task."""
 
     def __init__(
         self,
-        target_layer: torch.nn.Module,
+        model: ModelType,
+        target_layer: LayerType,
     ):
+        self.model = model
         self._gradients: Dict[str, torch.Tensor] = {}
         self._activations: Dict[str, torch.Tensor] = {}
         self.target_layer = target_layer
@@ -60,12 +62,11 @@ class LayerBaseGradCAM(ABC):
     def gradients(self) -> torch.Tensor:
         return self._gradients["value"]
 
-    @abstractmethod
     def forward(
         self,
         input_img: torch.Tensor,
     ) -> Union[torch.Tensor, ObjectDetectionOutput]:
-        """Forward pass of GradCAM aglorithm.
+        """Forward pass of GradCAM algorithm.
 
         Args:
             input_img: Input image with shape of (B, C, H, W).
@@ -74,6 +75,29 @@ class LayerBaseGradCAM(ABC):
             ObjectDetectionOutput object for object detection and tensor with saliency
             map for classification.
         """
+        saliency_maps: List[torch.Tensor] = []
+        _, _, height, width = input_img.size()
+
+        result_list: List[torch.Tensor] = self.model.forward(input_img)
+
+        result = torch.vstack(tensors=tuple(result_list))
+        score = result.max()
+
+        # clear gradients
+        self.model.zero_grad()
+
+        # calculate gradients
+        score.backward(retain_graph=True)
+
+        saliency_maps.append(
+            self.get_saliency_map(
+                height=height,
+                width=width,
+                gradients=self.gradients,
+                activations=self.activations,
+            )
+        )
+        return torch.cat(saliency_maps)
 
     def get_saliency_map(
         self,
@@ -116,59 +140,12 @@ class LayerBaseGradCAM(ABC):
         return self.forward(input_img)
 
 
-class LayerGradCAMObjectDetection(LayerBaseGradCAM):
-    """Layer GradCAM for object detection task."""
-
-    def __init__(
-        self,
-        model: torch.nn.Module,
-        target_layer: torch.nn.Module,
-    ):
-        super().__init__(target_layer=target_layer)
-        self.model = model
-
-    def forward(
-        self,
-        input_img: torch.Tensor,
-    ) -> torch.Tensor:
-        """Forward pass of GradCAM aglorithm.
-
-        Args:
-            input_img: Input image with shape of (B, C, H, W).
-
-        Returns:
-            Tensor with saliency map.
-        """
-        saliency_maps: List[torch.Tensor] = []
-        _, _, height, width = input_img.size()
-
-        result_list = self.model.forward(input_img)
-        for result in result_list:
-            score = result.max()
-
-            # clear gradients
-            self.model.zero_grad()
-
-            # calculate gradients
-            score.backward(retain_graph=True)
-
-            saliency_maps.append(
-                self.get_saliency_map(
-                    height=height,
-                    width=width,
-                    gradients=self.gradients,
-                    activations=self.activations,
-                )
-            )
-        return torch.cat(saliency_maps)
-
-
 class BaseGradCAMCVExplainer(Explainer):
     """Base GradCAM algorithm explainer."""
 
     @abstractmethod
     def create_explainer(
-        self, model: torch.nn.Module, layer: torch.nn.Module, **kwargs
+        self, model: ModelType, layer: LayerType, **kwargs
     ) -> Union[GuidedGradCam, LayerBaseGradCAM]:
         """Create explainer object.
 
@@ -189,13 +166,11 @@ class BaseGradCAMCVExplainer(Explainer):
     @abstractmethod
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
-        additional_forward_args: Any = None,
-        attribute_to_layer_input: bool = False,
+        pred_label_idx: Optional[TargetType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate features image with GradCAM algorithm explainer.
 
         Args:
@@ -228,30 +203,6 @@ class BaseGradCAMCVExplainer(Explainer):
                     #output_dims - 1 elements. Each tuple is applied as the
                     target for the corresponding example.
                 Default: None
-            additional_forward_args: If the forward function
-                requires additional arguments other than the inputs for
-                which attributions should not be computed, this argument
-                can be provided. It must be either a single additional
-                argument of a Tensor or arbitrary (non-tuple) type or a
-                tuple containing multiple additional arguments including
-                tensors or any arbitrary python types. These arguments
-                are provided to forward_func in order following the
-                arguments in inputs.
-                Note that attributions are not computed with respect
-                to these arguments.
-                Default: None
-            attribute_to_layer_input: Indicates whether to
-                compute the attribution with respect to the layer input
-                or output in `LayerGradCam`.
-                If `attribute_to_layer_input` is set to True
-                then the attributions will be computed with respect to
-                layer inputs, otherwise it will be computed with respect
-                to layer outputs.
-                Note that currently it is assumed that either the input
-                or the output of internal layer, depending on whether we
-                attribute to the input or output, is a single tensor.
-                Support for multiple tensors will be added later.
-                Default: False
 
         Returns:
             Element-wise product of (upsampled) GradCAM
@@ -273,8 +224,8 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
-        layer: torch.nn.Module,
+        model: ModelType,
+        layer: LayerType,
         **kwargs,
     ) -> Union[GuidedGradCam, LayerBaseGradCAM]:
         """Create explainer object.
@@ -298,14 +249,15 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
         interpolate_mode: str = "nearest",
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with GradCAM algorithm explainer.
 
         Args:
@@ -392,7 +344,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
             ValueError: if model does not contain conv layers.
             RuntimeError: if attributions has shape (0)
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        attributions: AttributionsType
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
@@ -415,8 +367,8 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
-        layer: torch.nn.Module,
+        model: ModelType,
+        layer: LayerType,
         **kwargs,
     ) -> Union[GuidedGradCam, LayerBaseGradCAM]:
         """Create explainer object.
@@ -436,24 +388,24 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         """
         model = modify_modules(model)
 
-        return LayerGradCAMObjectDetection(model=model, target_layer=layer)
+        return LayerBaseGradCAM(model=model, target_layer=layer)
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,  # pylint: disable = (unused-argument)
-        additional_forward_args: Any = None,  # pylint: disable = (unused-argument)
-        attribute_to_layer_input: bool = False,  # pylint: disable = (unused-argument)
-        relu_attributions: bool = False,  # pylint: disable = (unused-argument)
+        pred_label_idx: Optional[
+            TargetType
+        ] = None,  # pylint: disable = (unused-argument)
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate features image with GradCAM algorithm explainer.
 
         Args:
             model: The forward function of the model or any
                 modification of it.
-            inputs_data: Input for which attributions
+            input_data: Input for which attributions
                 are computed. If forward_func takes a single
                 tensor as input, a single input tensor should be provided.
                 If forward_func takes multiple tensors as input, a tuple
@@ -485,37 +437,10 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
                     #output_dims - 1 elements. Each tuple is applied as the
                     target for the corresponding example.
                 Default: None
-            additional_forward_args: If the forward function
-                requires additional arguments other than the inputs for
-                which attributions should not be computed, this argument
-                can be provided. It must be either a single additional
-                argument of a Tensor or arbitrary (non-tuple) type or a
-                tuple containing multiple additional arguments including
-                tensors or any arbitrary python types. These arguments
-                are provided to forward_func in order following the
-                arguments in inputs.
-                Note that attributions are not computed with respect
-                to these arguments.
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
                 Default: None
-            attribute_to_layer_input: Indicates whether to
-                compute the attribution with respect to the layer input
-                or output in `LayerGradCam`.
-                If `attribute_to_layer_input` is set to True
-                then the attributions will be computed with respect to
-                layer inputs, otherwise it will be computed with respect
-                to layer outputs.
-                Note that currently it is assumed that either the input
-                or the output of internal layer, depending on whether we
-                attribute to the input or output, is a single tensor.
-                Support for multiple tensors will be added later.
-                Default: False
-            relu_attributions: Indicates whether to
-                apply a ReLU operation on the final attribution,
-                returning only non-negative attributions. Setting this
-                flag to True matches the original GradCAM algorithm,
-                otherwise, by default, both positive and negative
-                attributions are returned.
-                Default: False
 
         Returns:
             Element-wise product of (upsampled) GradCAM
@@ -534,7 +459,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
             ValueError: if model does not contain conv layers.
             RuntimeError: if attributions has shape (0)
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
 
@@ -542,9 +466,9 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         if isinstance(gradcam, LayerBaseGradCAM):
             attributions = gradcam(input_data)
 
-        if not isinstance(attributions, torch.Tensor):
+        if not isinstance(attributions, AttributionsType):
             raise RuntimeError(
-                f"Saliency map is `{type(attributions)}`, but expected type is `torch.Tensor`."
+                f"Saliency map is `{type(attributions)}`, but expected type is `AttributionsType`."
             )
 
         validate_result(attributions=attributions)
@@ -560,16 +484,15 @@ class LayerGradCAMObjectDetectionExplainer(LayerBaseGradCAM):
     def __init__(
         self,
         model: BaseObjectDetector,
-        target_layer: torch.nn.Module,
+        target_layer: LayerType,
     ):
-        super().__init__(target_layer=target_layer)
-        self.model = model
+        super().__init__(model=model, target_layer=target_layer)
 
     def forward(
         self,
         input_img: torch.Tensor,
     ) -> ObjectDetectionOutput:
-        """Forward pass of GradCAM aglorithm.
+        """Forward pass of GradCAM algorithm.
 
         Args:
             input_img: Input image with shape of (B, C, H, W).

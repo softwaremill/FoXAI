@@ -5,10 +5,10 @@ and https://github.com/pytorch/captum/blob/master/captum/attr/_core/layer/layer_
 """
 
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, List, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
+from captum._utils.typing import BaselineType
 from captum.attr import DeepLift, LayerDeepLift
 
 from foxai.array_utils import validate_result
@@ -16,6 +16,14 @@ from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     modify_modules,
+    preprocess_baselines,
+)
+from foxai.types import (
+    AttributionsType,
+    CustomAttributionFuncType,
+    LayerType,
+    ModelType,
+    TargetType,
 )
 
 
@@ -25,7 +33,7 @@ class BaseDeepLIFTCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[DeepLift, LayerDeepLift]:
@@ -56,17 +64,16 @@ class BaseDeepLIFTCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
-        baselines: Union[None, int, float, torch.Tensor] = None,
+        pred_label_idx: Optional[TargetType] = None,
+        baselines: Optional[BaselineType] = None,
         additional_forward_args: Any = None,
-        custom_attribution_func: Union[
-            None, Callable[..., Tuple[torch.Tensor, ...]]
-        ] = None,
+        custom_attribution_func: Optional[CustomAttributionFuncType] = None,
         attribute_to_layer_input: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with DeepLIFT algorithm explainer.
 
         Args:
@@ -106,13 +113,16 @@ class BaseDeepLIFTCVExplainer(Explainer):
                 corresponding references.
                 Baselines can be provided as:
 
-                - a single tensor, if inputs is a single tensor, with
-                    exactly the same dimensions as inputs or the first
+                - a single tensor, if input_data is a single tensor, with
+                    exactly the same dimensions as input_data or the first
                     dimension is one and the remaining dimensions match
-                    with inputs.
-
-                - a single scalar, if inputs is a single tensor, which will
-                    be broadcasted for each input value in input tensor.
+                    with input_data.
+                - a batch tensor, if input_data is a batch tensor, with
+                    each tensor of a batch with exactly the same dimensions as
+                    input_data and the first dimension is number of different baselines
+                    to compute and their averaged score. Typical usage of batch
+                    baselines is to provide random baselines and compute mean
+                    attributes from them.
 
                 In the cases when `baselines` is not provided, we internally
                 use zero scalar corresponding to each input tensor.
@@ -158,6 +168,10 @@ class BaseDeepLIFTCVExplainer(Explainer):
                 attribute to the input or output, is a single tensor.
                 Support for multiple tensors will be added later.
                 Default: False
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             Attribution score computed based on DeepLift rescale rule with respect
@@ -171,36 +185,48 @@ class BaseDeepLIFTCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        attributions: AttributionsType
         deeplift = self.create_explainer(model=model, layer=layer)
 
-        if baselines is None:
-            baselines = torch.randn(
-                input_data.shape,
-                requires_grad=True,
-                device=input_data.device,
-            )
+        attributions_list: List[AttributionsType] = []
+        baselines_list, aggregate_attributes = preprocess_baselines(
+            baselines=baselines,
+            input_data_shape=input_data.shape,
+        )
 
-        if isinstance(deeplift, LayerDeepLift):
-            attributions = deeplift.attribute(
-                input_data,
-                target=pred_label_idx,
-                baselines=baselines,
-                return_convergence_delta=False,
-                additional_forward_args=additional_forward_args,
-                custom_attribution_func=custom_attribution_func,
-                attribute_to_layer_input=attribute_to_layer_input,
-            )
-        else:
-            attributions = deeplift.attribute(
-                input_data,
-                target=pred_label_idx,
-                baselines=baselines,
-                return_convergence_delta=False,
-                additional_forward_args=additional_forward_args,
-                custom_attribution_func=custom_attribution_func,
-            )
-        validate_result(attributions=attributions)
+        for baseline in baselines_list:
+            if isinstance(deeplift, LayerDeepLift):
+                attributions = deeplift.attribute(
+                    input_data,
+                    target=pred_label_idx,
+                    baselines=baseline,
+                    return_convergence_delta=False,
+                    additional_forward_args=additional_forward_args,
+                    custom_attribution_func=custom_attribution_func,
+                    attribute_to_layer_input=attribute_to_layer_input,
+                )
+            else:
+                attributions = deeplift.attribute(
+                    input_data,
+                    target=pred_label_idx,
+                    baselines=baseline,
+                    return_convergence_delta=False,
+                    additional_forward_args=additional_forward_args,
+                    custom_attribution_func=custom_attribution_func,
+                )
+            validate_result(attributions=attributions)
+
+            # if aggregation of attributes is required make sure that dimension of
+            # stacked attributes have baseline number dimension
+            if aggregate_attributes:
+                attributions = attributions.unsqueeze(0)
+
+            attributions_list.append(attributions)
+
+        attributions = torch.vstack(attributions_list)
+        if aggregate_attributes:
+            attributions = torch.mean(attributions, dim=0)
+
         return attributions
 
 
@@ -209,7 +235,7 @@ class DeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
         eps: float = 1e-10,
         **kwargs,
@@ -257,9 +283,9 @@ class LayerDeepLIFTCVExplainer(BaseDeepLIFTCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         multiply_by_inputs: bool = True,
-        layer: Optional[torch.nn.Module] = None,
+        layer: Optional[LayerType] = None,
         **kwargs,
     ) -> Union[DeepLift, LayerDeepLift]:
         """Create explainer object.

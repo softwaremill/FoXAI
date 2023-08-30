@@ -8,12 +8,12 @@ from abc import abstractmethod
 from typing import Any, Optional, Union
 
 import torch
-from captum._utils.typing import TargetType
 from captum.attr import InputXGradient, LayerGradientXActivation
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
+from foxai.types import AttributionsType, LayerType, ModelType, TargetType
 
 
 class BaseInputXGradientSHAPCVExplainer(Explainer):
@@ -22,7 +22,7 @@ class BaseInputXGradientSHAPCVExplainer(Explainer):
     @abstractmethod
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
@@ -37,13 +37,14 @@ class BaseInputXGradientSHAPCVExplainer(Explainer):
 
     def calculate_features(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[TargetType] = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
+        layer: Optional[LayerType] = None,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> AttributionsType:
         """Generate model's attributes with Input X Gradient algorithm explainer.
 
         Args:
@@ -95,6 +96,10 @@ class BaseInputXGradientSHAPCVExplainer(Explainer):
                 layer input, otherwise it will be computed with respect
                 to layer output.
                 Default: False
+            layer: Layer for which attributions are computed.
+                If None provided, last convolutional layer from the model
+                is taken.
+                Default: None
 
         Returns:
             The input x gradient with respect to each input feature or gradient
@@ -108,7 +113,7 @@ class BaseInputXGradientSHAPCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        layer: Optional[torch.nn.Module] = kwargs.get("layer", None)
+        attributions: AttributionsType
         input_x_gradient = self.create_explainer(model=model, layer=layer)
 
         if isinstance(input_x_gradient, LayerGradientXActivation):
@@ -133,7 +138,7 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
+        model: ModelType,
         **kwargs,
     ) -> Union[InputXGradient, LayerGradientXActivation]:
         """Create explainer object.
@@ -156,8 +161,8 @@ class LayerInputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
 
     def create_explainer(
         self,
-        model: torch.nn.Module,
-        layer: Optional[torch.nn.Module] = None,
+        model: ModelType,
+        layer: Optional[LayerType] = None,
         multiply_by_inputs: bool = True,
         **kwargs,
     ) -> Union[InputXGradient, LayerGradientXActivation]:
