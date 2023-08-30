@@ -346,7 +346,9 @@ def test_transpose_color_last_in_array_np_with_should_raise_exception_for_2d_dat
         _ = transpose_color_last_in_array_np(array=array)
 
 
-def test_transpose_color_last_in_array_np_with_should_raise_exception_for_5d_data() -> None:
+def test_transpose_color_last_in_array_np_with_should_raise_exception_for_5d_data() -> (
+    None
+):
     """Test if function raises RuntimeError when data has more than 4 dimensions."""
     array = np.zeros((1, 1, 6, 6, 3))
 
