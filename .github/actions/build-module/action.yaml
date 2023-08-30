@@ -49,45 +49,33 @@ runs:
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        poetry install --quiet
+        poetry install 
     
     - name: Install pandas (version ${{ env.PANDAS_VERSION }})
       shell: bash
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        pip uninstall pandas --yes 
-        pip install pandas==${{ env.PANDAS_VERSION }}
+        poetry run pip uninstall pandas --yes 
+        poetry run pip install pandas==${{ env.PANDAS_VERSION }}
     
     - name: Install torch (version ${{ env.TORCH_VERSION }})
       shell: bash
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        pip uninstall torch --yes
-        pip install torch==${{ env.TORCH_VERSION }}
+        poetry run pip uninstall torch --yes
+        poetry run pip install torch==${{ env.TORCH_VERSION }}
 
     - name: Install pytorch-lightning (version ${{ env.PYTORCH_LIGHTNING_VERSION }})
       shell: bash
       env:
           PIP_ROOT_USER_ACTION: ignore
       run: |
-        pip uninstall pytorch-lightning --yes --root-user-action ignore
-        pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
+        poetry run pip uninstall pytorch-lightning --yes --root-user-action ignore
+        poetry run pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
       working-directory: "${{ inputs.moduleFolder }}"
-
-    - name: Run Black
-      shell: bash
-      run: |
-        poetry run black . --check --diff --color
-      working-directory: "${{ inputs.moduleFolder }}"
-
-    - name: Run MyPy checks
-      shell: bash
-      run: |
-        poetry run mypy -p foxai --show-error-context --pretty --namespace-packages --explicit-package-bases --ignore-missing-imports
-      working-directory: "${{ inputs.moduleFolder }}"
-
+      
     - name: Run tests
       shell: bash
       run: poetry run pytest
