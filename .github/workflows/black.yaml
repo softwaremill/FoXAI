@@ -16,8 +16,15 @@ jobs:
           # Change reporter level if you need.
           # GitHub Status Check won't become failure with a warning.
           level: warning
-      # - name: Annotate diff changes using reviewdog
-      #   if: steps.action_black.outputs.is_formatted == 'true'
-      #   uses: reviewdog/action-suggester@v1
-      #   with:
-      #     tool_name: blackfmt
+  mypy:
+    name: runner / mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: tsuyoshicho/action-mypy@v3
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: warning
+          workdir: src
+          execute_command: 'poetry run mypy'
