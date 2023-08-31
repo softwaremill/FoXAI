@@ -79,7 +79,6 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
             RuntimeError: if attribution has shape (0).
         """
         with require_grad(input_data) as input_tensor:
-
             gradient = compute_gradients(
                 model, input_tensor, pred_label_idx, additional_forward_args
             )
