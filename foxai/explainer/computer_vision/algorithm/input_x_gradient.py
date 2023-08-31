@@ -13,6 +13,7 @@ from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.algorithm.gradient_utils import (
     compute_gradients,
     compute_layer_gradients,
+    require_grad,
 )
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
 from foxai.types import AttributionsType, LayerType, ModelType
@@ -77,18 +78,12 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
+        with require_grad(input_data) as input_tensor:
+            gradient = compute_gradients(
+                model, input_tensor, pred_label_idx, additional_forward_args
+            )
 
-        grad_required = input_data.requires_grad
-        input_data.requires_grad_()
-
-        gradient = compute_gradients(
-            model, input_data, pred_label_idx, additional_forward_args
-        )
-
-        attributions = input_data * gradient
-
-        if not grad_required:
-            input_data.requires_grad_(False)
+            attributions = input_data * gradient
 
         validate_result(attributions=attributions)
         return attributions

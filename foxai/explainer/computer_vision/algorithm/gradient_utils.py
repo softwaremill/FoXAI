@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from inspect import signature
 from typing import Any, Callable, Optional, Tuple
 
@@ -5,6 +6,19 @@ import torch
 from torch.utils.hooks import RemovableHandle
 
 from foxai.types import LayerType, ModelType
+
+
+@contextmanager
+def require_grad(input_data: torch.Tensor):
+    """
+    Sets requires_grad to True and restores previous setting on exit.
+    """
+    grad_required = input_data.requires_grad
+    input_data.requires_grad_()
+    try:
+        yield input_data
+    finally:
+        input_data.requires_grad_(grad_required)
 
 
 def _run_forward(

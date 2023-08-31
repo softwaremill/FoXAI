@@ -563,7 +563,7 @@ def test_occulusion_raises_error_if_attributes_are_empty(
         )
 
 
-@patch("foxai.explainer.computer_vision.algorithm.saliency.Saliency.attribute")
+@patch("foxai.explainer.computer_vision.algorithm.gradient_utils.compute_gradients")
 def test_saliency_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
