@@ -9,7 +9,10 @@ import torch
 
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
-from foxai.explainer.computer_vision.algorithm.gradient_utils import compute_gradients
+from foxai.explainer.computer_vision.algorithm.gradient_utils import (
+    compute_gradients,
+    require_grad,
+)
 from foxai.types import AttributionsType, ModelType
 
 
@@ -87,19 +90,13 @@ class SaliencyCVExplainer(Explainer):
         Raises:
             RuntimeError: if attribution has shape (0).
         """
-        grad_required = input_data.requires_grad
-        input_data.requires_grad_()
+        with require_grad(input_data) as input_tensor:
 
-        gradients = compute_gradients(
-            model, input_data, pred_label_idx, additional_forward_args
-        )
-        if abs_value:
-            attributions = torch.abs(gradients)
-        else:
-            attributions = gradients
-
-        if not grad_required:
-            input_data.requires_grad_(False)
+            attributions = compute_gradients(
+                model, input_tensor, pred_label_idx, additional_forward_args
+            )
+            if abs_value:
+                attributions = torch.abs(attributions)
 
         validate_result(attributions=attributions)
         return attributions
