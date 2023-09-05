@@ -22,5 +22,5 @@ jobs:
       cuda_version: ${{ matrix.cuda_version }}
       python_version: ${{ matrix.python_version }}
       pandas_version: ${{ matrix.pandas_version }}
-      torch_version: ${{ inputs.torch_version }}
-      pytorch_lightning_version: ${{ inputs.pytorch_lightning_version }}
+      torch_version: ${{ matrix.torch_version }}
+      pytorch_lightning_version: ${{ matrix.pytorch_lightning_version }}
