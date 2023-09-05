@@ -1,11 +1,13 @@
-from abc import ABC, abstractmethod
+"""Based on https://github.com/pytorch/captum/blob/master/captum/attr/_core/lrp.py"""
+
+from abc import ABCMeta, abstractmethod
 from typing import Optional
 
 import torch
 from torch.nn import Module, Parameter
 
 
-class PropagationRule(ABC):
+class PropagationRule(metaclass=ABCMeta):
     """
     Base class for all propagation rule classes, also called Z-Rule.
     epsilon is used to assure that no zero divison occurs.
@@ -41,8 +43,8 @@ class PropagationRule(ABC):
 
 class EpsilonRule(PropagationRule):
     """
-    Rule for relevance propagation using a small value of epsilon
-    to avoid numerical instabilities and remove noise.
+    Rule using only a small value of epsilon to avoid numerical instabilities.
+    No weights' modification.
 
     Use for middle layers.
     """

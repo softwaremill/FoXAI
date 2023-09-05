@@ -447,7 +447,7 @@ def test_layer_input_x_gradient_raises_error_if_attributes_are_empty(
         )
 
 
-@patch("foxai.explainer.computer_vision.algorithm.lrp.LRP.attribute")
+@patch("foxai.explainer.computer_vision.algorithm.lrp.LRPCVExplainer.get_relevances")
 def test_lrp_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -463,7 +463,9 @@ def test_lrp_raises_error_if_attributes_are_empty(
         )
 
 
-@patch("foxai.explainer.computer_vision.algorithm.lrp.LayerLRP.attribute")
+@patch(
+    "foxai.explainer.computer_vision.algorithm.lrp.LayerLRPCVExplainer.get_relevances"
+)
 def test_layer_lrp_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:

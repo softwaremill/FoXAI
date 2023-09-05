@@ -55,8 +55,6 @@ class InputXGradientCVExplainer(BaseInputXGradientSHAPCVExplainer):
                 this is usually the target class).
                 If the network returns a scalar value per example,
                 no target index is necessary.
-                Targets can be either a single integer or a tensor containing a single
-                integer, which is applied to all input examples.
 
                 Default: None
             additional_forward_args: If the forward function
