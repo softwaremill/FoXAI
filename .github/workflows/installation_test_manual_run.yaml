@@ -1,0 +1,73 @@
+name: Manual Installation test
+run-name: Installation test, CUDA ${{ inputs.cuda_version }}, PYTHON ${{ inputs.python_version }}, PyTorch ${{ inputs.torch_version }}, PyTorch-Lightning ${{ inputs.torch_lightning_version }}, Pandas ${{ inputs.pandas_version }}
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      pandas_version:
+        description: "Select Pandas version"
+        required: true
+        default: "2.0.0"
+        type: choice
+        options:
+          - "1.1.0"
+          - "2.0.0"
+          - "2.0.3"
+      torch_version:
+        description: "Select PyTorch version"
+        required: true
+        default: "2.0.1"
+        type: choice
+        options:
+          - "1.12.1"
+          - "1.13.0"
+          - "1.13.1"
+          - "2.0.0"
+          - "2.0.1"
+      pytorch_lightning_version:
+        description: "Select PyTorch-Lightning version"
+        required: true
+        default: "2.0.7"
+        type: choice
+        options:
+          - "1.5.0"
+          - "1.6.0"
+          - "1.7.0"
+          - "1.8.0"
+          - "1.9.0"
+          - "2.0.0"
+          - "2.0.7"
+      cuda_version:
+        description: "Select CUDA version"
+        required: true
+        default: "11.7.1"
+        type: choice
+        options:
+          - "11.0.3"
+          - "11.2.2"
+          - "11.4.3"
+          - "11.6.2"
+          - "11.7.1"
+          - "11.8.0"
+          - "12.0.0"
+      python_version:
+        description: "Select Python version"
+        required: true
+        default: "3.8"
+        type: choice
+        options:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+jobs:
+  foxai:
+    name: Install FoxAI
+    uses: ./.github/workflows/installation_test_called_workflow.yaml
+    with:
+      cuda_version: ${{ inputs.cuda_version }}
+      python_version: ${{ inputs.python_version }}
+      pandas_version: ${{ inputs.pandas_version }}
+      torch_version: ${{ inputs.torch_version }}
+      pytorch_lightning_version: ${{ inputs.pytorch_lightning_version }}

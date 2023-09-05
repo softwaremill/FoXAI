@@ -413,9 +413,7 @@ def test_layer_gradient_shap_raises_error_if_attributes_are_empty(
         )
 
 
-@patch(
-    "foxai.explainer.computer_vision.algorithm.input_x_gradient.InputXGradient.attribute"
-)
+@patch("foxai.explainer.computer_vision.algorithm.gradient_utils.compute_gradients")
 def test_input_x_gradient_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:
@@ -432,7 +430,7 @@ def test_input_x_gradient_raises_error_if_attributes_are_empty(
 
 
 @patch(
-    "foxai.explainer.computer_vision.algorithm.input_x_gradient.LayerGradientXActivation.attribute"
+    "foxai.explainer.computer_vision.algorithm.gradient_utils.compute_layer_gradients"
 )
 def test_layer_input_x_gradient_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
@@ -565,7 +563,7 @@ def test_occulusion_raises_error_if_attributes_are_empty(
         )
 
 
-@patch("foxai.explainer.computer_vision.algorithm.saliency.Saliency.attribute")
+@patch("foxai.explainer.computer_vision.algorithm.gradient_utils.compute_gradients")
 def test_saliency_raises_error_if_attributes_are_empty(
     fake_attribute: MagicMock,
 ) -> None:

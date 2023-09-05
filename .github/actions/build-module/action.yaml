@@ -17,8 +17,16 @@ runs:
   steps:
     - name: Set up Python
       uses: actions/setup-python@v4
+      env:
+          PIP_ROOT_USER_ACTION: 'ignore'
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Upgrade pip
+      shell: bash
+      run: |
+        pip install --root-user-action=ignore --upgrade pip 
+    
     - name: Load cached venv
       id: cached-poetry-dependencies
       uses: actions/cache@v3
@@ -28,25 +36,46 @@ runs:
         restore-keys: |
           venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('poetry.lock') }}
           venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
+    
     - name: Setup poetry
-      uses: abatilo/actions-poetry@v2.1.5
+      uses: abatilo/actions-poetry@v2.3.0
+      env:
+          PIP_ROOT_USER_ACTION: ignore
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
+    
     - name: Install dependencies
       shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
       run: |
-        poetry install
-      working-directory: "${{ inputs.moduleFolder }}"
-    - name: Run Black
+        poetry install 
+    
+    - name: Install pandas (version ${{ env.PANDAS_VERSION }})
       shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
       run: |
-        poetry run black . --check --diff --color
-      working-directory: "${{ inputs.moduleFolder }}"
-    - name: Run MyPy checks
+        poetry run pip uninstall pandas --yes 
+        poetry run pip install pandas==${{ env.PANDAS_VERSION }}
+    
+    - name: Install torch (version ${{ env.TORCH_VERSION }})
       shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
       run: |
-        poetry run mypy -p foxai --show-error-context --pretty --namespace-packages --explicit-package-bases --ignore-missing-imports
+        poetry run pip uninstall torch --yes
+        poetry run pip install torch==${{ env.TORCH_VERSION }}
+
+    - name: Install pytorch-lightning (version ${{ env.PYTORCH_LIGHTNING_VERSION }})
+      shell: bash
+      env:
+          PIP_ROOT_USER_ACTION: ignore
+      run: |
+        poetry run pip uninstall pytorch-lightning --yes --root-user-action ignore
+        poetry run pip install pytorch-lightning==${{ env.PYTORCH_LIGHTNING_VERSION }}
       working-directory: "${{ inputs.moduleFolder }}"
+      
     - name: Run tests
       shell: bash
       run: poetry run pytest

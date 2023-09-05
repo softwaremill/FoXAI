@@ -39,10 +39,13 @@ def _metric_calculation(
     transformed_img: torch.Tensor,
     model: ModelType,
     chosen_class: int,
-    steps_num: int = 30,
-    metric_type: Metrics = Metrics.INSERTION,
+    steps_num=30,
+    metric_type=Metrics.INSERTION,
+    kernel=(101, 101),
 ) -> Tuple[np.ndarray, List]:
     """Calculate metric (insertion or deletion) given importance map, image, model and chosen class.
+    Implementation of both metrics (insertion and deletion) are inspired by the paper
+    "RISE: Randomized Input Sampling for Explanation of Black-box Models": https://arxiv.org/abs/1806.07421
 
     Args:
         attributions: Torch Tensor corresponding to importance map.
@@ -50,10 +53,11 @@ def _metric_calculation(
         model: model which we are explaining.
         chosen_class: index of the class we are creating metric for.
         metric_type: type of metric presented using enum, supported ones are: Insertion and Deletion.
+        kernel: define a tuple regarding the used blurring kernel. Default value is 101 to produce very blurred value.
 
     Returns:
         metric: numerical value of chosen metric for given picture and explanation.
-        importance_lst: list of numpy elements corresponding to confidence value at each step.
+        importance_list: list of numpy elements corresponding to confidence value at each step.
 
     Raises:
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
@@ -74,7 +78,7 @@ def _metric_calculation(
     sorted_attrs: np.ndarray = np.flip(np.sort(np.unique(preprocessed_attrs)))
     stepped_attrs: np.ndarray = _get_stepped_attrs(sorted_attrs, steps_num)
 
-    importance_lst: List[np.ndarray] = []
+    importance_list: List[Tuple[float, float]] = []
 
     cuda = next(model.parameters()).is_cuda
     device = torch.device("cuda" if cuda else "cpu")
@@ -83,7 +87,7 @@ def _metric_calculation(
     removed_img_part[:] = transformed_img.mean()
 
     if metric_type == Metrics.INSERTION:
-        removed_img_part = gaussian_blur(transformed_img, (101, 101))
+        removed_img_part = gaussian_blur(transformed_img, kernel)
 
     for val in stepped_attrs:
         attributes_map_np: np.ndarray = np.expand_dims(
@@ -115,11 +119,17 @@ def _metric_calculation(
 
         output = model(perturbed_img.unsqueeze(dim=0))
         softmax_output: torch.Tensor = torch.nn.functional.softmax(output)[0]
-        importance_lst.append(softmax_output[chosen_class].detach().numpy())
+        importance_val: float = float(
+            softmax_output[chosen_class].detach().cpu().numpy()
+        )
+        importance_list.append((val, importance_val))
 
-    metric: np.ndarray = np.round(np.trapz(importance_lst) / len(importance_lst), 4)
+    importance_values: List = [elem[0] for elem in importance_list]
+    metric: np.ndarray = np.round(
+        np.trapz(importance_values) / len(importance_values), 4
+    )
 
-    return metric, importance_lst
+    return metric, importance_list
 
 
 def deletion(
@@ -138,7 +148,7 @@ def deletion(
 
     Returns:
         metric: numerical value of chosen metric for given picture and explanation.
-        importance_lst: list of numpy elements corresponding to confidence value at each step.
+        importance_list: list of numpy elements corresponding to confidence value at each step.
 
     Raises:
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
@@ -153,6 +163,7 @@ def insertion(
     transformed_img: torch.Tensor,
     model: ModelType,
     chosen_class: int,
+    kernel=(101, 101),
 ) -> Tuple[np.ndarray, List]:
     """Calculate insertion metric given importance map, image, model and chosen class.
 
@@ -164,7 +175,7 @@ def insertion(
 
     Returns:
         metric: numerical value of chosen metric for given picture and explanation.
-        importance_lst: list of numpy elements corresponding to confidence value at each step.
+        importance_list: list of numpy elements corresponding to confidence value at each step.
 
     Raises:
         AttributeError: if metric type is not enum of Metrics.INSERTION or Metrics.DELETION
@@ -175,4 +186,5 @@ def insertion(
         model,
         chosen_class,
         metric_type=Metrics.INSERTION,
+        kernel=kernel,
     )
