@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+    - adamjankaczmarek-patch-test-auto
 
 jobs:
   foxai:
