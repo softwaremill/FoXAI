@@ -42,10 +42,8 @@ from foxai.explainer import (
     LayerInputXGradientCVExplainer,
     LayerIntegratedGradientsCVExplainer,
     LayerLRPCVExplainer,
-    LayerLRPCVExplainerOLD,
     LayerNoiseTunnelCVExplainer,
     LRPCVExplainer,
-    LRPCVExplainerOLD,
     NoiseTunnelCVExplainer,
     OcclusionCVExplainer,
     SaliencyCVExplainer,
@@ -75,7 +73,6 @@ class CVClassificationExplainers(Enum):
     CV_NOISE_TUNNEL_EXPLAINER: str = NoiseTunnelCVExplainer.__name__
     CV_GRADIENT_SHAP_EXPLAINER: str = GradientSHAPCVExplainer.__name__
     CV_LRP_EXPLAINER: str = LRPCVExplainer.__name__
-    CV_LRP_EXPLAINER_OLD: str = LRPCVExplainerOLD.__name__
     CV_FULL_GRADIENTS_EXPLAINER: str = FullGradientCVExplainer.__name__
     CV_GUIDEDGRADCAM_EXPLAINER: str = GuidedGradCAMCVExplainer.__name__
     CV_LAYER_INTEGRATED_GRADIENTS_EXPLAINER: str = (
@@ -84,7 +81,6 @@ class CVClassificationExplainers(Enum):
     CV_LAYER_NOISE_TUNNEL_EXPLAINER: str = LayerNoiseTunnelCVExplainer.__name__
     CV_LAYER_GRADIENT_SHAP_EXPLAINER: str = LayerGradientSHAPCVExplainer.__name__
     CV_LAYER_LRP_EXPLAINER: str = LayerLRPCVExplainer.__name__
-    CV_LAYER_LRP_EXPLAINER_OLD: str = LayerLRPCVExplainerOLD.__name__
     CV_LAYER_GRADCAM_EXPLAINER: str = LayerGradCAMCVExplainer.__name__
     CV_INPUT_X_GRADIENT_EXPLAINER: str = InputXGradientCVExplainer.__name__
     CV_LAYER_INPUT_X_GRADIENT_EXPLAINER: str = LayerInputXGradientCVExplainer.__name__

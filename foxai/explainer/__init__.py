@@ -35,10 +35,6 @@ from foxai.explainer.computer_vision.algorithm.lrp import (
     LayerLRPCVExplainer,
     LRPCVExplainer,
 )
-from foxai.explainer.computer_vision.algorithm.lrp_old import (
-    LayerLRPCVExplainerOLD,
-    LRPCVExplainerOLD,
-)
 from foxai.explainer.computer_vision.algorithm.noise_tunnel import (
     LayerNoiseTunnelCVExplainer,
     NoiseTunnelCVExplainer,
