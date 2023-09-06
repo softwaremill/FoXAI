@@ -44,10 +44,8 @@ class BaseLRPCVExplainer(Explainer):
     @abstractmethod
     def get_relevances(
         self,
-        model: ModelType,
-        input_data: torch.Tensor,
-        pred_label_idx: Optional[int] = None,
-        additional_forward_args: Any = None,
+        model: Module,
+        gradients: torch.Tensor,
         **kwargs,
     ) -> torch.Tensor:
         pass
@@ -125,13 +123,10 @@ class BaseLRPCVExplainer(Explainer):
                             print(
                                 f"Applied {self.layer_to_rule[layer]} on layer {layer}"
                             )
-                relevances = self.get_relevances(
-                    safe_model,
-                    input_tensor,
-                    pred_label_idx,
-                    additional_forward_args,
-                    **kwargs,
+                gradients = compute_gradients(
+                    model, input_data, pred_label_idx, additional_forward_args
                 )
+                relevances = self.get_relevances(model, gradients, **kwargs)
                 attributions = relevances * output.reshape(
                     (-1,) + (1,) * (relevances.dim() - 1)
                 )
@@ -229,15 +224,11 @@ class LRPCVExplainer(BaseLRPCVExplainer):
 
     def get_relevances(
         self,
-        model: ModelType,
-        input_data: torch.Tensor,
-        pred_label_idx: Optional[int] = None,
-        additional_forward_args: Any = None,
+        model: Module,
+        gradients: torch.Tensor,
         **kwargs,
     ) -> torch.Tensor:
-        return compute_gradients(
-            model, input_data, pred_label_idx, additional_forward_args
-        )
+        return gradients
 
 
 class LayerLRPCVExplainer(BaseLRPCVExplainer):
@@ -245,10 +236,8 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
 
     def get_relevances(
         self,
-        model: ModelType,
-        input_data: torch.Tensor,
-        pred_label_idx: Optional[int] = None,
-        additional_forward_args: Any = None,
+        model: Module,
+        gradients: torch.Tensor,
         attribute_to_layer_input: bool = False,
         layer: Optional[LayerType] = None,
         **kwargs,
@@ -256,12 +245,13 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
 
         if layer is None:
             layer = get_last_conv_model_layer(model=model)
-        compute_gradients(model, input_data, pred_label_idx, additional_forward_args)
 
         if attribute_to_layer_input:
             relevance = self.layer_to_rule[layer].relevance_input
         else:
             relevance = self.layer_to_rule[layer].relevance_output
 
-        assert relevance is not None, "Relevance was not calculated properly"
+        assert (
+            relevance is not None
+        ), f"Relevance was not calculated properly for the given layer {layer}"
         return relevance
