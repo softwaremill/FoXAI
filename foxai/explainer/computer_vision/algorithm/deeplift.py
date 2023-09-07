@@ -23,7 +23,6 @@ from foxai.types import (
     CustomAttributionFuncType,
     LayerType,
     ModelType,
-    TargetType,
 )
 
 
@@ -66,7 +65,7 @@ class BaseDeepLIFTCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         baselines: Optional[BaselineType] = None,
         additional_forward_args: Any = None,
         custom_attribution_func: Optional[CustomAttributionFuncType] = None,

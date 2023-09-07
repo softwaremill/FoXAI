@@ -12,7 +12,7 @@ from captum.attr import IntegratedGradients, LayerIntegratedGradients, NoiseTunn
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.explainer.computer_vision.model_utils import get_last_conv_model_layer
-from foxai.types import AttributionsType, LayerType, ModelType, StdevsType, TargetType
+from foxai.types import AttributionsType, LayerType, ModelType, StdevsType
 
 
 class BaseNoiseTunnelCVExplainer(Explainer):
@@ -34,7 +34,7 @@ class BaseNoiseTunnelCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         nt_type: str = "smoothgrad",
         nt_samples: int = 5,
         nt_samples_batch_size: Optional[int] = None,
@@ -56,25 +56,6 @@ class BaseNoiseTunnelCVExplainer(Explainer):
                 this is usually the target class).
                 If the network returns a scalar value per example,
                 no target index is necessary.
-                For general 2D outputs, targets can be either:
-
-                - a single integer or a tensor containing a single
-                    integer, which is applied to all input examples
-
-                - a list of integers or a 1D tensor, with length matching
-                    the number of examples in inputs (dim 0). Each integer
-                    is applied as the target for the corresponding example.
-
-                For outputs with > 2 dimensions, targets can be either:
-
-                - A single tuple, which contains #output_dims - 1
-                    elements. This target index is applied to all examples.
-
-                - A list of tuples with length equal to the number of
-                    examples in inputs (dim 0), and each tuple containing
-                    #output_dims - 1 elements. Each tuple is applied as the
-                    target for the corresponding example.
-
                 Default: None
             nt_type: Smoothing type of the attributions.
                 `smoothgrad`, `smoothgrad_sq` or `vargrad`

@@ -36,7 +36,7 @@ from torch.utils.hooks import RemovableHandle
 from foxai.array_utils import validate_result
 from foxai.explainer.base_explainer import Explainer
 from foxai.logger import create_logger
-from foxai.types import AttributionsType, ModelType, TargetType
+from foxai.types import AttributionsType, ModelType
 
 _LOGGER: Optional[logging.Logger] = None
 """Global logger instance."""
@@ -370,7 +370,7 @@ class FullGrad:
     def compute_saliency(
         self,
         input_data: torch.Tensor,
-        target: Optional[TargetType] = None,
+        target: Optional[int] = None,
     ) -> torch.Tensor:
         """Compute FullGrad saliency map.
 
@@ -383,11 +383,15 @@ class FullGrad:
         Returns:
             silency map
         """
-        if isinstance(target, int):
-            target = torch.tensor(data=[target] * input_data.shape[0]).to(self._device)
+        if target is not None:
+            target_class = torch.tensor(data=[target] * input_data.shape[0]).to(
+                self._device
+            )
+        else:
+            target_class = None
 
         input_grad, bias_grad = self.full_gradient_decompose(
-            input_data, target_class=target
+            input_data, target_class=target_class
         )
 
         # Input-gradient * image
@@ -434,7 +438,7 @@ class BaseFullGradientCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         **kwargs,
     ) -> AttributionsType:
         """Generate features image with Full Gradients algorithm explainer.

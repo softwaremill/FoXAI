@@ -17,7 +17,7 @@ from foxai.explainer.computer_vision.model_utils import (
     get_last_conv_model_layer,
     preprocess_baselines,
 )
-from foxai.types import AttributionsType, LayerType, ModelType, StdevsType, TargetType
+from foxai.types import AttributionsType, LayerType, ModelType, StdevsType
 
 
 class BaseGradientSHAPCVExplainer(Explainer):
@@ -57,7 +57,7 @@ class BaseGradientSHAPCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         baselines: Optional[BaselineType] = None,
         n_samples: int = 5,
         stdevs: StdevsType = 0.0,
@@ -79,25 +79,6 @@ class BaseGradientSHAPCVExplainer(Explainer):
                 this is usually the target class).
                 If the network returns a scalar value per example,
                 no target index is necessary.
-                For general 2D outputs, targets can be either:
-
-                - a single integer or a tensor containing a single
-                    integer, which is applied to all input examples
-
-                - a list of integers or a 1D tensor, with length matching
-                    the number of examples in inputs (dim 0). Each integer
-                    is applied as the target for the corresponding example.
-
-                For outputs with > 2 dimensions, targets can be either:
-
-                - A single tuple, which contains #output_dims - 1
-                    elements. This target index is applied to all examples.
-
-                - A list of tuples with length equal to the number of
-                    examples in inputs (dim 0), and each tuple containing
-                    #output_dims - 1 elements. Each tuple is applied as the
-                    target for the corresponding example.
-
                 Default: None
             baselines:
                 Baselines define the starting point from which expectation

@@ -9,7 +9,7 @@ from typing import Any, Callable, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from captum._utils.typing import BaselineType, TargetType
+from captum._utils.typing import BaselineType
 from skimage import segmentation
 from skimage.morphology import dilation, disk
 from skimage.transform import resize
@@ -248,7 +248,7 @@ class XRAI:
     @staticmethod
     def _get_integrated_gradients(
         input_data: torch.Tensor,
-        pred_label_idx: TargetType,
+        pred_label_idx: Optional[int],
         call_model_function: ModelType,
         call_model_args: Any,
         baselines: BaselineType,
@@ -311,7 +311,7 @@ class XRAI:
     def get_attribution_mask(
         self,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType,
+        pred_label_idx: Optional[int],
         call_model_function: ModelType,
         call_model_args: Any = None,
         baselines: Optional[BaselineType] = None,
@@ -644,7 +644,7 @@ class XRAICVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: TargetType = None,
+        pred_label_idx: Optional[int] = None,
         **kwargs,
     ) -> AttributionsType:
         """Generate model's attributes with XRAI algorithm explainer.
@@ -660,25 +660,6 @@ class XRAICVExplainer(Explainer):
                 this is usually the target class).
                 If the network returns a scalar value per example,
                 no target index is necessary.
-                For general 2D outputs, targets can be either:
-
-                - a single integer or a tensor containing a single
-                    integer, which is applied to all input examples
-
-                - a list of integers or a 1D tensor, with length matching
-                    the number of examples in inputs (dim 0). Each integer
-                    is applied as the target for the corresponding example.
-
-                For outputs with > 2 dimensions, targets can be either:
-
-                - A single tuple, which contains #output_dims - 1
-                    elements. This target index is applied to all examples.
-
-                - A list of tuples with length equal to the number of
-                    examples in inputs (dim 0), and each tuple containing
-                    #output_dims - 1 elements. Each tuple is applied as the
-                    target for the corresponding example.
-
                 Default: `None`
 
         Returns:
