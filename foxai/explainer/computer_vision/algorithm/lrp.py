@@ -127,8 +127,9 @@ class BaseLRPCVExplainer(Explainer):
                     model, input_data, pred_label_idx, additional_forward_args
                 )
                 relevances = self.get_relevances(model, gradients, **kwargs)
+                # reshaping so that first dimension match relevances first dimension
                 attributions = relevances * output.reshape(
-                    (-1,) + (1,) * (relevances.dim() - 1)
+                    (relevances.shape[0],) + (1,) * (relevances.dim() - 1)
                 )
 
         validate_result(attributions=attributions)
@@ -251,7 +252,8 @@ class LayerLRPCVExplainer(BaseLRPCVExplainer):
         else:
             relevance = self.layer_to_rule[layer].relevance_output
 
-        assert (
-            relevance is not None
-        ), f"Relevance was not calculated properly for the given layer {layer}"
+        if relevance is None:
+            raise AttributeError(
+                f"Relevance was not calculated properly for the given layer {layer}"
+            )
         return relevance
