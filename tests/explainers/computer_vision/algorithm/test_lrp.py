@@ -51,14 +51,14 @@ class TestLRPCVExplainer:
         relevances = explainer.get_relevances(model, gradients)
         assert torch.equal(gradients, relevances)
 
-    def test_get_relevances_raises_assertion_error_when_layer_relevance_not_calculated(
+    def test_get_relevances_raises_attribute_error_when_layer_relevance_not_calculated(
         self,
     ):
         model = CNN()
         explainer = LayerLRPCVExplainer()
         gradients = torch.randn(10, 20)
         explainer.add_rules(model)
-        with pytest.raises(AssertionError):
+        with pytest.raises(AttributeError):
             explainer.get_relevances(model, gradients)
 
     def test_get_relevances_properly_gets_relevance_for_layer_if_attribute_to_layer_input(
