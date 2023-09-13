@@ -22,3 +22,4 @@ Please describe the tests that you ran to verify your changes.
 - [ ] I have made corresponding changes to the documentation.
 - [ ] My changes generate no new warnings.
 - [ ] All code references and dependencies will work.
+- [ ] After changing the codebase I have examined if I can run "example/notebooks/basic_usage.ipynb" without errors and produced maps are same as before.
