@@ -4,7 +4,7 @@ from typing import Optional, TypeVar
 
 import torch
 
-from foxai.types import AttributionsType, ModelType, TargetType
+from foxai.types import AttributionsType, ModelType
 
 
 class Explainer(ABC):
@@ -16,7 +16,7 @@ class Explainer(ABC):
         self,
         model: ModelType,
         input_data: torch.Tensor,  # TODO: add more generic way of passing model inputs # pylint: disable = (fixme)
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         **kwargs,
     ) -> AttributionsType:
         """Calculate features of given explainer.

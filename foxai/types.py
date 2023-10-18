@@ -10,4 +10,3 @@ ModelType = torch.nn.Module
 BboxType = Tuple[int, int, int, int]
 
 AttributionsType = torch.Tensor
-TargetType = Union[torch.Tensor, int]

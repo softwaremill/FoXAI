@@ -21,7 +21,7 @@ from foxai.explainer.computer_vision.object_detection.base_object_detector impor
     BaseObjectDetector,
 )
 from foxai.explainer.computer_vision.object_detection.types import ObjectDetectionOutput
-from foxai.types import AttributionsType, LayerType, ModelType, TargetType
+from foxai.types import AttributionsType, LayerType, ModelType
 
 
 class LayerBaseGradCAM:
@@ -168,7 +168,7 @@ class BaseGradCAMCVExplainer(Explainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         **kwargs,
     ) -> AttributionsType:
         """Generate features image with GradCAM algorithm explainer.
@@ -251,7 +251,7 @@ class GuidedGradCAMCVExplainer(BaseGradCAMCVExplainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[TargetType] = None,
+        pred_label_idx: Optional[int] = None,
         additional_forward_args: Any = None,
         attribute_to_layer_input: bool = False,
         interpolate_mode: str = "nearest",
@@ -394,9 +394,7 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
         self,
         model: ModelType,
         input_data: torch.Tensor,
-        pred_label_idx: Optional[
-            TargetType
-        ] = None,  # pylint: disable = (unused-argument)
+        pred_label_idx: Optional[int] = None,  # pylint: disable = (unused-argument)
         layer: Optional[LayerType] = None,
         **kwargs,
     ) -> AttributionsType:
@@ -418,24 +416,6 @@ class LayerGradCAMCVExplainer(BaseGradCAMCVExplainer):
                 this is usually the target class).
                 If the network returns a scalar value per example,
                 no target index is necessary.
-                For general 2D outputs, targets can be either:
-
-                - a single integer or a tensor containing a single
-                    integer, which is applied to all input examples
-
-                - a list of integers or a 1D tensor, with length matching
-                    the number of examples in inputs (dim 0). Each integer
-                    is applied as the target for the corresponding example.
-
-                For outputs with > 2 dimensions, targets can be either:
-
-                - A single tuple, which contains #output_dims - 1
-                    elements. This target index is applied to all examples.
-
-                - A list of tuples with length equal to the number of
-                    examples in inputs (dim 0), and each tuple containing
-                    #output_dims - 1 elements. Each tuple is applied as the
-                    target for the corresponding example.
                 Default: None
             layer: Layer for which attributions are computed.
                 If None provided, last convolutional layer from the model
