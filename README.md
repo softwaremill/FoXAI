@@ -22,6 +22,7 @@ add support for text, tabular and multimodal data problems in the future.
     * [Note](#note)
         * [Artifacts directory structure](#artifacts-directory-structure)
         * [Examples](#examples)
+* [Star history](#star-history)
 
 # Installation
 
@@ -269,3 +270,7 @@ poetry run pre-commit install
 At the moment only explainable algorithms for image classification are
 implemented. In the future more algorithms and more computer vision tasks will
 be introduced. In the end, the module should work with all types of tasks (NLP, etc.).
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=softwaremill/FoXAI&type=Date)](https://star-history.com/#softwaremill/FoXAI&Date)
